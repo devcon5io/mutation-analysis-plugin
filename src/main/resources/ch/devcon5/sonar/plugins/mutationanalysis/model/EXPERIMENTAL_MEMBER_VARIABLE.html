@@ -1,0 +1,104 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="EXPERIMENTAL_MEMBER_VARIABLE">
+    <h2>Experimental Member Variable Mutator (EXPERIMENTAL<em>MEMBER</em>VARIABLE)</h2>
+
+    <p>This operator mutates assignments to member variables, including final members, by removing the assignments.
+        Member variables will be initialized with their Java defaul values, depending on the type of the variable.
+        </p>
+
+    <p>Java Default Values for Primitives and Reference Types</p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Default Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                <code>boolean</code>
+            </td>
+            <td><code>false</code></td>
+        </tr>
+        <tr>
+            <td>
+                <code>int</code>
+                <code>short</code>
+                <code>byte</code>
+                <code>long</code>
+            </td>
+            <td><code>0</code></td>
+        </tr>
+        <tr>
+            <td>
+                <code>float</code>
+                <code>double</code>
+            </td>
+            <td><code>0.0</code></td>
+        </tr>
+        <tr>
+            <td>
+                <code>char</code>
+            </td>
+            <td><code>'\u0000'</code></td>
+        </tr>
+        <tr>
+            <td>
+                <code>Object</code>
+            </td>
+            <td><code>null</code></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>Example</p>
+
+<pre class="prettyprint lang-java">
+public class Example {
+    private final int a = 10;
+    private String text = "abc";
+    //...
+}
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+  public class Example {
+    private final int a = 0;
+    private String text = null;
+    ...
+  }
+</pre>
+
+    <p>In cases where the member variable is explicitly initialized with a default value this operator will create an
+        equivalent mutation that can not be killed.</p>
+
+<pre class="prettyprint lang-java">
+public class EquivalentExample {
+    private boolean b = false;
+}
+</pre>
+    <p>see <a href="http://pitest.org/quickstart/mutators#EXPERIMENTAL_MEMBER_VARIABLE">Pitest Mutators</a></p>
+</div>

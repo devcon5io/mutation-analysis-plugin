@@ -1,0 +1,148 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="MATH">
+    <h2>Math Mutator (MATH)</h2>
+
+
+    <p>Binary arithmetic operations for integer or floating point arithmetic are replaced by this operator with another
+        operation according the following ruleset.
+    </p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>
+                Original operation
+            </th>
+            <th>
+                Mutated operation
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>+</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>-</td>
+            <td>+</td>
+        </tr>
+        <tr>
+            <td>*</td>
+            <td>/</td>
+        </tr>
+        <tr>
+            <td>/</td>
+            <td>*</td>
+        </tr>
+        <tr>
+            <td>%</td>
+            <td>*</td>
+        </tr>
+        <tr>
+            <td>&amp;</td>
+            <td>|</td>
+        </tr>
+        <tr>
+            <td>|</td>
+            <td>&amp;</td>
+        </tr>
+        <tr>
+            <td>^</td>
+            <td>&amp;</td>
+        </tr>
+        <tr>
+            <td>&lt;&lt;</td>
+            <td>&gt;&gt;</td>
+        </tr>
+        <tr>
+            <td>&gt;&gt;</td>
+            <td>&lt;&lt;</td>
+        </tr>
+        <tr>
+            <td>&gt;&gt;&gt;</td>
+            <td>&lt;&lt;&lt;</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>Example</p>
+
+<pre class="prettyprint lang-java">
+int a = b + c;
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+int a = b - c;
+</pre>
+
+    <p>The <code>+</code> operator on <code>String</code>s is overloaded and is not mutated by this operator.
+    </p>
+
+<pre class="prettyprint lang-java">
+String a = "a" + "Text";
+</pre>
+
+    <p>is a string concatenation and not a mathematical operator. The compiler replaces this concatenation with
+        something like</p>
+
+<pre class="prettyprint lang-java">
+String a = new StringBuilder("a").append("Text").toString();
+</pre>
+
+    <p>For increments, decrements and assignment increments and decrements of member variables (non-local) the compiler
+        will also use binary arithmetic operations. Although a special <code>iinc</code> opcode exists for increments,
+        but it is restricted to local variables (stack variables) and is not applicable to member variables. Hence,
+        the math mutages will also mutate
+
+        Please note that the compiler will also use binary arithmetic operations for
+        increments, decrements and assignment increments and decrements of non-local
+        variables (member variables) although a special <code>iinc</code> opcode for increments
+        exists. This special opcode is restricted to local variables (also called stack
+        variables) and cannot be used for member variables. That means the math operator
+        will also mutate</p>
+
+<pre class="prettyprint lang-java">
+public class Example {
+  private int a;
+
+  public void inc() {
+    this.a++;
+  }
+}
+</pre>
+
+    <p>to</p>
+
+<pre class="prettyprint lang-java">
+public class Example {
+  private int a;
+
+  public void inc() {
+    this.a = this.a - 1;
+  }
+}
+</pre>
+    <p>see <a href="http://pitest.org/quickstart/mutators#MATH">Pitest Mutators</a></p>
+</div>

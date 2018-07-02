@@ -1,0 +1,140 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="INLINE_CONSTS">
+    <h2>Inline Constant Mutator (INLINE_CONSTS)</h2>
+
+    <p>An inline constant is a fixed value - a literal - that is assigned to a non-final variable. The inline
+        constant operator alters the value that is assigned to the variable.
+        </p>
+    <p>Example:</p>
+
+<pre class="prettyprint lang-java">
+public void aMethod() {
+  long l = 16L;
+  // some coding that uses l
+}
+</pre>
+
+    <p>The actual mutation depends on the type of the inline constant. Because the ways Java statements get converted
+        to byte code may vary, the rule for mutating inline constant are complex.
+        </p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Mutation</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>boolean</code></td>
+            <td>
+                <code>true</code> gets replaced with <code>false</code> and
+                <code>false</code> gets replaced with <code>true</code>
+            </td>
+        </tr>
+        <tr>
+            <td><code>integer</code> <code>byte</code> <code>short</code></td>
+            <td>
+                <ul>
+                    <li><code>1</code> gets replaced with <code>0</code></li>
+                    <li><code>-1</code> gets replaced with <code>1</code></li>
+                    <li><code>5</code> gets replaced with <code>-1</code></li>
+                    <li>all other values are incremented by 1</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><code>long</code></td>
+            <td>
+                <ul>
+                    <li><code>1</code> gets replaced with <code>0</code> </li>
+                    <li>all other values are incremented by 1</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><code>float</code></td>
+            <td>
+                <ul>
+                    <li><code>1.0</code> gets replaced with <code>0.0</code> </li>
+                    <li><code>2.0</code> gets replaced with <code>0.0</code> </li>
+                    <li>any other value gets replaced with <code>1.0</code> </li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><code>double</code></td>
+            <td>
+                <li><code>1.0</code> gets replaced with <code>0.0</code> </li>
+                <li>any other value gets replaced with <code>1.0</code> </li>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>For example</p>
+
+<pre class="prettyprint lang-java">
+public int aMethod() {
+  int i = 16;
+  return i;
+}
+</pre>
+
+    <p>will be changed to</p>
+
+<pre class="prettyprint lang-java">
+public int aMethod() {
+  int i = 17;
+  return i;
+}
+</pre>
+
+    <p>The compiler may optimize expressions with final variables - regardless of being local or member variables.
+        In those cases the mutation is not able to mutate any variable.
+    </p>
+    <p>Example</p>
+
+<pre class="prettyprint lang-java">
+public class Example {
+  private static final int CONSTANT = 4;
+  
+  public String aMethod() {
+    final int i = 16;
+    return "" + CONSTANT + ":" + i;
+  }
+}
+</pre>
+
+    <p>might get optimized to</p>
+
+<pre class="prettyprint lang-java">
+public class Example {
+  public String aMethod() {
+    return "4:16";
+  }
+}
+</pre>
+
+    <p>see <a href="http://pitest.org/quickstart/mutators#INLINE_CONSTS">Pitest Mutators</a></p>
+</div>

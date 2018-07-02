@@ -1,0 +1,125 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="NON_VOID_METHOD_CALLS">
+    <h2>Non Void Method Call Mutator (NON<em>VOID</em>METHOD_CALLS)</h2>
+
+    <p>This mutages removes a call to a method with a non-void return value. Instead of the return value the default
+        value according the following table is used instead.</p>
+
+    <p>Default Values for Primitives and Reference Types</p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Default Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>boolean</code></td>
+            <td><code>false</code></td>
+        </tr>
+        <tr>
+            <td><code>int</code> <code>byte</code> <code>short</code> <code>long</code></td>
+            <td><code>0</code></td>
+        </tr>
+        <tr>
+            <td><code>float</code> <code>double</code></td>
+            <td><code>0.0</code></td>
+        </tr>
+        <tr>
+            <td><code>char</code></td>
+            <td><code>'\u0000'</code></td>
+        </tr>
+        <tr>
+            <td><code>Object</code></td>
+            <td><code>null</code></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>Example</p>
+
+<pre class="prettyprint lang-java">
+public long aMethod() {
+  return 5L;
+}
+
+public void bMethod() {
+  long l = aMethod();
+  // do something l
+}
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+public long aMethod() {
+  return 5L;
+}
+
+public void foo() {
+  int l = 0L;
+  // do something with l
+}
+</pre>
+
+    <p>or</p>
+
+<pre class="prettyprint lang-java">
+public Object aMethod() {
+  return new Object();
+}
+
+public void bMethod() {
+  Object o = bMethod();
+  // do something with o
+}
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+public Object aMethod() {
+  return new Object();
+}
+
+public void bMethod() {
+  Object o = null;
+  // do something o
+}
+</pre>
+
+    <p>This operator produces mutations that are fairly easy to detect by a test, especially when Reference types
+        are mutated causing <code>NullPointerException</code>s. Further, it may create mutations that are an equivalent
+        of the original code because the original code already returns a default value, that make it impossible to be
+        detected by a test.
+        </p>
+
+    <p>This operator does not affect void methods or constructor calls. See
+        <a href="http://pitest.org/quickstart/mutators#VOID_METHOD_CALL">Void Method Call Mutator</a> for mutations of
+        void methods and
+        <a href="http://pitest.org/quickstart/mutators#CONSTRUCTOR_CALL">Constructor Call Mutator</a> for mutations of
+        constructors.</p>
+
+    <p>see <a href="http://pitest.org/quickstart/mutators#NON_VOID_METHOD_CALLS">Pitest Mutators</a></p>
+</div>

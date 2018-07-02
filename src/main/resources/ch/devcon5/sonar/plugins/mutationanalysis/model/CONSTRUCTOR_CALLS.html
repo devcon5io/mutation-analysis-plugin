@@ -1,0 +1,55 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="CONSTRUCTOR_CALLS">
+    <h2>Constructor Call Mutator (CONSTRUCTOR_CALLS)</h2>
+
+    <p>This operator targets at constructors where it replaces the call to the constructor with a <code>null</code> value
+        assignment. This should induce <code>NullPointerException</code>.
+        Example:</p>
+
+<pre class="prettyprint lang-java">
+public Object aMethod() {
+  Example x = new Example();
+  return x;
+}
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+public Example aMethod() {
+  Example x = null;
+  return x;
+}
+</pre>
+
+    <p>This mutation is very likely to cause <strong><code>NullPointerException</code>s</strong> even in test suites
+        that do not explicitly test for <code>null</code> value. Nevertheless, even if the test contain no assertion at
+        all, if the test runs this code, it is likely to kill this mutation.</p>
+
+    <p>Every other method invocation is not affected by this operator. See <a
+            href="http://pitest.org/quickstart/mutators#VOID_METHOD_CALL">Void Method Call Mutator</a>, which mutates
+        void methods, and
+        <a href="http://pitest.org/quickstart/mutators#NON_VOID_METHOD_CALL">Non Void Method Call Mutator</a>
+        mutating non-void methods.</p>
+
+    <p>see <a href="http://pitest.org/quickstart/mutators#CONSTRUCTOR_CALLS">Pitest Mutators</a></p>
+</div>
