@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>mutation-analysis-plugin</artifactId>
+    <groupId>ch.devcon5.sonar</groupId>
+    <packaging>sonar-plugin</packaging>
+    <version>1.2</version>
+
+    <name>${project.artifactId}</name>
+    <description>Sonar Plugin for integrating and visualizing mutation analysis results</description>
+    <inceptionYear>2015</inceptionYear>
+    <url>http://www.devcon5.ch/sonarqube-mutation-analysis-plugin</url>
+
+    <developers>
+        <developer>
+            <name>Gerald Muecke</name>
+            <email>gerald.muecke@devcon5.ch</email>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>DevCon5 GmbH</name>
+        <url>http://www.devcon5.ch</url>
+    </organization>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/devcon5io/${project.name}/issues</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:git@github.com:devcon5io/${project.name}.git</connection>
+        <developerConnection>scm:git:git@github.com:devcon5io/${project.name}.git</developerConnection>
+        <url>https://github.com/devcon5io/${project.name}</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>GNU LGPL 3</name>
+            <url>http://www.gnu.org/licenses/lgpl.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <sonar.buildVersion>6.7</sonar.buildVersion>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jdk.min.version>1.8</jdk.min.version>
+        <junit.version>4.12</junit.version>
+        <slf4j.version>1.7.6</slf4j.version>
+        <log4j.version>2.0-rc1</log4j.version>
+        <!-- license settings -->
+        <license.owner>DevCon5 GmbH</license.owner>
+        <license.title>Mutation Analysis Plugin</license.title>
+        <license.years>2015-2016</license.years>
+        <license.mailto>info@devcon5.ch</license.mailto>
+        <mockito.version>1.10.19</mockito.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.sonarsource.sonarqube</groupId>
+            <artifactId>sonar-plugin-api</artifactId>
+            <version>${sonar.buildVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <!-- Logging Binding for Test output -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- unit tests -->
+        <dependency>
+            <groupId>org.sonarsource.sonarqube</groupId>
+            <artifactId>sonar-testing-harness</artifactId>
+            <version>${sonar.buildVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+                <artifactId>sonar-packaging-maven-plugin</artifactId>
+                <version>1.18.0.372</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <pluginKey>mutationanalysis</pluginKey>
+                    <pluginClass>ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin</pluginClass>
+                    <pluginName>Mutation Analysis</pluginName>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>${jdk.min.version}</source>
+                    <target>${jdk.min.version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.1</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <!--
+                The pit profile enables mutation coverage for all projects.
+                To specify which classes should be mutated, set the pit.include.pattern property.
+                If this profile is activated, mutation analysis is run in verify phase
+            -->
+            <id>pit</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <version>1.4.0</version>
+                        <configuration>
+                            <targetClasses>
+                                <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
+                            </targetClasses>
+                            <targetTests>
+                                <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
+                            </targetTests>
+                            <mutators>
+                                <mutator>DEFAULTS</mutator>
+                                <mutator>CONSTRUCTOR_CALLS</mutator>
+                                <mutator>NON_VOID_METHOD_CALLS</mutator>
+                                <mutator>INLINE_CONSTS</mutator>
+                                <mutator>REMOVE_CONDITIONALS</mutator>
+                                <mutator>EXPERIMENTAL_MEMBER_VARIABLE</mutator>
+                                <mutator>EXPERIMENTAL_SWITCH</mutator>
+                            </mutators>
+                            <timestampedReports>
+                                false
+                            </timestampedReports>
+                            <outputFormats>
+                                <param>XML</param>
+                                <param>HTML</param>
+                            </outputFormats>
+                            <timeoutConstant>15000</timeoutConstant>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>mutationCoverage</goal>
+                                </goals>
+                                <phase>verify</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <failOnError>false</failOnError>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

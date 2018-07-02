@@ -1,0 +1,18 @@
+language: java
+sudo: false
+install: true
+addons:
+  sonarcloud:
+    organization: devcon5
+    token:
+      secure: $SONAR_TOKEN
+
+jdk:
+  - oraclejdk8
+script:
+  - mvn clean package sonar:sonar
+
+cache:
+  directories:
+    - $HOME/.m2/repository
+    - $HOME/.sonar/cache

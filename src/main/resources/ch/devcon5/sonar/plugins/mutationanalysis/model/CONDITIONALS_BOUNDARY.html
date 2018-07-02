@@ -1,0 +1,74 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="CONDITIONALS_BOUNDARY">
+    <h2>Conditionals Boundary Mutator (CONDITIONALS_BOUNDARY)</h2>
+
+    <p>This operator replaces relational operators <code>&lt;, &lt;=, &gt;, &gt;=</code> with their conditional boundary
+        counterparts according to the following table</p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>
+                Original
+            </th>
+            <th>
+                Mutation
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>&lt;</td>
+            <td>&lt;=</td>
+        </tr>
+        <tr>
+            <td>&lt;=</td>
+            <td>&lt;</td>
+        </tr>
+        <tr>
+            <td>&gt;</td>
+            <td>&gt;=</td>
+        </tr>
+        <tr>
+            <td>&gt;=</td>
+            <td>&gt;</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>For example</p>
+
+<pre class="prettyprint lang-java">
+if (a &lt;= b) {
+  // some code
+}
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+if (a &lt; b) {
+  // someCode
+}
+</pre>
+    <p>see <a href="http://pitest.org/quickstart/mutators#CONDITIONALS_BOUNDARY">Pitest Mutators</a></p>
+</div>

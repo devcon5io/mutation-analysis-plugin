@@ -1,0 +1,104 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="NEGATE_CONDITIONALS">
+    <h2>Negate Conditionals Mutator (NEGATE_CONDITIONALS)</h2>
+
+    <p>Conditional expressions are negated by this operator.</p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>
+                Original
+            </th>
+            <th>
+                Mutated
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>==</td>
+            <td>!=</td>
+        </tr>
+        <tr>
+            <td>!=</td>
+            <td>==</td>
+        </tr>
+        <tr>
+            <td>&lt;=</td>
+            <td>&gt;</td>
+        </tr>
+        <tr>
+            <td>&gt;=</td>
+            <td>&lt;</td>
+        </tr>
+        <tr>
+            <td>&lt;</td>
+            <td>&gt;=</td>
+        </tr>
+        <tr>
+            <td>&gt;</td>
+            <td>&lt;=</td>
+        </tr>
+
+        </tbody>
+    </table>
+
+    <p>Example</p>
+
+<pre class="prettyprint lang-java">
+if (a != b) {
+  // some code
+}
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+if (a == b) {
+  // some code
+}
+</pre>
+
+    <p>or</p>
+
+<pre class="prettyprint lang-java">
+if (a &lt;= b) {
+    // some code
+}
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+if (a &gt; b) {
+  // some code
+}
+</pre>
+
+
+    <p>The is an overlap with the conditional boundary operator. The conditionals negation however is more unstable and
+        is therefore easier to be killed by a test.
+        </p>
+
+    <p>see <a href="http://pitest.org/quickstart/mutators#NEGATE_CONDITIONALS">Pitest Mutators</a></p>
+</div>

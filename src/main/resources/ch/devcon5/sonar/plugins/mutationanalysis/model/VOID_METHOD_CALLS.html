@@ -1,0 +1,60 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="VOID_METHOD_CALLS">
+    <h2>Void Method Call Mutator (VOID<em>METHOD</em>CALLS)</h2>
+
+    <p>Method without a return value - void methods - do not produce an explicit result that is assigned to a
+        variable. This could be a call of a setter or a message to an external system or underlying components for
+        which the effects require more effort to verify. This operator removes such method calls. </p>
+
+<pre class="prettyprint lang-java">
+public void aMethod(String s) {
+  // some Code
+}
+
+public String bMethod() {
+  String s = "example";
+  aMethod(s);
+  return s;
+}
+</pre>
+
+    <p>will be changed to</p>
+
+<pre class="prettyprint lang-java">
+public void aMethod(String s) {
+  // someCode
+}
+
+public String bMethod() {
+  String s = "example";
+  return s;
+}
+</pre>
+
+    <p>Constructor calls are not considered as method calls and are therefore not affected by this operator.
+        To mutate constructor calls, refer to the
+        <a href="http://pitest.org/quickstart/mutators#CONSTRUCTOR_CALL">Constructor Call Mutator</a> or the
+        <a href="http://pitest.org/quickstart/mutators#NON_VOID_METHOD_CALL">Non Void Method Call
+            Mutator</a> if you want to mutate method calls that produce a return value.</p>
+
+    <p>see <a href="http://pitest.org/quickstart/mutators#VOID_METHOD_CALLS">Pitest Mutators</a></p>
+</div>

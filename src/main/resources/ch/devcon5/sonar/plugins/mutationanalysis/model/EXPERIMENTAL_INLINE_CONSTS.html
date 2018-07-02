@@ -1,0 +1,91 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="EXPERIMENTAL_INLINE_CONSTS">
+    <h2>Experimental Inline Constant Mutator (EXPERIMENTAL<em>INLINE</em>CONSTS)</h2>
+
+    <p>This yet experimental operator aims to provide a more consistent behavior than the inline const operator.
+        </p>
+
+    <p>This operator increments the value by 1. In some cases this would lead to equivalent mutations due to JVM
+        internals, i.e. for floating point types adding 1 would lead to equivalent mutations. </p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Mutation</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>boolean</code></td>
+            <td>
+                <ul>
+                    <li><code>true</code> gets replaced with <code>false</code> and</li>
+                    <li><code>false</code> gets replaced with <code>true</code></li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><code>int</code> <code>byte</code> <code>short</code></td>
+            <td>
+                <ul>
+                    <li><code>1</code> is replaces with <code>0</code>,</li>
+                    <li><code>-1</code> is replaced with <code>0</code>,</li>
+                    <li>all other values are incremented by 1.</li>
+                    <li><code>Byte.MAX</code>, <code>Short.MAX</code> and <code>Integer.MAX</code> are replaced with
+                        <code>Byte.MIN</code>, <code>Short.MIN</code> and <code>Integer.MIN</code></li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><code>long</code></td>
+            <td>
+                <ul>
+                    <li><code>1</code> gets replaced with <code>0</code> </li>
+                    <li>all other values are incremented by 1</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><code>float</code></td>
+            <td>
+                <ul>
+                    <li>replace <code>0.0</code> with <code>1.0</code></li>
+                    <li>replace <code>1.0</code> with <code>2.0</code></li>
+                    <li>replace any other value with <code>1.0</code></li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><code>double</code></td>
+            <td>
+                <ul>
+                    <li>replace <code>0.0</code> with <code>1.0</code></li>
+                    <li>replace <code>1.0</code> with <code>2.0</code></li>
+                    <li>replace any other value with <code>1.0</code></li>
+                </ul>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <p>see <a href="http://pitest.org/quickstart/mutators#EXPERIMENTAL_INLINE_CONSTS">Pitest Mutators</a></p>
+</div>

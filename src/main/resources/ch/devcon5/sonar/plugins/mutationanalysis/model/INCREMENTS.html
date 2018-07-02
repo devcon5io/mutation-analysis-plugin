@@ -1,0 +1,51 @@
+<!--
+  ~ Mutation Analysis Plugin
+  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ info@devcon5.ch
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; if not, write to the Free Software Foundation,
+  ~ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  -->
+
+<div id="INCREMENTS">
+    <h2>Increments Mutator (INCREMENTS)</h2>
+
+    <p>
+        This operator replaces increments with decrements and vice versa. It mutates increments, decrements, assignment
+        increments and decrements of stack variables (local variables).</p>
+
+    <p>For example</p>
+
+<pre class="prettyprint lang-java">
+public int aMethod(int i) {
+  i--;
+  return i;
+}
+</pre>
+
+    <p>will be mutated to</p>
+
+<pre class="prettyprint lang-java">
+public int aMethod(int i) {
+  i++;
+  return i;
+}
+</pre>
+
+    <p>Only increments and decrements of local variables are mutated. Member variables and the increments and
+        decrements thereof will be covered by the <a href="http://pitest.org/quickstart/mutators#MATH">Math Mutator</a>.
+    </p>
+
+    <p>see <a href="http://pitest.org/quickstart/mutators#INCREMENTS">Pitest Mutators</a></p>
+</div>
