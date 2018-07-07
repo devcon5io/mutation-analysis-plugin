@@ -72,7 +72,7 @@ public final class Reports {
     if (xmlReport == null) {
       LOG.warn("No XML PIT report found in directory {} !", reportsDirectory);
       LOG.warn(
-        "Checkout plugin documentation for more detailed explanations: http://docs.codehaus.org/display/SONAR/Pitest");
+        "Checkout plugin documentation for more detailed explanations: https://github.com/devcon5io/mutation-analysis-plugin");
       return Collections.emptyList();
     }
 
