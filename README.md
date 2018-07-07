@@ -63,15 +63,17 @@ If you're using custom profile, you may activate the Mutation Capabilities by ad
 2. In the rules box, click on "Activate More"
 3. In the search:
    1. Select Repository _Mutation Analysis_
-   2. Select Tag _mut_ or (recommended) _mutation-operator_ (maybe you have to search for it)
+   2. Select Tag _mutation-operator_ (maybe you have to search for it)
    3. Click on _Bulk change_
    4. Activate in your profile
    
 Running a mutation analysis
 ---------------------------
 
-The plugin itself does not conduct the analysis but processes the reports produced by [Pitest](http://pitest.org/).
+The plugin itself does _not_ conduct the actual analysis but processes the reports produced by [Pitest](http://pitest.org/).
 Following the [Quickstart](http://pitest.org/quickstart/maven/) to create a Pitest report, add the following plugin to your POM.
+
+It's important to enable the XML report in the output formats section.
 
 ```xml
 <plugin>
@@ -85,6 +87,10 @@ Following the [Quickstart](http://pitest.org/quickstart/maven/) to create a Pite
         <targetTests>
             <param>com.your.package.root*</param>
         </targetTests>
+        <outputFormats>
+            <param>XML</param><!-- this generates the reports parsed by the plugin -->
+            <param>HTML</param>
+        </outputFormats>
     </configuration>
 </plugin>
 ```
