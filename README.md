@@ -53,8 +53,7 @@ any empirical research.
 
 _In order to run a Mutation Analysis a profile with mutation analysis specific rules enable must be used._
 
-The plugin contains a built-in quality profile, that contains all active rules of the `Sonar way` Java profile plus all mutator-specific
-rules. This profile _Sonar Way + Mutation Analysis_ will be activated by default.
+The plugin contains a built-in quality profile, that contains all mutator-specific rules. 
 
 If you're using custom profile, you may activate the Mutation Capabilities by adding the mutator rules to the profile:
 
