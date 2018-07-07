@@ -14,16 +14,10 @@ import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition.BuiltInQual
 @RunWith(MockitoJUnitRunner.class)
 public class MutationAnalysisProfileDefinitionTest {
 
-   public static final String SONAR_WAY_REPOKEY = "sonarWay";
-
    private BuiltInQualityProfilesDefinition.Context context = new BuiltInQualityProfilesDefinition.Context();
 
    @Before
    public void setUp() throws Exception {
-      BuiltInQualityProfilesDefinition.NewBuiltInQualityProfile sonarWay = context.createBuiltInQualityProfile("Sonar way", "java");
-      sonarWay.activateRule(SONAR_WAY_REPOKEY, "exampleRule1");
-      sonarWay.activateRule(SONAR_WAY_REPOKEY, "exampleRule2");
-      sonarWay.done();
    }
 
    @Test
@@ -33,10 +27,9 @@ public class MutationAnalysisProfileDefinitionTest {
 
       def.define(context);
 
-      BuiltInQualityProfile result = context.profile("java", "Sonar Way + Mutation Analysis");
+      BuiltInQualityProfile result = context.profile("java", "Mutation Analysis");
 
       assertNotNull(result);
       assertEquals(23, result.rules().stream().filter(r -> REPOSITORY_KEY.equals(r.repoKey())).count());
-      assertEquals(2, result.rules().stream().filter(r -> SONAR_WAY_REPOKEY.equals(r.repoKey())).count());
    }
 }
