@@ -26,8 +26,6 @@ public class MutationAnalysisProfileDefinition implements BuiltInQualityProfiles
          LOGGER.warn("No 'Sonar Way'/java profile found");
       }
 
-      //this will make this rule a new default for java
-      mutationAnalysis.setDefault(true);
       mutationAnalysis.done();
    }
 }
