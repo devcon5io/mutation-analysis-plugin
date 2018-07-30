@@ -29,7 +29,7 @@
     <name>${project.artifactId}</name>
     <description>Sonar Plugin for integrating and visualizing mutation analysis results</description>
     <inceptionYear>2015</inceptionYear>
-    <url>http://www.devcon5.ch/sonarqube-mutation-analysis-plugin</url>
+    <url>https://www.devcon5.ch/en/products_and_services/products/sonarqube-mutation-plugin/</url>
 
     <developers>
         <developer>
