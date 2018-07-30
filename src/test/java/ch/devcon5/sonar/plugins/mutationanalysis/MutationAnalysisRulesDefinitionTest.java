@@ -87,10 +87,11 @@ public class MutationAnalysisRulesDefinitionTest {
       assertNotNull(rule.htmlDescription());
     }
 
-    assertEquals(23, rules.stream()
+    assertEquals(26, rules.stream()
                           .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
                           .filter(rule -> RuleType.BUG.equals(rule.type())).count());
     assertEquals(6, rules.stream().filter(rule -> rule.status() == RuleStatus.BETA).count());
+    assertEquals(3, rules.stream().filter(rule -> rule.status() == RuleStatus.DEPRECATED).count());
   }
 
 }
