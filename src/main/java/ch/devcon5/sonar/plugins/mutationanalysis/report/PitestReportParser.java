@@ -106,7 +106,8 @@ public class PitestReportParser {
 
     Collection<Mutant> result;
 
-    if(!Files.exists(report)){
+    //TODO replace java.nio.Files API when migrating to JDK9+
+    if(!report.toFile().exists()){
        LOG.debug("No report {} found", report);
        return Collections.emptyList();
     }
@@ -140,12 +141,8 @@ public class PitestReportParser {
     int event;
     while (reader.hasNext()) {
       event = reader.next();
-      switch (event) {
-        case START_ELEMENT:
+      if(event == START_ELEMENT){
           startElement(reader, result);
-          break;
-        default:
-          break;
       }
     }
 

@@ -55,7 +55,8 @@ public class ReportFinder {
    */
   public Path findReport(final Path reportDirectory) throws IOException {
 
-    if (reportDirectory == null || !Files.exists(reportDirectory) || !Files.isDirectory(reportDirectory)) {
+    //TODO replace java.nio.Files API when migrating to JDK9+
+    if (reportDirectory == null || !reportDirectory.toFile().exists() || !reportDirectory.toFile().isDirectory()) {
       LOG.warn("ReportDirectory {} is no valid directory", reportDirectory);
       return null;
     }

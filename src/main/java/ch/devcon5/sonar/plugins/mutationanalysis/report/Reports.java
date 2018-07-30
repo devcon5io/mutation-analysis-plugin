@@ -21,7 +21,6 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,7 +62,7 @@ public final class Reports {
     LOG.debug("Searching pit reports in {}", reportsDirectory);
 
     final Path xmlReport;
-    if (Files.isDirectory(reportsDirectory)) {
+    if (reportsDirectory.toFile().isDirectory()) {
       xmlReport = new ReportFinder().findReport(reportsDirectory);
     } else {
       xmlReport = reportsDirectory;
