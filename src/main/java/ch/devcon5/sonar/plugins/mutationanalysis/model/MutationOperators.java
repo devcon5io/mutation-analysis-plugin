@@ -77,9 +77,11 @@ public final class MutationOperators {
             }
             INSTANCES = Collections.unmodifiableMap(mutagens);
         } catch (IOException | XPathExpressionException e) {
-            throw new RuntimeException("Could not load mutagen definitions", e);
+            throw new MutationOperatorsInitializationException("Could not load mutagen definitions", e);
         }
     }
+
+
 
     /**
      * Converts a MutationOperator from the given {@link Node}
@@ -135,5 +137,15 @@ public final class MutationOperators {
     public static Collection<MutationOperator> allMutagens() {
 
         return Collections.unmodifiableCollection(INSTANCES.values());
+    }
+
+    /**
+     * Exception that is thrown if the mutation operators can not be loaded from configuration.
+     */
+    public static class MutationOperatorsInitializationException extends RuntimeException {
+
+        public MutationOperatorsInitializationException(final String message, final Throwable cause) {
+            super(message, cause);
+        }
     }
 }
