@@ -161,11 +161,7 @@ public class MutantTest {
 
     }
 
-    @Test
-    public void testGetPathToSourceFile() throws Exception {
 
-        assertEquals("com/foo/bar/SomeClass.java", detectedMutant.getPathToSourceFile());
-    }
 
     @Test(expected = NullPointerException.class)
     public void testMutant_nullStatus_exception() throws Exception {
