@@ -112,7 +112,7 @@ public class ReportFinder {
   /**
    * Recursive search report xml
    */
-  private class ReportFinderVisitor extends SimpleFileVisitor<Path> {
+  private static class ReportFinderVisitor extends SimpleFileVisitor<Path> {
 
     private final PathMatcher matcher;
 
