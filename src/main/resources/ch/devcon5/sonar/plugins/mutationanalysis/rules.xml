@@ -31,8 +31,14 @@
 	       in redundant issued.</p>
 	       <p>
 	       For more information check out the <a href=\"http://pitest.org/quickstart/mutators\">PIT documentation</a>
-	       </p>]]>
+	       </p>
+	       <p>This rule is deprecated and is likely to be removed in future releases. Instead of this rule, use one of
+	       the mutation specific rules.
+	       </p>
+           ]]>
         </description>
+        <status>DEPRECATED</status>
+        <type>BUG</type>
         <tag>aggregate</tag>
         <tag>pitest</tag>
         <tag>test</tag>
@@ -52,8 +58,13 @@
 	       with any of the mutation operator specific rules.</p>
 	       <p>For more information check out the <a href=\"http://pitest.org/quickstart/mutators\">PIT documentation</a>
 	       </p>
+	       <p>This rule is deprecated and is likely to be removed in future releases. Instead of this rule, use one of
+	       the mutation specific rules.
+	       </p>
 	       ]]>
         </description>
+        <status>DEPRECATED</status>
+        <type>BUG</type>
         <tag>aggregate</tag>
         <tag>pitest</tag>
         <tag>test</tag>
@@ -64,9 +75,15 @@
         <key>mutant.unknownStatus</key>
         <name>Mutant with unknown Status</name>
         <description>
-            <![CDATA[The Status of a mutant is unknown.]]>
+            <![CDATA[The Status of a mutant is unknown.
+            <p>This rule is deprecated and is likely to be removed in future releases. Instead of this rule, use one of
+	       the mutation specific rules.
+	       </p>
+            ]]>
         </description>
         <severity>MINOR</severity>
+        <status>DEPRECATED</status>
+        <type>BUG</type>
         <tag>aggregate</tag>
         <tag>pitest</tag>
         <tag>test</tag>
