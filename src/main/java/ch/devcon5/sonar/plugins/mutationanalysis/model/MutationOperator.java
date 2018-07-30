@@ -157,10 +157,8 @@ public final class MutationOperator {
             return false;
         }
         final MutationOperator other = (MutationOperator) obj;
-        if (!id.equals(other.id)) {
-            return false;
-        }
-        return true;
+
+        return id.equals(other.id);
     }
 
 }

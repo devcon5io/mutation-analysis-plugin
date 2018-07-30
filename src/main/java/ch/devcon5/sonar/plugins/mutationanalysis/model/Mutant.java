@@ -308,10 +308,7 @@ public class Mutant {
         if (!sourceFile.equals(other.sourceFile)) {
             return false;
         }
-        if (!killingTest.equals(other.killingTest)) {
-            return false;
-        }
-        return true;
+        return killingTest.equals(other.killingTest);
     }
 
     @Override
