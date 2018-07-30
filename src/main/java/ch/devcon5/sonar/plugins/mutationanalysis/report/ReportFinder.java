@@ -21,9 +21,11 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,13 +79,15 @@ public class ReportFinder {
   protected Path findMostRecentReport(final Path reportDirectory, final String pattern) throws IOException {
 
     Path mostRecent = null;
-    try (DirectoryStream<Path> reports = Files.newDirectoryStream(reportDirectory, pattern)) {
-      for (final Path report : reports) {
-        if (mostRecent == null || isNewer(mostRecent, report)) {
-          mostRecent = report;
-        }
+    ReportFinderVisitor reportFinderVisitor = new ReportFinderVisitor(pattern);
+    Files.walkFileTree(reportDirectory, reportFinderVisitor);
+
+    for (final Path report : reportFinderVisitor.getReports()) {
+      if (mostRecent == null || isNewer(mostRecent, report)) {
+        mostRecent = report;
       }
     }
+
     return mostRecent;
   }
 
@@ -103,4 +107,36 @@ public class ReportFinder {
 
     return Files.getLastModifiedTime(referencePath).compareTo(Files.getLastModifiedTime(otherPath)) < 0;
   }
+
+
+  /**
+   * Recursive search report xml
+   */
+  private class ReportFinderVisitor extends SimpleFileVisitor<Path> {
+
+    private final PathMatcher matcher;
+
+    private final List<Path> reports = new ArrayList<>();
+
+    public List<Path> getReports() {
+      return reports;
+    }
+
+    private ReportFinderVisitor(String pattern) {
+      matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+    }
+
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+      Objects.requireNonNull(file);
+      Objects.requireNonNull(attrs);
+
+      Path name = file.getFileName();
+      if (Objects.nonNull(name) && matcher.matches(name)) {
+        reports.add(file);
+      }
+      return FileVisitResult.CONTINUE;
+    }
+  }
+
 }

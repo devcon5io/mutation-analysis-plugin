@@ -186,4 +186,24 @@ public class ReportFinderTest {
         assertNotNull(report);
         assertEquals(newFile2, report);
     }
+
+
+    @Test
+    public void testFindMostRecentReport_inSubDirectories() throws IOException {
+
+        // prepare
+        final File olderReport = TestUtils.tempFileFromResource(folder, "target/pitest-reports/subDirectory1/mutations.xml",
+                getClass(), "ReportFinderTest_mutations.xml");
+        final File newReport = TestUtils.tempFileFromResource(folder, "target/pitest-reports/subDirectory2/mutations.xml",
+                getClass(), "ReportFinderTest_mutations.xml");
+        Files.setLastModifiedTime(olderReport.toPath(), FileTime.fromMillis(1000L));
+        Files.setLastModifiedTime(newReport.toPath(), FileTime.fromMillis(2000L));
+
+        // act
+        final Path report = subject.findMostRecentReport(folder.getRoot().toPath(), "*.xml");
+
+        // assert
+        assertNotNull(report);
+        assertEquals(newReport.toPath(), report);
+    }
 }
