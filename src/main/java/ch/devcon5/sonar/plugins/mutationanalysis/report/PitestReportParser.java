@@ -247,17 +247,4 @@ public class PitestReportParser {
 
     return reader.getAttributeValue(NAMESPACE_URI, ATTR_STATUS);
   }
-
-  /**
-   * Checks if the mutant was detected or not
-   *
-   * @param reader
-   *         the {@link XMLStreamReader} whose cursor is at the start element position of a &lt;mutation&gt; element
-   *
-   * @return <code>true</code> if the mutant was detected
-   */
-  private boolean isMutantDetected(final XMLStreamReader reader) {
-
-    return Boolean.parseBoolean(reader.getAttributeValue(NAMESPACE_URI, ATTR_DETECTED));
-  }
 }
