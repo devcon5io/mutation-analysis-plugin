@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
-import ch.devcon5.sonar.plugins.mutationanalysis.model.MutantBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,8 +179,7 @@ public class PitestReportParser {
    */
   private Mutant parseMutant(final XMLStreamReader reader) throws XMLStreamException {
 
-    final MutantBuilder builder = Mutant.newMutant().detected(isMutantDetected(reader))
-                                        .mutantStatus(getMutantStatus(reader));
+    final Mutant.Builder builder = Mutant.builder().mutantStatus(getMutantStatus(reader));
     while (reader.hasNext()) {
       final int event = reader.next();
       if (event == START_ELEMENT) {
@@ -205,7 +203,7 @@ public class PitestReportParser {
    *
    * @throws XMLStreamException
    */
-  private void buildMutant(final XMLStreamReader reader, final MutantBuilder builder) throws XMLStreamException {
+  private void buildMutant(final XMLStreamReader reader, final Mutant.Builder builder) throws XMLStreamException {
 
     switch (reader.getLocalName()) {
       case ELEMENT_SOURCE_FILE:
