@@ -258,9 +258,6 @@ public class Mutant {
 
   private boolean equalsMutant(final Mutant other) { // NOSONAR
 
-    if (detected != other.detected) {
-      return false;
-    }
     if (index != other.index) {
       return false;
     }
@@ -548,7 +545,6 @@ public class Mutant {
       requireNonNull(mutatedMethod, "mutatedMethod must be set");
       requireNonNull(methodDescription, "methodDescription must be set");
       requireNonNull(mutationOperator, "mutationOperator must be set");
-      requireNonNull(mutatorSuffix, "mutatorSuffix must be set");
 
       if (detected) {
         requireNonNull(killingTest, "killingTest must be set");

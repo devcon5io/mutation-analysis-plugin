@@ -26,10 +26,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class BuilderTest {
 
+  @Rule
+  public ExpectedException expected = ExpectedException.none();
   private Mutant.Builder subject;
 
   @Before
@@ -373,9 +377,10 @@ public class BuilderTest {
 
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void test_null_state_NullPointerException() throws Exception {
-
+    expected.expect(NullPointerException.class);
+    expected.expectMessage("state must be set");
     Mutant.builder()
           .inSourceFile("aFile.java")
           .inClass("AClass")
@@ -388,8 +393,10 @@ public class BuilderTest {
           .build();
 
   }
-  @Test(expected = NullPointerException.class)
+  @Test
   public void test_null_sourceFile_NullPointerException() throws Exception {
+    expected.expect(NullPointerException.class);
+    expected.expectMessage("sourceFile must not be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
           .inClass("AClass")
@@ -402,8 +409,10 @@ public class BuilderTest {
           .build();
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void test_null_mutatedClass_NullPointerException() throws Exception {
+    expected.expect(NullPointerException.class);
+    expected.expectMessage("mutatedClass must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
           .inSourceFile("aFile.java")
@@ -415,8 +424,10 @@ public class BuilderTest {
           .killedBy("aTest")
           .build();
   }
-  @Test(expected = NullPointerException.class)
+  @Test
   public void test_null_mutatedMethod_NullPointerException() throws Exception {
+    expected.expect(NullPointerException.class);
+    expected.expectMessage("mutatedMethod must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
           .inSourceFile("aFile.java")
@@ -428,8 +439,10 @@ public class BuilderTest {
           .killedBy("aTest")
           .build();
   }
-  @Test(expected = NullPointerException.class)
+  @Test
   public void test_null_mutatedMethodDesc_NullPointerException() throws Exception {
+    expected.expect(NullPointerException.class);
+    expected.expectMessage("methodDescription must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
           .inSourceFile("aFile.java")
@@ -441,8 +454,10 @@ public class BuilderTest {
           .killedBy("aTest")
           .build();
   }
-  @Test(expected = NullPointerException.class)
+  @Test
   public void test_null_mutationOperator_NullPointerException() throws Exception {
+    expected.expect(NullPointerException.class);
+    expected.expectMessage("mutationOperator must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
           .inSourceFile("aFile.java")
@@ -455,10 +470,26 @@ public class BuilderTest {
           .build();
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void test_null_killingTest_NullPointerException() throws Exception {
+    expected.expect(NullPointerException.class);
+    expected.expectMessage("killingTest must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
+          .inSourceFile("aFile.java")
+          .inClass("AClass")
+          .inMethod("aMethod")
+          .withMethodParameters("desc")
+          .inLine(1)
+          .atIndex(0)
+          .usingMutator(MutationOperators.UNKNOWN)
+          .build();
+  }
+
+  @Test
+  public void test_null_killingTest_notDetected() throws Exception {
+    Mutant.builder()
+          .mutantStatus(Mutant.State.NO_COVERAGE)
           .inSourceFile("aFile.java")
           .inClass("AClass")
           .inMethod("aMethod")
