@@ -66,8 +66,6 @@ public class PitestReportParser {
    */
   private static final Logger LOG = LoggerFactory.getLogger(PitestReportParser.class);
 
-  private static final String ATTR_DETECTED = "detected";
-
   private static final String ATTR_STATUS = "status";
 
   private static final String ELEMENT_KILLING_TEST = "killingTest";
