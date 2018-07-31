@@ -20,12 +20,8 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -33,563 +29,474 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class MutantTest {
 
-    private Mutant detectedMutant;
-    private Mutant undetectedMutant;
+  public static Mutant newUndetectedMutant() {
+
+    return Mutant.builder()
+                 .mutantStatus(Mutant.State.NO_COVERAGE)
+                 .inSourceFile("SomeClass.java")
+                 .inClass("com.foo.bar.SomeClass")
+                 .inMethod("anyMethod")
+                 .withMethodParameters("anyMethodDesc")
+                 .inLine(8)
+                 .usingMutator(MutationOperators.find("INVERT_NEGS"))
+                 .atIndex(10)
+                 .killedBy("com.foo.bar.SomeClassKillingTest")
+                 .build();
+  }
+
+  public static Mutant newDetectedMutant() {
 
-    @Before
-    public void setUp() throws Exception {
+    return Mutant.builder()
+                 .mutantStatus(Mutant.State.KILLED)
+                 .inSourceFile("SomeClass.java")
+                 .inClass("com.foo.bar.SomeClass")
+                 .inMethod("anyMethod")
+                 .withMethodParameters("anyMethodDesc")
+                 .inLine(17)
+                 .usingMutator(MutationOperators.find("INVERT_NEGS"))
+                 .atIndex(5)
+                 .killedBy("com.foo.bar.SomeClassKillingTest")
+                 .build();
+  }
 
-        detectedMutant = newDetectedMutant();
-        undetectedMutant = newUndetectedMutant();
-    }
+  public static Mutant newSurvivedMutantWithSuffix(){
+    return Mutant.builder()
+                 .mutantStatus(Mutant.State.SURVIVED)
+                 .inSourceFile("SomeClass.java")
+                 .inClass("com.foo.bar.SomeClass")
+                 .inMethod("anyMethod")
+                 .withMethodParameters("anyMethodDesc")
+                 .inLine(8)
+                 .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator_EQUAL_ELSE")
+                 .atIndex(10)
+                 .killedBy("com.foo.bar.SomeClassKillingTest")
+                 .build();
+  }
 
-    public static Mutant newUndetectedMutant() {
 
-        return new Mutant(false, Mutant.State.NO_COVERAGE, "SomeClass.java", "com.foo.bar.SomeClass", "anyMethod",
-                          "anyMethodDesc", 8, MutationOperators.find("INVERT_NEGS"), "EQUAL_ELSE", 10, "com.foo.bar.SomeClassKillingTest");
-    }
+  @Test
+  public void testIsDetected_true() throws Exception {
 
-    public static Mutant newDetectedMutant() {
+    assertTrue(newDetectedMutant().isDetected());
+  }
 
-        return new Mutant(true, Mutant.State.KILLED, "SomeClass.java", "com.foo.bar.SomeClass", "anyMethod",
-                          "anyMethodDesc", 17, MutationOperators.find("INVERT_NEGS"), "", 5, "com.foo.bar.SomeClassKillingTest");
-    }
+  @Test
+  public void testIsDetected_false() throws Exception {
 
-    @Test
-    public void testIsDetected_true() throws Exception {
+    assertFalse(newUndetectedMutant().isDetected());
+  }
 
-        assertTrue(detectedMutant.isDetected());
-    }
+  @Test
+  public void testGetMutantStatus_killed() throws Exception {
 
-    @Test
-    public void testIsDetected_false() throws Exception {
+    assertEquals(Mutant.State.KILLED, newDetectedMutant().getState());
+  }
 
-        assertTrue(detectedMutant.isDetected());
-    }
+  @Test
+  public void testGetMutantStatus_noCoverage() throws Exception {
 
-    @Test
-    public void testGetMutantStatus_killed() throws Exception {
+    assertEquals(Mutant.State.NO_COVERAGE, newUndetectedMutant().getState());
+  }
 
-        assertEquals(Mutant.State.KILLED, detectedMutant.getState());
-    }
+  @Test
+  public void testGetSourceFile() throws Exception {
 
-    @Test
-    public void testGetMutantStatus_noCoverage() throws Exception {
+    assertEquals("SomeClass.java", newDetectedMutant().getSourceFile());
+  }
 
-        assertEquals(Mutant.State.NO_COVERAGE, undetectedMutant.getState());
-    }
 
-    @Test
-    public void testGetSourceFile() throws Exception {
+  @Test
+  public void testGetState_killed() throws Exception {
 
-        assertEquals("SomeClass.java", detectedMutant.getSourceFile());
-    }
+    assertEquals(Mutant.State.KILLED, newDetectedMutant().getState());
+  }
 
-    @Test
-    public void testGetMutatedClass() throws Exception {
+  @Test
+  public void testGetMutatedClass() throws Exception {
 
-        assertEquals("com.foo.bar.SomeClass", detectedMutant.getMutatedClass());
-    }
+    assertEquals("com.foo.bar.SomeClass", newDetectedMutant().getMutatedClass());
+  }
 
-    @Test
-    public void testGetMutatedMethod() throws Exception {
+  @Test
+  public void testGetMutatedMethod() throws Exception {
 
-        assertEquals("anyMethod", detectedMutant.getMutatedMethod());
-    }
+    assertEquals("anyMethod", newDetectedMutant().getMutatedMethod());
+  }
 
-    @Test
-    public void testGetMethodDescription() throws Exception {
+  @Test
+  public void testGetMethodDescription() throws Exception {
 
-        assertEquals("anyMethodDesc", detectedMutant.getMethodDescription());
-    }
+    assertEquals("anyMethodDesc", newDetectedMutant().getMethodDescription());
+  }
 
-    @Test
-    public void testGetLineNumber() throws Exception {
+  @Test
+  public void testGetLineNumber() throws Exception {
 
-        assertEquals(17, detectedMutant.getLineNumber());
-        assertEquals(8, undetectedMutant.getLineNumber());
-    }
+    assertEquals(17, newDetectedMutant().getLineNumber());
+    assertEquals(8, newUndetectedMutant().getLineNumber());
+  }
 
-    @Test
-    public void testGetMutator() throws Exception {
+  @Test
+  public void testGetMutator() throws Exception {
 
-        final MutationOperator mutationOperator = MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InvertNegsMutator");
-        assertNotNull(mutationOperator);
-        assertEquals(mutationOperator, detectedMutant.getMutationOperator());
-    }
+    final MutationOperator mutationOperator = MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InvertNegsMutator");
+    assertNotNull(mutationOperator);
+    assertEquals(mutationOperator, newDetectedMutant().getMutationOperator());
+  }
 
-    @Test
-    public void testGetMutatorSuffix_nonEmptySuffix() throws Exception {
+  @Test
+  public void testGetMutatorSuffix_emptySuffix() throws Exception {
+
+    assertEquals("", newDetectedMutant().getMutatorSuffix());
 
-        assertEquals("", detectedMutant.getMutatorSuffix());
+  }
+
+  @Test
+  public void testGetMutatorSuffix_nonEmptySuffix() throws Exception {
 
-    }
-
-    @Test
-    public void testGetMutatorSuffix_emptySuffix() throws Exception {
-
-        assertEquals("EQUAL_ELSE", undetectedMutant.getMutatorSuffix());
-
-    }
-
-    @Test
-    public void testGetIndex() throws Exception {
-
-        assertEquals(5, detectedMutant.getIndex());
-        assertEquals(10, undetectedMutant.getIndex());
-    }
-
-    @Test
-    public void testGetKillingTest() throws Exception {
-
-        assertEquals("com.foo.bar.SomeClassKillingTest", detectedMutant.getKillingTest());
-    }
-
-    @Test
-    public void testToString() throws Exception {
-
-        assertEquals(
-                "Mutant [sourceFile=SomeClass.java, "
-                        + "mutatedClass=com.foo.bar.SomeClass, "
-                        + "mutatedMethod=anyMethod, "
-                        + "methodDescription=anyMethodDesc, "
-                        + "lineNumber=17, "
-                        + "state=KILLED, "
-                        + "mutationOperator=Invert Negs Mutator, "
-                        + "killingTest=com.foo.bar.SomeClassKillingTest]",
-                detectedMutant.toString());
-
-    }
-
-
-
-    @Test(expected = NullPointerException.class)
-    public void testMutant_nullStatus_exception() throws Exception {
-
-        new Mutant(false, null, "SomeClass.java", "com.foo.bar.SomeClass", "anyMethod", "anyMethodDesc", 8,
-                   MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator"), "EQUAL_ELSE", 10,
-                   "com.foo.bar.SomeClassKillingTest");
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testMutant_nullSourceFile_exception() throws Exception {
-
-        new Mutant(false, Mutant.State.NO_COVERAGE, null, "com.foo.bar.SomeClass", "anyMethod", "anyMethodDesc", 8,
-                   MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator"), "EQUAL_ELSE", 10,
-                   "com.foo.bar.SomeClassKillingTest");
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testMutant_nullClass_exception() throws Exception {
-
-        new Mutant(false, Mutant.State.NO_COVERAGE, "SomeClass.java", null, "anyMethod", "anyMethodDesc", 8,
-                   MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator"), "EQUAL_ELSE", 10,
-                   "com.foo.bar.SomeClassKillingTest");
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testMutant_nullMethod_exception() throws Exception {
-
-        new Mutant(false, Mutant.State.NO_COVERAGE, "SomeClass.java", "com.foo.bar.SomeClass", null, "anyMethodDesc",
-                   8, MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator"), "EQUAL_ELSE",
-                   10, "com.foo.bar.SomeClassKillingTest");
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testMutant_nullMethodDesc_exception() throws Exception {
-
-        new Mutant(false, Mutant.State.NO_COVERAGE, "SomeClass.java", "com.foo.bar.SomeClass", "anyMethod", null, 8,
-                   MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator"), "EQUAL_ELSE", 10,
-                   "com.foo.bar.SomeClassKillingTest");
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testMutant_nullMutator_exception() throws Exception {
-
-        new Mutant(false, Mutant.State.NO_COVERAGE, "SomeClass.java", "com.foo.bar.SomeClass", "anyMethod",
-                   "anyMethodDesc", 8, null, "EQUAL_ELSE", 10, "com.foo.bar.SomeClassKillingTest");
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testMutant_nullMutatorSuffix_exception() throws Exception {
-
-        new Mutant(false, Mutant.State.NO_COVERAGE, "SomeClass.java", "com.foo.bar.SomeClass", "anyMethod",
-                   "anyMethodDesc", 8,
-                   MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator"), null, 10,
-                   "com.foo.bar.SomeClassKillingTest");
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testMutant_nullKillingTest_exception() throws Exception {
-
-        new Mutant(false, Mutant.State.NO_COVERAGE, "SomeClass.java", "com.foo.bar.SomeClass", "anyMethod",
-                   "anyMethodDesc", 8,
-                   MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator"), "EQUAL_ELSE", 10,
-                   null);
-
-    }
-
-    @Test
-    public void testEquals_same_true() throws Exception {
-
-        assertEquals(detectedMutant, detectedMutant);
-    }
-
-    @Test
-    public void testEquals_twin_true() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant twin = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertEquals(detectedMutant, twin);
-    }
-
-    @Test
-    public void testEquals_differentDetected_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                !expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-
-        // act/assert
-        assertNotEquals(expected, other);
-    }
-
-    @Test
-    public void testEquals_differentStatus_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                Mutant.State.UNKNOWN,
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentSourceFile_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                "other.java",
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentMutatedClass_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                "com.OtherClass",
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentMutatedMethod_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                "other",
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentMethodDescription_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                "()",
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentLineNumber_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber() + 1,
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentMutator_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                MutationOperators.find("ARGUMENT_PROPAGATION"),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentMutatorSuffix_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                "other",
-                expected.getIndex(),
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentIndex_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant other = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex()+1,
-                expected.getKillingTest());
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, other);
-    }
-
-    @Test
-    public void testEquals_differentKillingTest_false() throws Exception {
-
-        // prepare
-        final Mutant expected = detectedMutant;
-        //@formatter:off
-        final Mutant twin = new Mutant(
-                expected.isDetected(),
-                expected.getState(),
-                expected.getSourceFile(),
-                expected.getMutatedClass(),
-                expected.getMutatedMethod(),
-                expected.getMethodDescription(),
-                expected.getLineNumber(),
-                expected.getMutationOperator(),
-                expected.getMutatorSuffix(),
-                expected.getIndex(),
-                "killedByOtherTest");
-        // @formatter:on
-        // act/assert
-        assertNotEquals(detectedMutant, twin);
-    }
-
-    @Test
-    public void testEquals_null_false() throws Exception {
-
-        assertNotEquals(detectedMutant, null);
-    }
-
-    @Test
-    public void testEquals_otherObject_false() throws Exception {
-
-        assertNotEquals(detectedMutant, new Object());
-    }
-
-    @Test
-    public void testHashCode_detected_reproducible() throws Exception {
-
-        // for the same object we always have the same hashCode
-        final int prime = 31;
-        int refCode = 1;
-        refCode = prime * refCode + detectedMutant.getIndex();
-        refCode = prime * refCode + 1231;
-        refCode = prime * refCode + detectedMutant.getLineNumber();
-        refCode = prime * refCode + detectedMutant.getMethodDescription().hashCode();
-        refCode = prime * refCode + detectedMutant.getState().hashCode();
-        refCode = prime * refCode + detectedMutant.getMutatedClass().hashCode();
-        refCode = prime * refCode + detectedMutant.getMutatedMethod().hashCode();
-        refCode = prime * refCode + detectedMutant.getMutationOperator().hashCode();
-        refCode = prime * refCode + detectedMutant.getMutatorSuffix().hashCode();
-        refCode = prime * refCode + detectedMutant.getSourceFile().hashCode();
-        refCode = prime * refCode + detectedMutant.getKillingTest().hashCode();
-
-        assertEquals(refCode, detectedMutant.hashCode());
-    }
-
-    @Test
-    public void testHashCode_undetected_reproducible() throws Exception {
-
-        // for the same object we always have the same hashCode
-        final int prime = 31;
-        int refCode = 1;
-        refCode = prime * refCode + undetectedMutant.getIndex();
-        refCode = prime * refCode + 1237;
-        refCode = prime * refCode + undetectedMutant.getLineNumber();
-        refCode = prime * refCode + undetectedMutant.getMethodDescription().hashCode();
-        refCode = prime * refCode + undetectedMutant.getState().hashCode();
-        refCode = prime * refCode + undetectedMutant.getMutatedClass().hashCode();
-        refCode = prime * refCode + undetectedMutant.getMutatedMethod().hashCode();
-        refCode = prime * refCode + undetectedMutant.getMutationOperator().hashCode();
-        refCode = prime * refCode + undetectedMutant.getMutatorSuffix().hashCode();
-        refCode = prime * refCode + undetectedMutant.getSourceFile().hashCode();
-        refCode = prime * refCode + undetectedMutant.getKillingTest().hashCode();
-
-        assertEquals(refCode, undetectedMutant.hashCode());
-    }
-
-    @Test
-    public void testHashCode_sameMutant() throws Exception {
-
-        assertEquals(detectedMutant.hashCode(), detectedMutant.hashCode());
-    }
-
-    @Test
-    public void testHashCode_otherMutantObject() throws Exception {
-
-        assertNotEquals(detectedMutant.hashCode(), undetectedMutant.hashCode());
-    }
-
-    @Test
-    public void testNewMutant() throws Exception {
-
-        final MutantBuilder builder = Mutant.newMutant();
-        assertNotNull(builder);
-    }
+    Mutant mutant = newSurvivedMutantWithSuffix();
+
+    assertEquals("EQUAL_ELSE", mutant.getMutatorSuffix());
+
+  }
+
+  @Test
+  public void testGetIndex() throws Exception {
+
+    assertEquals(5, newDetectedMutant().getIndex());
+    assertEquals(10, newUndetectedMutant().getIndex());
+  }
+
+  @Test
+  public void testGetKillingTest() throws Exception {
+
+    assertEquals("com.foo.bar.SomeClassKillingTest", newDetectedMutant().getKillingTest());
+  }
+
+  @Test
+  public void testToString() throws Exception {
+
+    assertEquals("Mutant [sourceFile=SomeClass.java, "
+                     + "mutatedClass=com.foo.bar.SomeClass, "
+                     + "mutatedMethod=anyMethod, "
+                     + "methodDescription=anyMethodDesc, "
+                     + "lineNumber=17, "
+                     + "state=KILLED, "
+                     + "mutationOperator=Invert Negs Mutator, "
+                     + "killingTest=com.foo.bar.SomeClassKillingTest]", newDetectedMutant().toString());
+
+  }
+
+  @Test
+  public void testEquals_same_true() throws Exception {
+
+    Mutant mutant = newDetectedMutant();
+    assertEquals(mutant, mutant);
+  }
+
+  @Test
+  public void testEquals_clone_true() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant twin = newDetectedMutant();
+    assertEquals(expected, twin);
+  }
+
+  @Test
+  public void testEquals_differentDetected_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = newUndetectedMutant();
+
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentStatus_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(Mutant.State.MEMORY_ERROR)
+                               .inSourceFile(expected.getSourceFile())
+                               .inClass(expected.getMutatedClass())
+                               .inMethod(expected.getMutatedMethod())
+                               .inLine(expected.getLineNumber())
+                               .withMethodParameters(expected.getMethodDescription())
+                               .usingMutator(expected.getMutationOperator())
+                               .atIndex(expected.getIndex())
+                               .killedBy(expected.getKillingTest())
+                               .build();
+
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentSourceFile_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(expected.getState())
+                               .inSourceFile("other")
+                               .inClass(expected.getMutatedClass())
+                               .inMethod(expected.getMutatedMethod())
+                               .inLine(expected.getLineNumber())
+                               .withMethodParameters(expected.getMethodDescription())
+                               .usingMutator(expected.getMutationOperator())
+                               .atIndex(expected.getIndex())
+                               .killedBy(expected.getKillingTest())
+                               .build();
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentMutatedClass_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(expected.getState())
+                               .inSourceFile(expected.getSourceFile())
+                               .inClass("com.otherClass")
+                               .inMethod(expected.getMutatedMethod())
+                               .inLine(expected.getLineNumber())
+                               .withMethodParameters(expected.getMethodDescription())
+                               .usingMutator(expected.getMutationOperator())
+                               .atIndex(expected.getIndex())
+                               .killedBy(expected.getKillingTest())
+                               .build();
+
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentMutatedMethod_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(expected.getState())
+                               .inSourceFile(expected.getSourceFile())
+                               .inClass(expected.getMutatedClass())
+                               .inMethod("otherMethod")
+                               .inLine(expected.getLineNumber())
+                               .withMethodParameters(expected.getMethodDescription())
+                               .usingMutator(expected.getMutationOperator())
+                               .atIndex(expected.getIndex())
+                               .killedBy(expected.getKillingTest())
+                               .build();
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentMethodDescription_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(expected.getState())
+                               .inSourceFile(expected.getSourceFile())
+                               .inClass(expected.getMutatedClass())
+                               .inMethod(expected.getMutatedMethod())
+                               .inLine(expected.getLineNumber())
+                               .withMethodParameters("()")
+                               .usingMutator(expected.getMutationOperator())
+                               .atIndex(expected.getIndex())
+                               .killedBy(expected.getKillingTest())
+                               .build();
+
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentLineNumber_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(expected.getState())
+                               .inSourceFile(expected.getSourceFile())
+                               .inClass(expected.getMutatedClass())
+                               .inMethod(expected.getMutatedMethod())
+                               .inLine(127)
+                               .withMethodParameters(expected.getMethodDescription())
+                               .usingMutator(expected.getMutationOperator())
+                               .atIndex(expected.getIndex())
+                               .killedBy(expected.getKillingTest())
+                               .build();
+
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentMutator_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(expected.getState())
+                               .inSourceFile(expected.getSourceFile())
+                               .inClass(expected.getMutatedClass())
+                               .inMethod(expected.getMutatedMethod())
+                               .inLine(expected.getLineNumber())
+                               .withMethodParameters(expected.getMethodDescription())
+                               .usingMutator(MutationOperators.find("ARGUMENT_PROPAGATION"))
+                               .atIndex(expected.getIndex())
+                               .killedBy(expected.getKillingTest())
+                               .build();
+
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentSuffix_false() throws Exception {
+
+    final Mutant expected = newSurvivedMutantWithSuffix();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(expected.getState())
+                               .inSourceFile(expected.getSourceFile())
+                               .inClass(expected.getMutatedClass())
+                               .inMethod(expected.getMutatedMethod())
+                               .inLine(expected.getLineNumber())
+                               .withMethodParameters(expected.getMethodDescription())
+                               .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator_EQUAL_IF")
+                               .atIndex(expected.getIndex())
+                               .killedBy(expected.getKillingTest())
+                               .build();
+
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentIndex_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant other = Mutant.builder()
+                               .mutantStatus(expected.getState())
+                               .inSourceFile(expected.getSourceFile())
+                               .inClass(expected.getMutatedClass())
+                               .inMethod(expected.getMutatedMethod())
+                               .inLine(expected.getLineNumber())
+                               .withMethodParameters(expected.getMethodDescription())
+                               .usingMutator(expected.getMutationOperator())
+                               .atIndex(127)
+                               .killedBy(expected.getKillingTest())
+                               .build();
+
+    assertNotEquals(expected, other);
+  }
+
+  @Test
+  public void testEquals_differentKillingTest_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant twin = Mutant.builder()
+                              .mutantStatus(expected.getState())
+                              .inSourceFile(expected.getSourceFile())
+                              .inClass(expected.getMutatedClass())
+                              .inMethod(expected.getMutatedMethod())
+                              .inLine(expected.getLineNumber())
+                              .withMethodParameters(expected.getMethodDescription())
+                              .usingMutator(expected.getMutationOperator())
+                              .atIndex(expected.getIndex())
+                              .killedBy("otherTest")
+                              .build();
+
+    assertNotEquals(expected, twin);
+  }
+
+  @Test
+  public void testEquals_null_false() throws Exception {
+
+    assertNotEquals(newDetectedMutant(), null);
+  }
+
+  @Test
+  public void testEquals_otherObject_false() throws Exception {
+
+    assertNotEquals(newDetectedMutant(), new Object());
+  }
+
+  @Test
+  public void testHashCode_detected_reproducible() throws Exception {
+
+    // for the same object we always have the same hashCode
+    Mutant mutant = newDetectedMutant();
+    final int prime = 31;
+    int refCode = 1;
+    refCode = prime * refCode + mutant.getIndex();
+    refCode = prime * refCode + 1231;
+    refCode = prime * refCode + mutant.getLineNumber();
+    refCode = prime * refCode + mutant.getMethodDescription().hashCode();
+    refCode = prime * refCode + mutant.getState().hashCode();
+    refCode = prime * refCode + mutant.getMutatedClass().hashCode();
+    refCode = prime * refCode + mutant.getMutatedMethod().hashCode();
+    refCode = prime * refCode + mutant.getMutationOperator().hashCode();
+    refCode = prime * refCode + mutant.getMutatorSuffix().hashCode();
+    refCode = prime * refCode + mutant.getSourceFile().hashCode();
+    refCode = prime * refCode + mutant.getKillingTest().hashCode();
+
+    assertEquals(refCode, mutant.hashCode());
+  }
+
+  @Test
+  public void testHashCode_undetected_reproducible() throws Exception {
+
+    // for the same object we always have the same hashCode
+    Mutant mutant = newSurvivedMutantWithSuffix();
+    final int prime = 31;
+    int refCode = 1;
+    refCode = prime * refCode + mutant.getIndex();
+    refCode = prime * refCode + 1237;
+    refCode = prime * refCode + mutant.getLineNumber();
+    refCode = prime * refCode + mutant.getMethodDescription().hashCode();
+    refCode = prime * refCode + mutant.getState().hashCode();
+    refCode = prime * refCode + mutant.getMutatedClass().hashCode();
+    refCode = prime * refCode + mutant.getMutatedMethod().hashCode();
+    refCode = prime * refCode + mutant.getMutationOperator().hashCode();
+    refCode = prime * refCode + mutant.getMutatorSuffix().hashCode();
+    refCode = prime * refCode + mutant.getSourceFile().hashCode();
+    refCode = prime * refCode + mutant.getKillingTest().hashCode();
+
+    assertEquals(refCode, mutant.hashCode());
+  }
+
+  @Test
+  public void testHashCode_sameMutant() throws Exception {
+
+    Mutant mutant = newDetectedMutant();
+    assertEquals(mutant.hashCode(), mutant.hashCode());
+  }
+
+  @Test
+  public void testHashCode_equalMutant_same() throws Exception {
+
+    assertEquals(newDetectedMutant().hashCode(), newDetectedMutant().hashCode());
+  }
+
+  @Test
+  public void testGetTestDescriptor_detected_nonEmptySpec() throws Exception {
+
+    Mutant mutant = newDetectedMutant();
+    TestDescriptor td = mutant.getTestDescriptor();
+
+    assertEquals("com.foo.bar.SomeClassKillingTest", td.getSpec());
+  }
+
+  @Test
+  public void testGetTestDescriptor_undetected_emptySpec() throws Exception {
+
+    Mutant mutant = newUndetectedMutant();
+    TestDescriptor td = mutant.getTestDescriptor();
+
+    assertEquals("", td.getSpec());
+  }
+
+  @Test
+  public void testHashCode_otherMutantObject_different() throws Exception {
+
+    assertNotEquals(newDetectedMutant().hashCode(), newUndetectedMutant().hashCode());
+  }
+
+  @Test
+  public void testBuilder() throws Exception {
+
+    final Mutant.Builder builder = Mutant.builder();
+    assertNotNull(builder);
+  }
 
 }
