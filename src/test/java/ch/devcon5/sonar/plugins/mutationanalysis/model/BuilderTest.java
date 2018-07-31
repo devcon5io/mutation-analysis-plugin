@@ -72,7 +72,7 @@ public class BuilderTest {
   }
 
   @Test
-  public void testBuild_detectedWithMinimalArguments() throws Exception {
+  public void testBuild_detected() throws Exception {
 
     //@formatter:off
         final Mutant mutant = subject
@@ -105,7 +105,7 @@ public class BuilderTest {
   }
 
   @Test
-  public void testBuild_StatusAsString_WithMinimalArguments() throws Exception {
+  public void testBuild_StatusAsString() throws Exception {
 
     final Mutant mutant = subject.mutantStatus("KILLED")
                                  .inSourceFile("someSource.java")
@@ -135,7 +135,155 @@ public class BuilderTest {
   }
 
   @Test
-  public void testBuild_invalidStatus_WithMinimalArguments() throws Exception {
+  public void testBuild_nullStatusAsString_isUnknownState() throws Exception {
+
+    final Mutant mutant = subject.mutantStatus((String)null)
+                                 .inSourceFile("someSource.java")
+                                 .inClass("some.package.SomeClass")
+                                 .inMethod("aMethod")
+                                 .withMethodParameters("methodDescription")
+                                 .usingMutator(MutationOperators.find("ARGUMENT_PROPAGATION"))
+                                 .killedBy("aTest")
+                                 .build();
+    assertNotNull(mutant);
+    assertEquals(Mutant.State.UNKNOWN, mutant.getState());
+    assertEquals("someSource.java", mutant.getSourceFile());
+    assertEquals("some.package.SomeClass", mutant.getMutatedClass());
+    assertEquals("aMethod", mutant.getMutatedMethod());
+    assertEquals("methodDescription", mutant.getMethodDescription());
+    // implicit default values
+    assertEquals(0, mutant.getLineNumber());
+    assertEquals(0, mutant.getIndex());
+    assertEquals("", mutant.getKillingTest());
+
+    final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+    assertNotNull(mutationOperator);
+    assertEquals(mutationOperator, mutant.getMutationOperator());
+    assertEquals("", mutant.getMutatorSuffix());
+
+  }
+
+  @Test
+  public void testBuild_unknownMutatorAsString() throws Exception {
+
+    final Mutant mutant = subject.mutantStatus(Mutant.State.UNKNOWN)
+                                 .inSourceFile("someSource.java")
+                                 .inClass("some.package.SomeClass")
+                                 .inMethod("aMethod")
+                                 .withMethodParameters("methodDescription")
+                                 .usingMutator("xyzabc")
+                                 .killedBy("aTest")
+                                 .build();
+    assertNotNull(mutant);
+    assertEquals(Mutant.State.UNKNOWN, mutant.getState());
+    assertEquals("someSource.java", mutant.getSourceFile());
+    assertEquals("some.package.SomeClass", mutant.getMutatedClass());
+    assertEquals("aMethod", mutant.getMutatedMethod());
+    assertEquals("methodDescription", mutant.getMethodDescription());
+    // implicit default values
+    assertEquals(0, mutant.getLineNumber());
+    assertEquals(0, mutant.getIndex());
+    assertEquals("", mutant.getKillingTest());
+
+    final MutationOperator mutationOperator = MutationOperators.UNKNOWN;
+    assertNotNull(mutationOperator);
+    assertEquals(mutationOperator, mutant.getMutationOperator());
+    assertEquals("", mutant.getMutatorSuffix());
+
+  }
+
+  @Test
+  public void testBuild_unknownMutator() throws Exception {
+
+    final Mutant mutant = subject.mutantStatus(Mutant.State.UNKNOWN)
+                                 .inSourceFile("someSource.java")
+                                 .inClass("some.package.SomeClass")
+                                 .inMethod("aMethod")
+                                 .withMethodParameters("methodDescription")
+                                 .usingMutator(MutationOperators.UNKNOWN)
+                                 .killedBy("aTest")
+                                 .build();
+    assertNotNull(mutant);
+    assertEquals(Mutant.State.UNKNOWN, mutant.getState());
+    assertEquals("someSource.java", mutant.getSourceFile());
+    assertEquals("some.package.SomeClass", mutant.getMutatedClass());
+    assertEquals("aMethod", mutant.getMutatedMethod());
+    assertEquals("methodDescription", mutant.getMethodDescription());
+    // implicit default values
+    assertEquals(0, mutant.getLineNumber());
+    assertEquals(0, mutant.getIndex());
+    assertEquals("", mutant.getKillingTest());
+
+    final MutationOperator mutationOperator = MutationOperators.UNKNOWN;
+    assertNotNull(mutationOperator);
+    assertEquals(mutationOperator, mutant.getMutationOperator());
+    assertEquals("", mutant.getMutatorSuffix());
+
+  }
+
+
+  @Test
+  public void testBuild_MutatorAsStringId() throws Exception {
+
+    final Mutant mutant = subject.mutantStatus(Mutant.State.KILLED)
+                                 .inSourceFile("someSource.java")
+                                 .inClass("some.package.SomeClass")
+                                 .inMethod("aMethod")
+                                 .withMethodParameters("methodDescription")
+                                 .usingMutator("ARGUMENT_PROPAGATION")
+                                 .killedBy("aTest")
+                                 .build();
+    assertNotNull(mutant);
+    assertEquals(Mutant.State.KILLED, mutant.getState());
+    assertEquals("someSource.java", mutant.getSourceFile());
+    assertEquals("some.package.SomeClass", mutant.getMutatedClass());
+    assertEquals("aMethod", mutant.getMutatedMethod());
+    assertEquals("methodDescription", mutant.getMethodDescription());
+    // implicit default values
+    assertEquals(0, mutant.getLineNumber());
+    assertEquals(0, mutant.getIndex());
+    assertTrue(mutant.isDetected());
+    assertEquals("aTest", mutant.getKillingTest());
+
+    final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+    assertNotNull(mutationOperator);
+    assertEquals(mutationOperator, mutant.getMutationOperator());
+    assertEquals("", mutant.getMutatorSuffix());
+
+  }
+
+  @Test
+  public void testBuild_MutatorAsStringWithSuffix() throws Exception {
+
+    final Mutant mutant = subject.mutantStatus(Mutant.State.KILLED)
+                                 .inSourceFile("someSource.java")
+                                 .inClass("some.package.SomeClass")
+                                 .inMethod("aMethod")
+                                 .withMethodParameters("methodDescription")
+                                 .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator_A_SUFFIX")
+                                 .killedBy("aTest")
+                                 .build();
+    assertNotNull(mutant);
+    assertEquals(Mutant.State.KILLED, mutant.getState());
+    assertEquals("someSource.java", mutant.getSourceFile());
+    assertEquals("some.package.SomeClass", mutant.getMutatedClass());
+    assertEquals("aMethod", mutant.getMutatedMethod());
+    assertEquals("methodDescription", mutant.getMethodDescription());
+    // implicit default values
+    assertEquals(0, mutant.getLineNumber());
+    assertEquals(0, mutant.getIndex());
+    assertTrue(mutant.isDetected());
+    assertEquals("aTest", mutant.getKillingTest());
+
+    final MutationOperator mutationOperator = MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator");
+    assertNotNull(mutationOperator);
+    assertEquals(mutationOperator, mutant.getMutationOperator());
+    assertEquals("A_SUFFIX", mutant.getMutatorSuffix());
+
+  }
+
+  @Test
+  public void testBuild_invalidStatus() throws Exception {
 
     final Mutant mutant = subject.mutantStatus("invalid")
                                  .inSourceFile("someSource.java")
@@ -164,7 +312,7 @@ public class BuilderTest {
   }
 
   @Test
-  public void testBuild_withLineAndIndexAndMinimalArguments() throws Exception {
+  public void testBuild_withLineAndIndex() throws Exception {
 
     final Mutant mutant = subject.mutantStatus(Mutant.State.KILLED)
                                  .inSourceFile("someSource.java")
@@ -196,67 +344,7 @@ public class BuilderTest {
   }
 
   @Test
-  public void testBuild_withMinimalArguments_MutatorAsStringId() throws Exception {
-
-    final Mutant mutant = subject.mutantStatus(Mutant.State.KILLED)
-                                 .inSourceFile("someSource.java")
-                                 .inClass("some.package.SomeClass")
-                                 .inMethod("aMethod")
-                                 .withMethodParameters("methodDescription")
-                                 .usingMutator("ARGUMENT_PROPAGATION")
-                                 .killedBy("aTest")
-                                 .build();
-    assertNotNull(mutant);
-    assertEquals(Mutant.State.KILLED, mutant.getState());
-    assertEquals("someSource.java", mutant.getSourceFile());
-    assertEquals("some.package.SomeClass", mutant.getMutatedClass());
-    assertEquals("aMethod", mutant.getMutatedMethod());
-    assertEquals("methodDescription", mutant.getMethodDescription());
-    // implicit default values
-    assertEquals(0, mutant.getLineNumber());
-    assertEquals(0, mutant.getIndex());
-    assertTrue(mutant.isDetected());
-    assertEquals("aTest", mutant.getKillingTest());
-
-    final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-    assertNotNull(mutationOperator);
-    assertEquals(mutationOperator, mutant.getMutationOperator());
-    assertEquals("", mutant.getMutatorSuffix());
-
-  }
-
-  @Test
-  public void testBuild_MutatorAsStringWithSuffix_withMinimalArguments() throws Exception {
-
-    final Mutant mutant = subject.mutantStatus(Mutant.State.KILLED)
-                                 .inSourceFile("someSource.java")
-                                 .inClass("some.package.SomeClass")
-                                 .inMethod("aMethod")
-                                 .withMethodParameters("methodDescription")
-                                 .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator_A_SUFFIX")
-                                 .killedBy("aTest")
-                                 .build();
-    assertNotNull(mutant);
-    assertEquals(Mutant.State.KILLED, mutant.getState());
-    assertEquals("someSource.java", mutant.getSourceFile());
-    assertEquals("some.package.SomeClass", mutant.getMutatedClass());
-    assertEquals("aMethod", mutant.getMutatedMethod());
-    assertEquals("methodDescription", mutant.getMethodDescription());
-    // implicit default values
-    assertEquals(0, mutant.getLineNumber());
-    assertEquals(0, mutant.getIndex());
-    assertTrue(mutant.isDetected());
-    assertEquals("aTest", mutant.getKillingTest());
-
-    final MutationOperator mutationOperator = MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator");
-    assertNotNull(mutationOperator);
-    assertEquals(mutationOperator, mutant.getMutationOperator());
-    assertEquals("A_SUFFIX", mutant.getMutatorSuffix());
-
-  }
-
-  @Test
-  public void testBuild_withKillingTestAndMinimalArguments() throws Exception {
+  public void testBuild_withKillingTest() throws Exception {
 
     final Mutant mutant = subject.mutantStatus(Mutant.State.KILLED)
                                  .inSourceFile("someSource.java")

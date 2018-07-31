@@ -61,7 +61,8 @@ public class Mutant {
    * Creates a new Mutant using the specified builder. This constructor is invoked by the builder.
    * All properties of the build must be non-null.
    *
-   * @param builder
+   * @param builder the builder containing the parameters for creating the mutant. The parameters have
+   *                to be non-null for the construction to succeed.
    */
   private Mutant(final Builder builder) {
 
@@ -93,8 +94,7 @@ public class Mutant {
         + ", killingTest="
         + this.killingTest
         + "]";
-    this.hashCode = calculateHashCode(1,
-                                      this.index,
+    this.hashCode = calculateHashCode(this.index,
                                       this.detected ? 1231 : 1237,
                                       this.lineNumber,
                                       this.methodDescription.hashCode(),
@@ -246,10 +246,10 @@ public class Mutant {
     return toString;
   }
 
-  private int calculateHashCode(final int initial, final int... values) {
+  private int calculateHashCode(final int... values) {
 
     final int prime = 31;
-    int result = initial;
+    int result = 1;
     for (final int value : values) {
       result = prime * result + value;
     }
@@ -338,9 +338,6 @@ public class Mutant {
      */
     public static State parse(final String stateName) {
 
-      if (stateName == null) {
-        return UNKNOWN;
-      }
       for (final State state : State.values()) {
         if (state.name().equals(stateName)) {
           return state;
@@ -368,7 +365,7 @@ public class Mutant {
 
     private static final Logger LOGGER = getLogger(Builder.class);
 
-    private boolean detected = false;
+    private boolean detected;
     private State state;
     private String sourceFile;
     private String mutatedClass;
