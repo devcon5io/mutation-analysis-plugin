@@ -90,7 +90,12 @@ public class MutationScoreComputerTest {
 
         subject.compute(computerContext);
 
-        verify(computerContext, times(0)).addMeasure(anyString(), anyDouble());
+//        verify(computerContext, times(0)).addMeasure(anyString(), anyDouble());
+
+        final ArgumentCaptor<Double> captor = forClass(double.class);
+        verify(computerContext, times(1)).addMeasure(eq("dc5_mutationAnalysis_mutations_coverage"), captor.capture());
+        final Double passedParam = captor.getValue();
+        assertEquals(0.0, passedParam, 0.05);
     }
 
     @Test

@@ -64,6 +64,9 @@ public class MutationScoreComputer implements MeasureComputer {
                 //TODO check if empty modules are 0% or 100% covered
                 context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), 100.0);
             }
+        } else {
+            //TODO make this configurable (on/off)
+            context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), 0.0);
         }
     }
 }
