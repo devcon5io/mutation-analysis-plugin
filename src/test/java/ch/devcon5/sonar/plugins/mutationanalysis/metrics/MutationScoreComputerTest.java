@@ -20,109 +20,110 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.*;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.Matchers.anyDouble;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+import java.util.Arrays;
+import java.util.Optional;
+
+import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.sonar.api.ce.measure.Measure;
 import org.sonar.api.ce.measure.MeasureComputer;
-import org.sonar.api.ce.measure.MeasureComputer.MeasureComputerDefinition.Builder;
+import org.sonar.api.ce.measure.test.TestMeasureComputerContext;
+import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
 
-/**
- *
- */
-@RunWith(MockitoJUnitRunner.class)
 public class MutationScoreComputerTest {
 
-    /**
-     * The class under test
-     */
-    @InjectMocks
-    private MutationScoreComputer subject;
+  private MutationScoreComputer computer;
+  private MeasureComputerTestHarness<MutationScoreComputer> harness;
 
-    @Mock
-    private MeasureComputer.MeasureComputerDefinitionContext definitionContext;
+  @Before
+  public void setUp() {
 
-    @Mock
-    private MeasureComputer.MeasureComputerContext computerContext;
+    this.harness = MeasureComputerTestHarness.createFor(MutationScoreComputer.class);
+    this.computer = harness.getComputer();
+    setForceMissingCoverageToZero(false);
 
-    @Mock
-    private MeasureComputer.MeasureComputerDefinition computerDefinition;
+  }
 
-    @Mock
-    private Builder builder;
+  @Test
+  public void define() {
 
-    @Mock
-    private Measure mutationTotal;
+    final TestMeasureComputerDefinitionContext context = new TestMeasureComputerDefinitionContext();
 
-    @Mock
-    private Measure mutationsCovered;
+    final MeasureComputer.MeasureComputerDefinition def = computer.define(context);
 
-    @Test
-    public void define() throws Exception {
+    assertTrue(def.getInputMetrics().containsAll(Arrays.asList(MUTATIONS_DETECTED_KEY, MUTATIONS_TOTAL_KEY)));
+    assertTrue(def.getOutputMetrics().containsAll(Arrays.asList(MUTATIONS_COVERAGE_KEY)));
+  }
 
-        when(definitionContext.newDefinitionBuilder()).thenReturn(builder);
-        when(builder.setInputMetrics(anyVararg())).thenReturn(builder);
-        when(builder.setOutputMetrics(anyVararg())).thenReturn(builder);
-        when(builder.build()).thenReturn(computerDefinition);
+  @Test
+  public void compute_noMutations_noForceTo0_noMeasure() {
 
-        MeasureComputer.MeasureComputerDefinition def = subject.define(definitionContext);
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
-        verify(builder).setInputMetrics("dc5_mutationAnalysis_mutations_detected", "dc5_mutationAnalysis_mutations_total");
-        verify(builder).setOutputMetrics("dc5_mutationAnalysis_mutations_coverage");
-        assertEquals(computerDefinition, def);
-    }
+    computer.compute(measureContext);
 
-    @Test
-    public void compute_noMutations() throws Exception {
+    assertNull(measureContext.getMeasure(MUTATIONS_COVERAGE_KEY));
+  }
 
-        subject.compute(computerContext);
+  @Test
+  public void compute_noMutations_forceTo0_noMeasure() {
 
-//        verify(computerContext, times(0)).addMeasure(anyString(), anyDouble());
+    setForceMissingCoverageToZero(true);
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
-        final ArgumentCaptor<Double> captor = forClass(double.class);
-        verify(computerContext, times(1)).addMeasure(eq("dc5_mutationAnalysis_mutations_coverage"), captor.capture());
-        final Double passedParam = captor.getValue();
-        assertEquals(0.0, passedParam, 0.05);
-    }
+    computer.compute(measureContext);
 
-    @Test
-    public void compute_0totalMutations_to_100percentCoverage() throws Exception {
-        when(computerContext.getMeasure("dc5_mutationAnalysis_mutations_total")).thenReturn(mutationTotal);
+    assertEquals(0.0, measureContext.getMeasure(MUTATIONS_COVERAGE_KEY).getDoubleValue(), 0.05);
+  }
 
-        subject.compute(computerContext);
+  @Test
+  public void compute_0totalMutations_to_100percentCoverage() {
 
-        final ArgumentCaptor<Double> captor = forClass(double.class);
-        verify(computerContext, times(1)).addMeasure(eq("dc5_mutationAnalysis_mutations_coverage"), captor.capture());
-        final Double passedParam = captor.getValue();
-        assertEquals(100.0, passedParam, 0.05);
-    }
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
-    @Test
-    public void compute_3of5Mutations_to_60percentCoverage() throws Exception {
-        when(mutationTotal.getIntValue()).thenReturn(5);
-        when(mutationsCovered.getIntValue()).thenReturn(3);
-        when(computerContext.getMeasure("dc5_mutationAnalysis_mutations_total")).thenReturn(mutationTotal);
-        when(computerContext.getMeasure("dc5_mutationAnalysis_mutations_detected")).thenReturn(mutationsCovered);
+    measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 0);
 
-        subject.compute(computerContext);
+    computer.compute(measureContext);
 
-        final ArgumentCaptor<Double> captor = forClass(double.class);
-        verify(computerContext, times(1)).addMeasure(eq("dc5_mutationAnalysis_mutations_coverage"), captor.capture());
-        final Double passedParam = captor.getValue();
-        assertEquals(60.0, passedParam, 0.05);
-    }
+    assertEquals(100.0, measureContext.getMeasure(MUTATIONS_COVERAGE_KEY).getDoubleValue(), 0.05);
+  }
+
+  @Test
+  public void compute_3of5Mutations_to_60percentCoverage() {
+
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
+
+    measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 5);
+    measureContext.addInputMeasure(MUTATIONS_DETECTED_KEY, 3);
+
+    computer.compute(measureContext);
+
+    assertEquals(60.0, measureContext.getMeasure(MUTATIONS_COVERAGE_KEY).getDoubleValue(), 0.05);
+
+  }
+
+  @Test
+  public void compute_NoCoveredElements_0percentCoverage() {
+
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
+
+    measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 5);
+
+    computer.compute(measureContext);
+
+    assertEquals(0.0, measureContext.getMeasure(MUTATIONS_COVERAGE_KEY).getDoubleValue(), 0.05);
+
+  }
+
+  private void setForceMissingCoverageToZero(boolean enabled) {
+
+    harness.getConfig().ifPresent(conf -> when(conf.getBoolean(MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO)).thenReturn(Optional.of(enabled)));
+  }
 
 }

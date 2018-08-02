@@ -20,11 +20,13 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
+import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
 import org.sonar.api.ce.measure.Measure;
 import org.sonar.api.ce.measure.MeasureComputer;
+import org.sonar.api.config.Configuration;
 
 /**
  * Computer for calculating the mutation coverage of a component based on the detected vs total mutations.
@@ -32,6 +34,13 @@ import org.sonar.api.ce.measure.MeasureComputer;
 public class MutationScoreComputer implements MeasureComputer {
 
     private static final Logger LOG = getLogger(MutationScoreComputer.class);
+
+    private Configuration config;
+
+    public MutationScoreComputer(final Configuration config) {
+
+        this.config = config;
+    }
 
     @Override
     public MeasureComputerDefinition define(final MeasureComputerDefinitionContext defContext) {
@@ -61,11 +70,10 @@ public class MutationScoreComputer implements MeasureComputer {
                 LOG.info("Computed Mutation Coverage of {}% for {}", coverage, context.getComponent());
                 context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), coverage);
             } else {
-                //TODO check if empty modules are 0% or 100% covered
+                //modules with no mutants (0 total) are always 100% covered (0 of 0 is 100%, right?)
                 context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), 100.0);
             }
-        } else {
-            //TODO make this configurable (on/off)
+        } else if(config.getBoolean(FORCE_MISSING_COVERAGE_TO_ZERO).orElse(false)){
             context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), 0.0);
         }
     }
