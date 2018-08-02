@@ -28,8 +28,6 @@ import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.sonar.api.ce.measure.Measure;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.ce.measure.test.TestMeasureComputerContext;
@@ -38,7 +36,6 @@ import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
 /**
  *
  */
-@RunWith(MockitoJUnitRunner.class)
 public class TotalMutationsComputerTest {
 
   public static final String GLOBAL_MUTATIONS = MutationMetrics.UTILITY_GLOBAL_MUTATIONS.key();
@@ -128,7 +125,7 @@ public class TotalMutationsComputerTest {
   }
 
   @Test
-  public void compute_noInputMeasures_outputValues_0() {
+  public void compute_noInputMeasures_noOutputValues() {
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
@@ -137,13 +134,12 @@ public class TotalMutationsComputerTest {
     Measure total = measureContext.getMeasure(TOTAL_PERCENT);
     Measure alive = measureContext.getMeasure(ALIVE_PERCENT);
 
-    assertEquals(0.0, total.getDoubleValue(), 0.05);
-    assertEquals(0.0, alive.getDoubleValue(), 0.05);
-
+    assertNull(total);
+    assertNull(alive);
   }
 
   @Test
-  public void compute_noGlobalMutations_outputValues_0() {
+  public void compute_noGlobalMutations_noOutputValues() {
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
@@ -155,9 +151,8 @@ public class TotalMutationsComputerTest {
     Measure total = measureContext.getMeasure(TOTAL_PERCENT);
     Measure alive = measureContext.getMeasure(ALIVE_PERCENT);
 
-    assertEquals(0.0, total.getDoubleValue(), 0.05);
-    assertEquals(0.0, alive.getDoubleValue(), 0.05);
-
+    assertNull(total);
+    assertNull(alive);
   }
 
   @Test
