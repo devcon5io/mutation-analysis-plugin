@@ -46,7 +46,7 @@ public class MutationScoreComputerTest {
 
     this.harness = MeasureComputerTestHarness.createFor(MutationScoreComputer.class);
     this.computer = harness.getComputer();
-    setForceMissingCoverageToZero(false);
+    setForceMissingCoverageToZero(null);
 
   }
 
@@ -62,7 +62,7 @@ public class MutationScoreComputerTest {
   }
 
   @Test
-  public void compute_noMutations_noForceTo0_noMeasure() {
+  public void compute_noMutations_forceToZeroNotConfigured_noMeasure() {
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
@@ -72,7 +72,18 @@ public class MutationScoreComputerTest {
   }
 
   @Test
-  public void compute_noMutations_forceTo0_noMeasure() {
+  public void compute_noMutations_ForceTo0Disabled_noMeasure() {
+
+    setForceMissingCoverageToZero(false);
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
+
+    computer.compute(measureContext);
+
+    assertNull(measureContext.getMeasure(MUTATIONS_COVERAGE_KEY));
+  }
+
+  @Test
+  public void compute_noMutations_forceTo0Enabled_noMeasure() {
 
     setForceMissingCoverageToZero(true);
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
@@ -121,9 +132,9 @@ public class MutationScoreComputerTest {
 
   }
 
-  private void setForceMissingCoverageToZero(boolean enabled) {
+  private void setForceMissingCoverageToZero(Boolean enabled) {
 
-    harness.getConfig().ifPresent(conf -> when(conf.getBoolean(MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO)).thenReturn(Optional.of(enabled)));
+    harness.getConfig().ifPresent(conf -> when(conf.getBoolean(MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO)).thenReturn(Optional.ofNullable(enabled)));
   }
 
 }
