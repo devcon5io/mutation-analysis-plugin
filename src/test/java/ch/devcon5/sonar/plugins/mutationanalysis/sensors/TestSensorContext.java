@@ -307,10 +307,18 @@ public class TestSensorContext implements SensorContext {
 
   private Mutant newMutant(String file, Mutant.State state, final int line, String testName) {
 
-    String className = file.substring(0, file.lastIndexOf('.')).replaceAll("/|\\\\", ".");
-    MutationOperator mutator = MUTATION_OPERATORS.get(line % MUTATION_OPERATORS.size());
+    return Mutant.builder()
+                 .mutantStatus(state)
+                 .inSourceFile(file)
+                 .inClass(file.substring(0, file.lastIndexOf('.')).replaceAll("/|\\\\", "."))
+                 .inMethod("aMethod")
+                 .withMethodParameters("desc")
+                 .inLine(line)
+                 .atIndex(0)
+                 .usingMutator(MUTATION_OPERATORS.get(line % MUTATION_OPERATORS.size()))
+                 .killedBy(testName)
+                 .build();
 
-    return new Mutant(!state.isAlive(), state, file, className, "aMethod", "decs", line, mutator, "", 0, state.isAlive() ? "" : testName);
   }
 
   public static class TestFileMetadata {

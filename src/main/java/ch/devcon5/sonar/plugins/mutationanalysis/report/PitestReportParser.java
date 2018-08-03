@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
-import ch.devcon5.sonar.plugins.mutationanalysis.model.MutantBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +65,6 @@ public class PitestReportParser {
    * SLF4J Logger for this class
    */
   private static final Logger LOG = LoggerFactory.getLogger(PitestReportParser.class);
-
-  private static final String ATTR_DETECTED = "detected";
 
   private static final String ATTR_STATUS = "status";
 
@@ -180,8 +177,7 @@ public class PitestReportParser {
    */
   private Mutant parseMutant(final XMLStreamReader reader) throws XMLStreamException {
 
-    final MutantBuilder builder = Mutant.newMutant().detected(isMutantDetected(reader))
-                                        .mutantStatus(getMutantStatus(reader));
+    final Mutant.Builder builder = Mutant.builder().mutantStatus(getMutantStatus(reader));
     while (reader.hasNext()) {
       final int event = reader.next();
       if (event == START_ELEMENT) {
@@ -205,7 +201,7 @@ public class PitestReportParser {
    *
    * @throws XMLStreamException
    */
-  private void buildMutant(final XMLStreamReader reader, final MutantBuilder builder) throws XMLStreamException {
+  private void buildMutant(final XMLStreamReader reader, final Mutant.Builder builder) throws XMLStreamException {
 
     switch (reader.getLocalName()) {
       case ELEMENT_SOURCE_FILE:
@@ -248,18 +244,5 @@ public class PitestReportParser {
   private String getMutantStatus(final XMLStreamReader reader) {
 
     return reader.getAttributeValue(NAMESPACE_URI, ATTR_STATUS);
-  }
-
-  /**
-   * Checks if the mutant was detected or not
-   *
-   * @param reader
-   *         the {@link XMLStreamReader} whose cursor is at the start element position of a &lt;mutation&gt; element
-   *
-   * @return <code>true</code> if the mutant was detected
-   */
-  private boolean isMutantDetected(final XMLStreamReader reader) {
-
-    return Boolean.parseBoolean(reader.getAttributeValue(NAMESPACE_URI, ATTR_DETECTED));
   }
 }

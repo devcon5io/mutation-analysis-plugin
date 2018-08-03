@@ -36,46 +36,70 @@ import org.junit.Test;
 
 public class PitestReportParserTest {
 
-    private PitestReportParser subject;
+  private PitestReportParser subject;
 
-    @Before
-    public void setUp() {
+  @Before
+  public void setUp() {
 
-        subject = new PitestReportParser();
-    }
+    subject = new PitestReportParser();
+  }
 
-    @Test
-    public void testParseReport_findMutants() throws IOException, URISyntaxException {
+  @Test
+  public void testParseReport_findMutants() throws IOException, URISyntaxException {
 
-        // prepare
-        final Path report = Paths.get(getClass().getResource("PitestReportParserTest_mutations.xml").toURI());
+    // prepare
+    final Path report = Paths.get(getClass().getResource("PitestReportParserTest_mutations.xml").toURI());
 
-        // act
-        final Collection<Mutant> mutants = subject.parseMutants(report);
+    // act
+    final Collection<Mutant> mutants = subject.parseMutants(report);
 
-        // assert
-        assertEquals(3, mutants.size());
+    // assert
+    assertEquals(3, mutants.size());
 
-        //@formatter:off
 
-        assertTrue(mutants.contains( new Mutant(true,Mutant.State.KILLED,"Mutant.java",
-                "ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant","equals","(Ljava/lang/Object;)Z",162,
-                MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"),"",
-                5,"ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_different_false(ch"
-                                                    + ".devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")));
-        assertTrue(mutants.contains(new Mutant(false, Mutant.State.SURVIVED, "Mutant.java",
-                "ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant", "equals","(Ljava/lang/Object;)Z", 172,
-                MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"), "",
-                43,"")));
-        assertTrue(mutants.contains(new Mutant(false,Mutant.State.NO_COVERAGE,"Mutant.java",
-                "ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant","equals","(Ljava/lang/Object;)Z",175,
-                MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"),"",
-                55, "")));
-        // @formatter:on
+        assertTrue(mutants.contains(
+            Mutant.builder()
+                  .mutantStatus(Mutant.State.KILLED)
+                  .inSourceFile("Mutant.java")
+            .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+            .inMethod("equals")
+            .withMethodParameters("(Ljava/lang/Object;)Z")
+            .inLine(162)
+          .atIndex(5)
+            .usingMutator(MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"))
+            .killedBy("ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_different_false(ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")
+            .build()
+            ));
 
-        assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
-        assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.MEMORY_ERROR).count());
-        assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
+        assertTrue(mutants.contains(
+            Mutant.builder()
+                  .mutantStatus(Mutant.State.SURVIVED)
+                  .inSourceFile("Mutant.java")
+                  .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+                  .inMethod("equals")
+                  .withMethodParameters("(Ljava/lang/Object;)Z")
+                  .inLine(172)
+                  .atIndex(43)
+                  .usingMutator(MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"))
+                  .killedBy("")
+                  .build()
+            ));
+        assertTrue(mutants.contains(
+            Mutant.builder()
+                  .mutantStatus(Mutant.State.NO_COVERAGE)
+                  .inSourceFile("Mutant.java")
+                  .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+                  .inMethod("equals")
+                  .withMethodParameters("(Ljava/lang/Object;)Z")
+                  .inLine(175)
+                  .atIndex(55)
+                  .usingMutator(MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"))
+                  .killedBy("")
+                  .build()));
 
-    }
+    assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
+    assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.MEMORY_ERROR).count());
+    assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
+
+  }
 }
