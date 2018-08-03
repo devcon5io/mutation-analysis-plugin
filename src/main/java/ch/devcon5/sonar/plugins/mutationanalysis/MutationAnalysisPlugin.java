@@ -81,8 +81,11 @@ import org.sonar.api.config.Configuration;
                           name = "Force missing coverage to zero",
                           description = "If a project has no mutation report, it's coverage is forced to zero. If disabled, no coverage metric is calculated",
                           type = PropertyType.BOOLEAN,
-                          defaultValue = "false",
-                          project = true),
+                          defaultValue = "false"
+                          //the project=true setting doesn't seem to have an effect on compute engine side
+                          // see https://community.sonarsource.com/t/plugin-development-project-level-settings-have-no-effect-in-ce/1528
+                          //, project = true
+                ),
             })
 public final class MutationAnalysisPlugin implements Plugin {
 
