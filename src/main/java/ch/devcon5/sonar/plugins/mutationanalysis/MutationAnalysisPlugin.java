@@ -38,9 +38,8 @@ import org.sonar.api.PropertyType;
 import org.sonar.api.config.Configuration;
 
 /**
- * This class is the entry point for all PIT extensions. The properties define, which {@link org.sonar.api.config.Configuration} are
- * configurable
- * for the plugin.
+ * This class is the entry point for the Mutation Analysis Plugin.
+ * The properties define, which {@link org.sonar.api.config.Configuration} are configurable for the plugin.
  */
 @Properties({
                 @Property(key = MutationAnalysisPlugin.PITEST_SENSOR_ENABLED,
@@ -77,7 +76,16 @@ import org.sonar.api.config.Configuration;
                           name = "Effort Factor: Survived Mutant ",
                           description = "Factor that is applied to any of the survived mutant rule to calculate effort to fix",
                           type = PropertyType.FLOAT,
-                          project = true)
+                          project = true),
+                @Property(key = MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO,
+                          name = "Force missing coverage to zero",
+                          description = "If a project has no mutation report, it's coverage is forced to zero. If disabled, no coverage metric is calculated",
+                          type = PropertyType.BOOLEAN,
+                          defaultValue = "false"
+                          //the project=true setting doesn't seem to have an effect on compute engine side
+                          // see https://community.sonarsource.com/t/plugin-development-project-level-settings-have-no-effect-in-ce/1528
+                          //, project = true
+                ),
             })
 public final class MutationAnalysisPlugin implements Plugin {
 
@@ -86,6 +94,7 @@ public final class MutationAnalysisPlugin implements Plugin {
   public static final String EFFORT_MUTANT_KILL = "dc5.mutationAnalysis.effort.mutantKill";
   public static final String EFFORT_FACTOR_MISSING_COVERAGE = "dc5.mutationAnalysis.effort.missingCoverage";
   public static final String EFFORT_FACTOR_SURVIVED_MUTANT = "dc5.mutationAnalysis.effort.survivedMutant";
+  public static final String FORCE_MISSING_COVERAGE_TO_ZERO = "dc5.mutationAnalysis.missingCoverage.force2zero";
   public static final String REPORT_DIRECTORY_KEY = "dc5.mutationAnalysis.pitest.sensor.reports.directory";
   public static final String REPORT_DIRECTORY_DEF = "target/pit-reports";
   public static final String DEFAULT_EFFORT_TO_KILL_MUTANT = "15min";

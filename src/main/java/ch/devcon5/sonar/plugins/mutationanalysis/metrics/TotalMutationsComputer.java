@@ -88,9 +88,8 @@ public class TotalMutationsComputer implements MeasureComputer {
       final double percentage = 100.0 * mutationsLocal / mutationsGlobal;
       LOG.info("Computed {} of {}% from ({} / {}) for {}", resultMetric.getName(), percentage, mutationsLocal, mutationsGlobal, context.getComponent());
       context.addMeasure(resultMetric.key(), percentage);
-    } else {
+    } else  {
       LOG.info("No mutations found in project");
-      context.addMeasure(resultMetric.key(), 0.0);
     }
   }
 
