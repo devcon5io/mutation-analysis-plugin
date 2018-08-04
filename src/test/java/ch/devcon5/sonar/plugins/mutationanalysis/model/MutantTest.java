@@ -23,10 +23,7 @@ package ch.devcon5.sonar.plugins.mutationanalysis.model;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 public class MutantTest {
 
   public static Mutant newUndetectedMutant() {
@@ -70,6 +67,7 @@ public class MutantTest {
                  .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator_EQUAL_ELSE")
                  .atIndex(10)
                  .killedBy("com.foo.bar.SomeClassKillingTest")
+                 .withDescription("removed conditional - replaced equality check with false")
                  .build();
   }
 
@@ -130,6 +128,18 @@ public class MutantTest {
   }
 
   @Test
+  public void testGetDescription_defaultEmpty() throws Exception {
+
+    assertFalse(newDetectedMutant().getDescription().isPresent());
+  }
+
+  @Test
+  public void testGetDescription() throws Exception {
+
+    assertEquals("removed conditional - replaced equality check with false", newSurvivedMutantWithSuffix().getDescription().get());
+  }
+
+  @Test
   public void testGetLineNumber() throws Exception {
 
     assertEquals(17, newDetectedMutant().getLineNumber());
@@ -183,7 +193,22 @@ public class MutantTest {
                      + "lineNumber=17, "
                      + "state=KILLED, "
                      + "mutationOperator=Invert Negs Mutator, "
-                     + "killingTest=com.foo.bar.SomeClassKillingTest]", newDetectedMutant().toString());
+                     + "killingTest=com.foo.bar.SomeClassKillingTest]",
+                 newDetectedMutant().toString());
+
+  }
+  @Test
+  public void testToString_withDescription() throws Exception {
+    assertEquals("Mutant [sourceFile=SomeClass.java, "
+                     + "mutatedClass=com.foo.bar.SomeClass, "
+                     + "mutatedMethod=anyMethod, "
+                     + "methodDescription=anyMethodDesc, "
+                     + "lineNumber=8, "
+                     + "state=SURVIVED, "
+                     + "mutationOperator=Remove Conditional Mutator, "
+                     + "killingTest=, "
+                     + "description=removed conditional - replaced equality check with false]",
+                 newSurvivedMutantWithSuffix().toString());
 
   }
 
@@ -400,6 +425,26 @@ public class MutantTest {
   }
 
   @Test
+  public void testEquals_differentDescription_false() throws Exception {
+
+    final Mutant expected = newDetectedMutant();
+    final Mutant twin = Mutant.builder()
+                              .mutantStatus(expected.getState())
+                              .inSourceFile(expected.getSourceFile())
+                              .inClass(expected.getMutatedClass())
+                              .inMethod(expected.getMutatedMethod())
+                              .inLine(expected.getLineNumber())
+                              .withMethodParameters(expected.getMethodDescription())
+                              .usingMutator(expected.getMutationOperator())
+                              .atIndex(expected.getIndex())
+                              .killedBy(expected.getKillingTest())
+                              .withDescription("other Description")
+                              .build();
+
+    assertNotEquals(expected, twin);
+  }
+
+  @Test
   public void testEquals_null_false() throws Exception {
 
     assertNotEquals(newDetectedMutant(), null);
@@ -429,6 +474,7 @@ public class MutantTest {
     refCode = prime * refCode + mutant.getMutatorSuffix().hashCode();
     refCode = prime * refCode + mutant.getSourceFile().hashCode();
     refCode = prime * refCode + mutant.getKillingTest().hashCode();
+    refCode = prime * refCode + mutant.getDescription().hashCode();
 
     assertEquals(refCode, mutant.hashCode());
   }
@@ -451,6 +497,7 @@ public class MutantTest {
     refCode = prime * refCode + mutant.getMutatorSuffix().hashCode();
     refCode = prime * refCode + mutant.getSourceFile().hashCode();
     refCode = prime * refCode + mutant.getKillingTest().hashCode();
+    refCode = prime * refCode + mutant.getDescription().hashCode();
 
     assertEquals(refCode, mutant.hashCode());
   }

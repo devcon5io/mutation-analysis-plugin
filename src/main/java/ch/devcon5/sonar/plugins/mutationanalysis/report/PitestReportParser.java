@@ -70,6 +70,8 @@ public class PitestReportParser {
 
   private static final String ELEMENT_KILLING_TEST = "killingTest";
 
+  private static final String ELEMENT_DESCRIPTION = "description";
+
   private static final String ELEMENT_INDEX = "index";
 
   private static final String ELEMENT_MUTATOR = "mutator";
@@ -227,6 +229,9 @@ public class PitestReportParser {
         break;
       case ELEMENT_KILLING_TEST:
         builder.killedBy(reader.getElementText());
+        break;
+      case ELEMENT_DESCRIPTION:
+        builder.withDescription(reader.getElementText());
         break;
       default:
         break;

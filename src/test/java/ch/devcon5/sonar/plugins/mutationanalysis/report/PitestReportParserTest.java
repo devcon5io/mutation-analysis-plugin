@@ -45,7 +45,7 @@ public class PitestReportParserTest {
   }
 
   @Test
-  public void testParseReport_findMutants() throws IOException, URISyntaxException {
+  public void testParseReport_findMutants_withoutDescription() throws IOException, URISyntaxException {
 
     // prepare
     final Path report = Paths.get(getClass().getResource("PitestReportParserTest_mutations.xml").toURI());
@@ -99,7 +99,33 @@ public class PitestReportParserTest {
 
     assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
     assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.MEMORY_ERROR).count());
-    assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
+    assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.TIMED_OUT).count());
 
   }
+
+  @Test
+  public void testParseReport_findMutants_withDescriptions() throws IOException, URISyntaxException {
+
+    // prepare
+    final Path report = Paths.get(getClass().getResource("PitestReportParserTest_mutationsWithDescriptions.xml").toURI());
+    final Mutant expected =  Mutant.builder()
+                                   .mutantStatus(Mutant.State.KILLED)
+                                   .inSourceFile("Mutant.java")
+                                   .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+                                   .inMethod("equals")
+                                   .withMethodParameters("(Ljava/lang/Object;)Z")
+                                   .inLine(268)
+                                   .atIndex(8)
+                                   .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator")
+                                   .killedBy("ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_same_true(ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")
+                                   .withDescription("Substituted 1 with 0")
+                                   .build();
+
+    // act
+    final Collection<Mutant> mutants = subject.parseMutants(report);
+
+    // assert
+    assertEquals(expected, mutants.iterator().next());
+  }
+
 }
