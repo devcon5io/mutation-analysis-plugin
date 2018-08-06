@@ -34,15 +34,15 @@ import org.sonar.api.batch.fs.InputFile;
 public class ResourceMutationMetrics {
 
   private final List<Mutant> mutants = new ArrayList<>();
-  private int mutationsTotal = 0;
-  private int mutationsNoCoverage = 0;
-  private int mutationsKilled = 0;
-  private int mutationsSurvived = 0;
-  private int mutationsMemoryError = 0;
-  private int mutationsTimedOut = 0;
-  private int mutationsUnknown = 0;
-  private int mutationsDetected = 0;
-  private double mutationCoverage = 0;
+  private int mutationsTotal;
+  private int mutationsNoCoverage;
+  private int mutationsKilled;
+  private int mutationsSurvived;
+  private int mutationsMemoryError;
+  private int mutationsTimedOut;
+  private int mutationsUnknown;
+  private int mutationsDetected;
+  private double mutationCoverage;
   private final InputFile resource;
 
   /**

@@ -255,6 +255,9 @@ public class RulesProcessor {
   private String getViolationDescription(final Mutant mutant) {
 
     final StringBuilder message = new StringBuilder(mutant.getMutationOperator().getViolationDescription());
+
+    mutant.getDescription().ifPresent(desc -> message.append(" Mutation: ").append(desc));
+
     if (!mutant.getMutatorSuffix().isEmpty()) {
       message.append(" (").append(mutant.getMutatorSuffix()).append(')');
     }

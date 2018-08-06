@@ -62,8 +62,10 @@ import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
 public class RulesProcessorTest {
 
   private static final MutationOperator[] MUTATION_OPERATORS = MutationOperators.allMutagens().toArray(new MutationOperator[0]);
+
   @org.junit.Rule
   public TemporaryFolder folder = new TemporaryFolder();
+
   @Mock
   private Configuration configuration;
   private MutationAnalysisRulesDefinition def;
@@ -116,6 +118,31 @@ public class RulesProcessorTest {
     assertIssueAtLine(issues.get(0), RULE_SURVIVED_MUTANT, "test-module:Test.java", 3, 1.0);
     assertIssueAtLine(issues.get(1), RULE_SURVIVED_MUTANT, "test-module:Test.java", 4, 1.0);
     assertIssueAtLine(issues.get(2), RULE_SURVIVED_MUTANT, "test-module:Test.java", 5, 1.0);
+    assertEquals(3, issues.size());
+  }
+
+  @Test
+  public void processRules_survivorRuleActive_defaultEffortFactor_survivedMutant_withDescription_issueCreated() {
+
+    when(configuration.getDouble(EFFORT_FACTOR_SURVIVED_MUTANT)).thenReturn(Optional.empty());
+
+    final TestSensorContext context = TestSensorContext.create(folder.getRoot().toPath(), "test-module");
+    final RulesProfile profile = createRulesProfile(createRule(RULE_SURVIVED_MUTANT));
+    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
+      md.lines = 100;
+      md.mutants.survived = 3;
+      md.mutants.killed = 9;
+      md.mutants.description = "substituted foo with bar";
+    }));
+
+    final RulesProcessor processor = new RulesProcessor(configuration, profile);
+
+    processor.processRules(metrics, context);
+
+    final List<Issue> issues = context.getStorage().getIssues();
+    assertIssueAtLine(issues.get(0), RULE_SURVIVED_MUTANT, "test-module:Test.java", 3, 1.0, "Mutation: substituted foo with bar");
+    assertIssueAtLine(issues.get(1), RULE_SURVIVED_MUTANT, "test-module:Test.java", 4, 1.0, "Mutation: substituted foo with bar");
+    assertIssueAtLine(issues.get(2), RULE_SURVIVED_MUTANT, "test-module:Test.java", 5, 1.0, "Mutation: substituted foo with bar");
     assertEquals(3, issues.size());
   }
 
@@ -324,20 +351,33 @@ public class RulesProcessorTest {
 
   private void assertIssueAtLine(final Issue issue, String ruleKey, String componentName, final double gap) {
 
-    assertIssueAtLine(issue, ruleKey, componentName, -1, gap);
+    assertIssueAtLine(issue, ruleKey, componentName, -1, gap, null);
   }
 
   private void assertIssueAtLine(final Issue issue, String ruleKey, String componentName, int line, final double gap) {
+    assertIssueAtLine(issue, ruleKey, componentName, line, gap, null);
+  }
+  private void assertIssueAtLine(final Issue issue, String ruleKey, String componentName, int line, final double gap, String description) {
 
     assertEquals(ruleKey, issue.ruleKey().rule());
     assertEquals(componentName, issue.primaryLocation().inputComponent().key());
     assertEquals(gap, issue.gap(), 0.05);
     if (line != -1) {
       assertEquals(line, issue.primaryLocation().textRange().start().line());
+
+      final String baseMessage = TestSensorContext.getMutationOperatorForLine(line).getViolationDescription();
+      if(description == null) {
+        assertEquals(baseMessage, issue.primaryLocation().message());
+      } else {
+        assertEquals(baseMessage + " " + description, issue.primaryLocation().message());
+      }
     } else {
       assertNull("issue is not expected to have a textrange", issue.primaryLocation().textRange());
     }
+
   }
+
+
 
   private RulesProfile createRulesProfile(Rule... rules) {
 

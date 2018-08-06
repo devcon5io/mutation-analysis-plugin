@@ -258,12 +258,14 @@ public class TestSensorContext implements SensorContext {
     try {
       ResourceMutationMetrics rmm = new ResourceMutationMetrics(addTestFile(filename, metadata));
 
-      addMutants(rmm, Mutant.State.UNKNOWN, metadata.mutants.unknown, metadata.test.name);
-      addMutants(rmm, Mutant.State.NO_COVERAGE, metadata.mutants.noCoverage, metadata.test.name);
-      addMutants(rmm, Mutant.State.SURVIVED, metadata.mutants.survived, metadata.test.name);
-      addMutants(rmm, Mutant.State.TIMED_OUT, metadata.mutants.timedOut, metadata.test.name);
-      addMutants(rmm, Mutant.State.MEMORY_ERROR, metadata.mutants.memoryError, metadata.test.name);
-      addMutants(rmm, Mutant.State.KILLED, metadata.mutants.killed, metadata.test.name);
+      String desc = metadata.mutants.description;
+
+      addMutants(rmm, Mutant.State.UNKNOWN, metadata.mutants.unknown, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.NO_COVERAGE, metadata.mutants.noCoverage, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.SURVIVED, metadata.mutants.survived, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.TIMED_OUT, metadata.mutants.timedOut, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.MEMORY_ERROR, metadata.mutants.memoryError, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.KILLED, metadata.mutants.killed, metadata.test.name, desc);
 
       return rmm;
     } catch (IOException e) {
@@ -293,19 +295,19 @@ public class TestSensorContext implements SensorContext {
 
   private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count) {
 
-    addMutants(rmm, state, count, "ATest");
+    addMutants(rmm, state, count, "ATest", null);
   }
 
-  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count, String testname) {
+  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count, String testname, String desc) {
 
     String filename = rmm.getResource().filename();
 
     for (int i = 0; i < count; i++) {
-      rmm.addMutant(newMutant(filename, state, count + i, testname));
+      rmm.addMutant(newMutant(filename, state, count + i, testname, desc));
     }
   }
 
-  private Mutant newMutant(String file, Mutant.State state, final int line, String testName) {
+  private Mutant newMutant(String file, Mutant.State state, final int line, String testName, String description) {
 
     return Mutant.builder()
                  .mutantStatus(state)
@@ -315,10 +317,16 @@ public class TestSensorContext implements SensorContext {
                  .withMethodParameters("desc")
                  .inLine(line)
                  .atIndex(0)
-                 .usingMutator(MUTATION_OPERATORS.get(line % MUTATION_OPERATORS.size()))
+                 .usingMutator(getMutationOperatorForLine(line))
                  .killedBy(testName)
+                 .withDescription(description)
                  .build();
 
+  }
+
+  public static MutationOperator getMutationOperatorForLine(final int line) {
+
+    return MUTATION_OPERATORS.get(line % MUTATION_OPERATORS.size());
   }
 
   public static class TestFileMetadata {
@@ -344,6 +352,7 @@ public class TestSensorContext implements SensorContext {
       public int memoryError = 0;
       public int timedOut = 0;
       public int killed = 0;
+      public String description;
     }
 
     public static class TestMetadata implements Serializable {

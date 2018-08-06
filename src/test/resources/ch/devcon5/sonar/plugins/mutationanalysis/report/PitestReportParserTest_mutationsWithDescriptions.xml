@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mutations>
+    <mutation detected='true' status='KILLED' numberOfTestsRun='1'>
+        <sourceFile>Mutant.java</sourceFile>
+        <mutatedClass>ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant</mutatedClass>
+        <mutatedMethod>equals</mutatedMethod>
+        <methodDescription>(Ljava/lang/Object;)Z</methodDescription>
+        <lineNumber>268</lineNumber>
+        <mutator>org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator</mutator>
+        <index>8</index>
+        <block>20</block>
+        <killingTest>ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_same_true(ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest)</killingTest>
+        <description>Substituted 1 with 0</description>
+    </mutation>
+</mutations>

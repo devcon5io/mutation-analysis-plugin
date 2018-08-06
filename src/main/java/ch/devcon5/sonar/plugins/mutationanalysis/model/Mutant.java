@@ -23,6 +23,8 @@ package ch.devcon5.sonar.plugins.mutationanalysis.model;
 import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 
 /**
@@ -56,6 +58,7 @@ public class Mutant {
   private final int hashCode;
   private final String toString;
   private final TestDescriptor testDescriptor;
+  private String description;
 
   /**
    * Creates a new Mutant using the specified builder. This constructor is invoked by the builder.
@@ -77,6 +80,7 @@ public class Mutant {
     this.mutatorSuffix = builder.mutatorSuffix;
     this.index = builder.index;
     this.killingTest = builder.detected ? builder.killingTest : "";
+    this.description = builder.description;
     this.toString = "Mutant [sourceFile="
         + builder.sourceFile
         + ", mutatedClass="
@@ -93,6 +97,7 @@ public class Mutant {
         + builder.mutationOperator.getName()
         + ", killingTest="
         + this.killingTest
+        + (this.description == null ? "" : ", description=" + this.description)
         + "]";
     this.hashCode = calculateHashCode(this.index,
                                       this.detected ? 1231 : 1237,
@@ -104,7 +109,8 @@ public class Mutant {
                                       this.mutationOperator.hashCode(),
                                       this.mutatorSuffix.hashCode(),
                                       this.sourceFile.hashCode(),
-                                      this.killingTest.hashCode());
+                                      this.killingTest.hashCode(),
+                                      this.description == null ? 0 : this.description.hashCode());
 
     this.testDescriptor = new TestDescriptor(this.killingTest);
 
@@ -214,6 +220,16 @@ public class Mutant {
     return killingTest;
   }
 
+  /**
+   * Newer versions of Pit produce a description containing more details about what has been mutated.
+   * @return
+   *  the description if the mutant contained any or an empty optional
+   */
+  public Optional<String> getDescription() {
+
+    return Optional.ofNullable(this.description);
+  }
+
   public TestDescriptor getTestDescriptor() {
 
     return this.testDescriptor;
@@ -285,7 +301,10 @@ public class Mutant {
     if (!sourceFile.equals(other.sourceFile)) {
       return false;
     }
-    return killingTest.equals(other.killingTest);
+    if (!killingTest.equals(other.killingTest)) {
+      return false;
+    }
+    return getDescription().equals(other.getDescription());
   }
 
   /**
@@ -373,6 +392,7 @@ public class Mutant {
     private String mutatorSuffix;
     private int index;
     private String killingTest;
+    private String description;
 
     Builder() {
 
@@ -551,6 +571,11 @@ public class Mutant {
       }
 
       return new Mutant(this);
+    }
+
+    public Builder withDescription(final String description) {
+      this.description = description;
+      return this;
     }
   }
 }
