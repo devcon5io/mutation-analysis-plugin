@@ -21,6 +21,7 @@ package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
@@ -50,6 +51,23 @@ public class ResourceMutationMetricsTest {
     public void setUp() throws Exception {
 
         when(mutant.getState()).thenReturn(Mutant.State.UNKNOWN);
+
+    }
+
+    @Test
+    public void testDefaults() throws Exception {
+        ResourceMutationMetrics rmm = new ResourceMutationMetrics(resource);
+
+        assertEquals(0, rmm.getMutationsDetected());
+        assertEquals(0, rmm.getMutationsTotal());
+        assertEquals(0, rmm.getMutationsKilled());
+        assertEquals(0, rmm.getMutationsMemoryError());
+        assertEquals(0, rmm.getMutationsNoCoverage());
+        assertEquals(0, rmm.getMutationsSurvived());
+        assertEquals(0, rmm.getMutationsTimedOut());
+        assertEquals(0, rmm.getMutationsUnknown());
+        assertEquals(0.0, rmm.getMutationCoverage(), 0.0001);
+        assertTrue(rmm.getMutants().isEmpty());
 
     }
 
