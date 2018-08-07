@@ -20,6 +20,7 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.sonar.api.batch.fs.InputFile;
 public class ResourceMutationMetrics {
 
   private final List<Mutant> mutants = new ArrayList<>();
+  private final Path file;
   private int mutationsTotal;
   private int mutationsNoCoverage;
   private int mutationsKilled;
@@ -45,6 +47,19 @@ public class ResourceMutationMetrics {
   private double mutationCoverage;
   private final InputFile resource;
 
+
+  /**
+   * Constructor for creating a new metrics holder for the given resource
+   *
+   * @param resource
+   *         the Sonar resource for which mutation information should be collected
+   */
+  public ResourceMutationMetrics(final Path resource) {
+
+    this.resource = null;
+    this.file = resource;
+  }
+
   /**
    * Constructor for creating a new metrics holder for the given resource
    *
@@ -54,6 +69,7 @@ public class ResourceMutationMetrics {
   public ResourceMutationMetrics(final InputFile resource) {
 
     this.resource = resource;
+    this.file = null;
   }
 
   /**
@@ -197,4 +213,7 @@ public class ResourceMutationMetrics {
     return resource;
   }
 
+  public Path getFile() {
+    return file;
+  }
 }

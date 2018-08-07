@@ -44,12 +44,12 @@ public class ResourceMutationMetricsTest {
     @Mock
     private Mutant mutant;
 
-    @InjectMocks
     private ResourceMutationMetrics subject;
 
     @Before
     public void setUp() throws Exception {
 
+        subject = new ResourceMutationMetrics(resource);
         when(mutant.getState()).thenReturn(Mutant.State.UNKNOWN);
 
     }
