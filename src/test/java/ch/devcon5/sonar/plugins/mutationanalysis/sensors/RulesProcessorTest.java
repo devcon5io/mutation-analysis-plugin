@@ -23,7 +23,12 @@ package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE;
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT;
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.EFFORT_MUTANT_KILL;
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.*;
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD;
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.REPOSITORY_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.RULE_MUTANT_COVERAGE;
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.RULE_SURVIVED_MUTANT;
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.RULE_UNCOVERED_MUTANT;
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.RULE_UNKNOWN_MUTANT_STATUS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -40,6 +45,7 @@ import java.util.stream.Collectors;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperator;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaRulesDefinition;
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,7 +83,7 @@ public class RulesProcessorTest {
     when(configuration.get(EFFORT_MUTANT_KILL)).thenReturn(Optional.empty());
 
     RulesDefinitionXmlLoader rulesLoader = new RulesDefinitionXmlLoader();
-    this.def = new MutationAnalysisRulesDefinition(configuration, rulesLoader);
+    this.def = new JavaRulesDefinition(configuration, rulesLoader);
     this.rulesContext = new RulesDefinition.Context();
     this.def.define(rulesContext);
   }
@@ -91,7 +97,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertTrue(issues.isEmpty());
@@ -112,7 +118,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_SURVIVED_MUTANT, "test-module:Test.java", 3, 1.0);
@@ -137,7 +143,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_SURVIVED_MUTANT, "test-module:Test.java", 3, 1.0, "Mutation: substituted foo with bar");
@@ -161,7 +167,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertEquals(3, issues.size());
@@ -185,7 +191,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_UNCOVERED_MUTANT, "test-module:Test.java", 2, 1.0);
@@ -208,7 +214,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_UNCOVERED_MUTANT, "test-module:Test.java", 2, 10.0);
@@ -231,7 +237,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_UNKNOWN_MUTANT_STATUS, "test-module:Test.java", 2, 1.0);
@@ -254,7 +260,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_UNKNOWN_MUTANT_STATUS, "test-module:Test.java", 2, 10.0);
@@ -277,7 +283,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final List<Issue> issues = context.getStorage().getIssues();
     assertEquals(23, issues.size());
@@ -300,7 +306,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final Issue issue = context.getStorage().getIssues().get(0);
     assertIssueAtLine(issue, RULE_MUTANT_COVERAGE, "test-module:Test.java", 0.6);
@@ -320,7 +326,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     final Issue issue = context.getStorage().getIssues().get(0);
     assertIssueAtLine(issue, RULE_MUTANT_COVERAGE, "test-module:Test.java", 6.0);
@@ -339,7 +345,7 @@ public class RulesProcessorTest {
 
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
 
-    processor.processRules(metrics, context);
+    processor.processRules(metrics, context, "java");
 
     assertTrue(context.getStorage().getIssues().isEmpty());
   }
@@ -392,12 +398,12 @@ public class RulesProcessorTest {
 
   private Rule createRule(final String ruleKey) {
 
-    return Rule.create(REPOSITORY_KEY, ruleKey);
+    return Rule.create(REPOSITORY_KEY + ".java", ruleKey);
   }
 
   private Rule createRule(String ruleKey, String key, String value) {
 
-    final Rule r = Rule.create(REPOSITORY_KEY, ruleKey);
+    final Rule r = Rule.create(REPOSITORY_KEY  + ".java", ruleKey);
     r.createParameter(key).setDefaultValue(value);
     return r;
   }

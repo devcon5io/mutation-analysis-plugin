@@ -21,8 +21,10 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
@@ -41,6 +43,7 @@ import org.sonar.api.profiles.RulesProfile;
 
 /**
  * Sonar sensor for pitest mutation coverage analysis.
+ * The pitest sensor supports Java and Kotlin as languages, both can be enabled/disabled separately and are
  */
 public class PitestSensor implements Sensor {
 
@@ -88,19 +91,36 @@ public class PitestSensor implements Sensor {
   public void describe(final SensorDescriptor descriptor) {
 
     descriptor.name("Mutation Analysis");
-    descriptor.onlyOnLanguages("java");
-    descriptor.createIssuesForRuleRepositories(MutationAnalysisRulesDefinition.REPOSITORY_KEY);
+    descriptor.onlyOnLanguages("java", "kotlin");
+    descriptor.createIssuesForRuleRepositories(
+            MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".java",
+            MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".kotlin");
 
   }
+
+  private List<String> getLanguageKeys(){
+
+    final List<String> keys = new ArrayList<>();
+    if( settings.getBoolean(MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED).orElse(true)){
+      keys.add("java");
+    }
+    if( settings.getBoolean(MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED).orElse(true)){
+      keys.add("kotlin");
+    }
+    LOG.debug("Enabled Languages for Pitest: {}", keys);
+
+    return keys;
+  }
+
 
   @Override
   public void execute(final SensorContext context) {
 
-    if (!(fileSystem.hasFiles(fileSystem.predicates().hasLanguage("java")) && settings.getBoolean(MutationAnalysisPlugin.PITEST_SENSOR_ENABLED).orElse(true))) {
-      LOG.info("PIT Sensor disabled");
-      return;
+    if (isEnabled()) {
+      LOG.info("Pitest Sensor {} running on {} in {}", getLanguageKeys(), context.module(), context.fileSystem().baseDir());
     } else {
-      LOG.info("PIT Sensor running on {} in {}", context.module(), context.fileSystem().baseDir());
+      LOG.info("Pitest Sensor {} disabled", getLanguageKeys());
+      return;
     }
 
     try {
@@ -111,8 +131,11 @@ public class PitestSensor implements Sensor {
       LOG.debug("collecting metrics");
       final Collection<ResourceMutationMetrics> metrics = collectMetrics(localMutants);
 
-      LOG.debug("applying rules");
-      this.rulesProcessor.processRules(metrics, context);
+      getLanguageKeys().forEach(language -> {
+        LOG.debug("applying {} rules", language);
+        this.rulesProcessor.processRules(metrics, context, language);
+
+      });
 
       LOG.debug("saving metrics");
       this.sourceMetricsWriter.writeMetrics(metrics, context, globalMutants);
@@ -128,6 +151,13 @@ public class PitestSensor implements Sensor {
       LOG.error("Could not read mutants", e);
     }
 
+  }
+
+  private boolean isEnabled() {
+
+    final List<String> keys = getLanguageKeys();
+
+    return !keys.isEmpty() && fileSystem.hasFiles(fileSystem.predicates().hasLanguages(keys)) ;
   }
 
   /**

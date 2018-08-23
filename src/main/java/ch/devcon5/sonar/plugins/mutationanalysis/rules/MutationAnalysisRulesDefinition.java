@@ -36,7 +36,7 @@ import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
  * The definition of pitest rules. A new repository is created for the Pitest plugin and Java language. The rules are
  * defined in the rules.xml file in the classpath. The rule keys are accessible as constants.
  */
-public class MutationAnalysisRulesDefinition implements org.sonar.api.server.rule.RulesDefinition {
+public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.server.rule.RulesDefinition {
 
   /**
    * The key for the PITest repository
@@ -105,7 +105,7 @@ public class MutationAnalysisRulesDefinition implements org.sonar.api.server.rul
   @Override
   public void define(final Context context) {
 
-    final NewRepository repository = context.createRepository(REPOSITORY_KEY, "java").setName(REPOSITORY_NAME);
+    final NewRepository repository = context.createRepository(REPOSITORY_KEY + "." + getLanguageKey(), getLanguageKey()).setName(REPOSITORY_NAME);
     this.xmlLoader.load(repository,
                         getClass().getResourceAsStream("/ch/devcon5/sonar/plugins/mutationanalysis/rules.xml"),
                         "UTF-8");
@@ -120,6 +120,9 @@ public class MutationAnalysisRulesDefinition implements org.sonar.api.server.rul
     repository.done();
     LOG.info("Defining Mutation Analysis rule repository {} done", repository);
   }
+
+  protected abstract String getLanguageKey();
+
 
   /**
    * Enriches the mutator rules with the descriptions from the mutators
