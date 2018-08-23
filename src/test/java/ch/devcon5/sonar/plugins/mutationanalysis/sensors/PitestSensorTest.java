@@ -46,6 +46,7 @@ import org.sonar.api.batch.sensor.issue.Issue;
 import org.sonar.api.batch.sensor.measure.Measure;
 import org.sonar.api.profiles.RulesProfile;
 
+//kills 68 mutants, 11 alive
 public class PitestSensorTest {
 
    @Rule

@@ -44,11 +44,16 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
+import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
 import ch.devcon5.sonar.plugins.mutationanalysis.report.PitestReportParser;
 import ch.devcon5.sonar.plugins.mutationanalysis.report.ReportFinder;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -81,6 +86,7 @@ import org.sonar.api.rules.ActiveRule;
 import org.sonar.api.rules.Rule;
 
 //kills 73 mutants, 14 alive
+@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class PitestSensorMockTest {
 
@@ -114,7 +120,6 @@ public class PitestSensorMockTest {
     private Issuable issuable;
     @Mock
     private DefaultInputFile javaFile;
-
 
     private final ActiveRule negateConditionalsRule = createRuleMock("mutant.NEGATE_CONDITIONALS");
     private final ActiveRule survivedMutantRule = createRuleMock("mutant.survived");
@@ -212,173 +217,173 @@ public class PitestSensorMockTest {
 
     }
 
-//    @Test
-//    public void testExecute_noFilesAndSensorDisabled_noIssuesAndMeasures() throws Exception {
-//
-//        // prepare
-//        setupEnvironment(false, false);
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        verify(context, times(0)).newIssue();
-//        verify(context, times(0)).newMeasure();
-//
-//    }
-//
-//    @Test
-//    public void testExecute_withFilesAndSensorDisabled_noIssuesAndMeasures() throws Exception {
-//
-//        // prepare
-//        setupEnvironment(true, false);
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        verify(context, times(0)).newIssue();
-//        verify(context, times(0)).newMeasure();
-//
-//    }
+    @Test
+    public void testExecute_noFilesAndSensorDisabled_noIssuesAndMeasures() throws Exception {
 
-//    @Test
-//    public void testExecute_withFilesAndSensorEnabled_noReport_noIssuesAndMeasure() throws Exception {
-//
-//        // prepare
-//        setupEnvironment(true, true);
-//        when(rulesProfile.getActiveRulesByRepository("pitest.pro")).thenReturn(Arrays.asList(negateConditionalsRule));
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        verify(context, times(0)).newIssue();
-//        verify(context, times(0)).newMeasure();
-//
-//    }
+        // prepare
+        setupEnvironment(false, false);
 
-//    @Test
-//    public void testExecute_withFilesAndSensorEnabledAndReportExist_noActiveRule_noIssues() throws Exception {
-//
-//        // prepare
-//        setupEnvironment(true, true);
-//        setupSensorTest();
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        // verify issues have been create
-//        verify(context, times(0)).newIssue();
-//
-//        verifyMeasures(METRICS_COUNT);
-//    }
-//
-//    @Test
-//    public void testExecute_mutatorSpecificRuleActive() throws Exception {
-//
-//        // prepare
-//
-//        final double EXPECTED_EFFORT_TO_FIX = 1.0;
-//        final double FACTOR = 2.0;
-//        setupEnvironment(true, true);
-//        setupSensorTest(negateConditionalsRule);
-//        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT, FACTOR);
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        // verify issues have been create
-//        verify(context, times(2)).newIssue();
-//        verifyRuleKey(issue, "mutant.NEGATE_CONDITIONALS", times(2));
-//        // verify the file and the lines of the mutants
-//        final ArgumentCaptor<NewIssueLocation> captor = forClass(NewIssueLocation.class);
-//        verify(issue, times(2)).at(captor.capture());
-//        final DefaultIssueLocation loc1 = (DefaultIssueLocation) captor.getAllValues().get(0);
-//        final DefaultIssueLocation loc2 = (DefaultIssueLocation) captor.getAllValues().get(1);
-//        assertEquals(172, loc1.textRange().start().line());
-//        assertEquals(172, loc1.textRange().end().line());
-//        assertEquals(175, loc2.textRange().start().line());
-//        assertEquals(175, loc2.textRange().end().line());
-//        // verify the violation description
-//        Assert.assertEquals(MutationOperators.find("NEGATE_CONDITIONALS").getViolationDescription(), loc1.message());
-//        assertEquals(MutationOperators.find("NEGATE_CONDITIONALS").getViolationDescription() + " (WITH_SUFFIX)", loc2.message());
-//
-//        verify(issue, times(2)).forRule(any(RuleKey.class));
-//        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR, times(2));
-//        verify(issue, times(2)).save();
-//
-//        verifyMeasures(METRICS_COUNT);
-//    }
-//
-//    @Test
-//    public void testExecute_survivedMutantRuleActive() throws Exception {
-//
-//        // prepare
-//        final double EXPECTED_EFFORT_TO_FIX = 1.0;
-//        final double FACTOR = 2.0;
-//        setupEnvironment(true, true);
-//        setupSensorTest(survivedMutantRule);
-//        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT, FACTOR);
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        verify(context).newIssue();
-//        verifyRuleKey(issue, "mutant.survived");
-//        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
-//        verifyNewIssueLocation(javaFile, issue, 172);
-//        verify(issue).save();
-//        verifyMeasures(METRICS_COUNT);
-//    }
+        // act
+        subject.execute(context);
 
-//    @Test
-//    public void testExecute_uncoverdMutantRuleActive() throws Exception {
-//
-//        // prepare
-//        final double EXPECTED_EFFORT_TO_FIX = 1.0;
-//        final double FACTOR = 2.0;
-//        setupEnvironment(true, true);
-//        setupSensorTest(uncoveredMutantRule);
-//        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT, FACTOR);
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        // verify issues have been create
-//        verify(context).newIssue();
-//        verifyRuleKey(issue, "mutant.uncovered");
-//        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
-//        verifyNewIssueLocation(javaFile, issue, 175);
-//        verify(issue).save();
-//        verifyMeasures(METRICS_COUNT);
-//    }
+        // assert
+        verify(context, times(0)).newIssue();
+        verify(context, times(0)).newMeasure();
 
-//    @Test
-//    public void testExecute_unknownMutantStatusRuleActive() throws Exception {
-//
-//        // prepare
-//        final double EXPECTED_EFFORT_TO_FIX = 1.0;
-//        final double FACTOR = 2.0;
-//        setupEnvironment(true, true);
-//        setupSensorTest(unknownStatusRule);
-//        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT, FACTOR);
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        verify(context).newIssue();
-//        verifyRuleKey(issue, "mutant.unknownStatus");
-//        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
-//        verifyNewIssueLocation(javaFile, issue, 175);
-//        verify(issue).save();
-//        verifyMeasures(METRICS_COUNT);
-//    }
+    }
+
+    @Test
+    public void testExecute_withFilesAndSensorDisabled_noIssuesAndMeasures() throws Exception {
+
+        // prepare
+        setupEnvironment(true, false);
+
+        // act
+        subject.execute(context);
+
+        // assert
+        verify(context, times(0)).newIssue();
+        verify(context, times(0)).newMeasure();
+
+    }
+
+    @Test
+    public void testExecute_withFilesAndSensorEnabled_noReport_noIssuesAndMeasure() throws Exception {
+
+        // prepare
+        setupEnvironment(true, true);
+        when(rulesProfile.getActiveRulesByRepository("pitest.pro")).thenReturn(Arrays.asList(negateConditionalsRule));
+
+        // act
+        subject.execute(context);
+
+        // assert
+        verify(context, times(0)).newIssue();
+        verify(context, times(0)).newMeasure();
+
+    }
+
+    @Test
+    public void testExecute_withFilesAndSensorEnabledAndReportExist_noActiveRule_noIssues() throws Exception {
+
+        // prepare
+        setupEnvironment(true, true);
+        setupSensorTest();
+
+        // act
+        subject.execute(context);
+
+        // assert
+        // verify issues have been create
+        verify(context, times(0)).newIssue();
+
+        verifyMeasures(METRICS_COUNT);
+    }
+
+    @Test
+    public void testExecute_mutatorSpecificRuleActive() throws Exception {
+
+        // prepare
+
+        final double EXPECTED_EFFORT_TO_FIX = 1.0;
+        final double FACTOR = 2.0;
+        setupEnvironment(true, true);
+        setupSensorTest(negateConditionalsRule);
+        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT, FACTOR);
+
+        // act
+        subject.execute(context);
+
+        // assert
+        // verify issues have been create
+        verify(context, times(2)).newIssue();
+        verifyRuleKey(issue, "mutant.NEGATE_CONDITIONALS", times(2));
+        // verify the file and the lines of the mutants
+        final ArgumentCaptor<NewIssueLocation> captor = forClass(NewIssueLocation.class);
+        verify(issue, times(2)).at(captor.capture());
+        final DefaultIssueLocation loc1 = (DefaultIssueLocation) captor.getAllValues().get(0);
+        final DefaultIssueLocation loc2 = (DefaultIssueLocation) captor.getAllValues().get(1);
+        assertEquals(172, loc1.textRange().start().line());
+        assertEquals(172, loc1.textRange().end().line());
+        assertEquals(175, loc2.textRange().start().line());
+        assertEquals(175, loc2.textRange().end().line());
+        // verify the violation description
+        Assert.assertEquals(MutationOperators.find("NEGATE_CONDITIONALS").getViolationDescription(), loc1.message());
+        assertEquals(MutationOperators.find("NEGATE_CONDITIONALS").getViolationDescription() + " (WITH_SUFFIX)", loc2.message());
+
+        verify(issue, times(2)).forRule(any(RuleKey.class));
+        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR, times(2));
+        verify(issue, times(2)).save();
+
+        verifyMeasures(METRICS_COUNT);
+    }
+
+    @Test
+    public void testExecute_survivedMutantRuleActive() throws Exception {
+
+        // prepare
+        final double EXPECTED_EFFORT_TO_FIX = 1.0;
+        final double FACTOR = 2.0;
+        setupEnvironment(true, true);
+        setupSensorTest(survivedMutantRule);
+        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT, FACTOR);
+
+        // act
+        subject.execute(context);
+
+        // assert
+        verify(context).newIssue();
+        verifyRuleKey(issue, "mutant.survived");
+        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
+        verifyNewIssueLocation(javaFile, issue, 172);
+        verify(issue).save();
+        verifyMeasures(METRICS_COUNT);
+    }
+
+    @Test
+    public void testExecute_uncoverdMutantRuleActive() throws Exception {
+
+        // prepare
+        final double EXPECTED_EFFORT_TO_FIX = 1.0;
+        final double FACTOR = 2.0;
+        setupEnvironment(true, true);
+        setupSensorTest(uncoveredMutantRule);
+        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT, FACTOR);
+
+        // act
+        subject.execute(context);
+
+        // assert
+        // verify issues have been create
+        verify(context).newIssue();
+        verifyRuleKey(issue, "mutant.uncovered");
+        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
+        verifyNewIssueLocation(javaFile, issue, 175);
+        verify(issue).save();
+        verifyMeasures(METRICS_COUNT);
+    }
+
+    @Test
+    public void testExecute_unknownMutantStatusRuleActive() throws Exception {
+
+        // prepare
+        final double EXPECTED_EFFORT_TO_FIX = 1.0;
+        final double FACTOR = 2.0;
+        setupEnvironment(true, true);
+        setupSensorTest(unknownStatusRule);
+        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT, FACTOR);
+
+        // act
+        subject.execute(context);
+
+        // assert
+        verify(context).newIssue();
+        verifyRuleKey(issue, "mutant.unknownStatus");
+        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
+        verifyNewIssueLocation(javaFile, issue, 175);
+        verify(issue).save();
+        verifyMeasures(METRICS_COUNT);
+    }
 
     private void verifyNewIssueLocation(final DefaultInputFile javaFile, final NewIssue issue, final int lineNumber) {
 
@@ -401,85 +406,85 @@ public class PitestSensorMockTest {
         return loc;
     }
 
-//    @Test
-//    public void testExecute_coverageThresholdRuleActive_belowThreshold_oneMutantMissing() throws Exception {
-//
-//        // prepare
-//
-//        final double EXPECTED_EFFORT_TO_FIX = 1.8;
-//        final double FACTOR = 2.0;
-//        setupEnvironment(true, true);
-//        setupSensorTest(coverageThresholdRule);
-//        when(coverageThresholdRule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD)).thenReturn("80.0");
-//        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE, FACTOR);
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        // verify issues have been create
-//        verify(context).newIssue();
-//        verifyRuleKey(issue, "mutant.coverage");
-//        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
-//        verifyNewIssueLocation(javaFile, issue);
-//        verify(issue).save();
-//        verifyMeasures(METRICS_COUNT);
-//    }
+    @Test
+    public void testExecute_coverageThresholdRuleActive_belowThreshold_oneMutantMissing() throws Exception {
 
-//    @Test
-//    public void testExecute_coverageThresholdRuleActive_belowThreshold_moreMutantsMissing() throws Exception {
-//
-//        // prepare
-//        final double EXPECTED_EFFORT_TO_FIX = 2.4;
-//        final double FACTOR = 2.0;
-//        setupSensorTest(coverageThresholdRule);
-//        when(coverageThresholdRule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD)).thenReturn("90.0");
-//        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE, FACTOR);
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        // verify issues have been create
-//        verify(context).newIssue();
-//        verifyRuleKey(issue, "mutant.coverage");
-//        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
-//        verifyNewIssueLocation(javaFile, issue);
-//        verify(issue).save();
-//        verifyMeasures(METRICS_COUNT);
-//    }
+        // prepare
 
-//    @Test
-//    public void testExecute_coverageThresholdRuleActive_aboveThreshold() throws Exception {
-//
-//        // prepare
-//        setupEnvironment(true, true);
-//        setupSensorTest(coverageThresholdRule);
-//        when(coverageThresholdRule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD)).thenReturn("20.0");
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        verify(context, times(0)).newIssue();
-//        verifyMeasures(METRICS_COUNT);
-//    }
-//
-//    @Test
-//    public void testExecute_coverageThresholdRuleActive_onThreshold() throws Exception {
-//
-//        // prepare
-//        setupEnvironment(true, true);
-//        setupSensorTest(coverageThresholdRule);
-//        when(coverageThresholdRule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD)).thenReturn("50.0");
-//
-//        // act
-//        subject.execute(context);
-//
-//        // assert
-//        verify(context, times(0)).newIssue();
-//        verifyMeasures(METRICS_COUNT);
-//    }
+        final double EXPECTED_EFFORT_TO_FIX = 1.8;
+        final double FACTOR = 2.0;
+        setupEnvironment(true, true);
+        setupSensorTest(coverageThresholdRule);
+        when(coverageThresholdRule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD)).thenReturn("80.0");
+        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE, FACTOR);
+
+        // act
+        subject.execute(context);
+
+        // assert
+        // verify issues have been create
+        verify(context).newIssue();
+        verifyRuleKey(issue, "mutant.coverage");
+        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
+        verifyNewIssueLocation(javaFile, issue);
+        verify(issue).save();
+        verifyMeasures(METRICS_COUNT);
+    }
+
+    @Test
+    public void testExecute_coverageThresholdRuleActive_belowThreshold_moreMutantsMissing() throws Exception {
+
+        // prepare
+        final double EXPECTED_EFFORT_TO_FIX = 2.4;
+        final double FACTOR = 2.0;
+        setupSensorTest(coverageThresholdRule);
+        when(coverageThresholdRule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD)).thenReturn("90.0");
+        setupSettings(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE, FACTOR);
+
+        // act
+        subject.execute(context);
+
+        // assert
+        // verify issues have been create
+        verify(context).newIssue();
+        verifyRuleKey(issue, "mutant.coverage");
+        verifyEffortToFix(issue, EXPECTED_EFFORT_TO_FIX * FACTOR);
+        verifyNewIssueLocation(javaFile, issue);
+        verify(issue).save();
+        verifyMeasures(METRICS_COUNT);
+    }
+
+    @Test
+    public void testExecute_coverageThresholdRuleActive_aboveThreshold() throws Exception {
+
+        // prepare
+        setupEnvironment(true, true);
+        setupSensorTest(coverageThresholdRule);
+        when(coverageThresholdRule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD)).thenReturn("20.0");
+
+        // act
+        subject.execute(context);
+
+        // assert
+        verify(context, times(0)).newIssue();
+        verifyMeasures(METRICS_COUNT);
+    }
+
+    @Test
+    public void testExecute_coverageThresholdRuleActive_onThreshold() throws Exception {
+
+        // prepare
+        setupEnvironment(true, true);
+        setupSensorTest(coverageThresholdRule);
+        when(coverageThresholdRule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD)).thenReturn("50.0");
+
+        // act
+        subject.execute(context);
+
+        // assert
+        verify(context, times(0)).newIssue();
+        verifyMeasures(METRICS_COUNT);
+    }
 
     private void verifyRuleKey(final NewIssue issue, final String ruleKey) {
 
