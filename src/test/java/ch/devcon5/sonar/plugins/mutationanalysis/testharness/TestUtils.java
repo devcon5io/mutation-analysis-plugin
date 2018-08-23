@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package ch.devcon5.sonar.plugins.mutationanalysis;
+package ch.devcon5.sonar.plugins.mutationanalysis.testharness;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.rules.TemporaryFolder;
@@ -154,4 +156,16 @@ public class TestUtils {
         return tempFile;
     }
 
+    public static <G> G assertContains(List<G> container, Consumer<G> filter) {
+
+        return container.stream().filter(m -> {
+            try {
+                filter.accept(m);
+                return true;
+            } catch (AssertionError e) {
+                return false;
+            }
+        }).findFirst().orElseThrow(() -> new AssertionError("No element found matching assertions"));
+
+    }
 }

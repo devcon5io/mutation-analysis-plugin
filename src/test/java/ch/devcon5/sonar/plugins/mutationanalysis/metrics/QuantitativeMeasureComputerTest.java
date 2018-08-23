@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.ce.measure.MeasureComputer;

@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -47,12 +50,19 @@ public class SourceMetricsWriterTest {
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
 
+  private SensorTestHarness harness;
+
+  @Before
+  public void setUp() throws Exception {
+    this.harness = SensorTestHarness.builder().withTempFolder(folder).build();
+  }
+
   @Test
   public void writeMetrics_noMutants_noMetric_nothingWritten() {
 
     SourceMetricsWriter smw = new SourceMetricsWriter();
 
-    final TestSensorContext context = TestSensorContext.create(folder.getRoot().toPath(), "test-module");
+    final TestSensorContext context = harness.createSensorContext();
     final Collection<Mutant> globalMutants = Collections.emptyList();
     final Collection<ResourceMutationMetrics> metrics = Collections.emptyList();
 
@@ -66,7 +76,7 @@ public class SourceMetricsWriterTest {
 
     SourceMetricsWriter smw = new SourceMetricsWriter();
 
-    final TestSensorContext context = TestSensorContext.create(folder.getRoot().toPath(), "test-module");
+    final TestSensorContext context = harness.createSensorContext();
     final Collection<Mutant> globalMutants = Collections.emptyList();
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
       md.lines = 100;
@@ -124,7 +134,7 @@ public class SourceMetricsWriterTest {
 
     SourceMetricsWriter smw = new SourceMetricsWriter();
 
-    final TestSensorContext context = TestSensorContext.create(folder.getRoot().toPath(), "test-module");
+    final TestSensorContext context = harness.createSensorContext();
 
     final Collection<Mutant> globalMutants = Collections.emptyList();
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test1.java", md -> {

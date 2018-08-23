@@ -28,7 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
-import ch.devcon5.sonar.plugins.mutationanalysis.TestUtils;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
