@@ -29,6 +29,7 @@ import static org.sonar.api.measures.CoreMetrics.LINES_TO_COVER_KEY;
 
 import java.util.Arrays;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.ce.measure.Measure;

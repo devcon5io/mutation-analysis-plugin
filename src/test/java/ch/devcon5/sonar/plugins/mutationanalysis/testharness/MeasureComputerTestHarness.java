@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
+package ch.devcon5.sonar.plugins.mutationanalysis.testharness;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.ce.measure.MeasureComputer;

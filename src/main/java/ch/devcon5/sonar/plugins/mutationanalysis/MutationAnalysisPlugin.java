@@ -28,8 +28,10 @@ import ch.devcon5.sonar.plugins.mutationanalysis.metrics.TestKillRatioComputer;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.TotalMutationsComputer;
 import ch.devcon5.sonar.plugins.mutationanalysis.report.PitestReportParser;
 import ch.devcon5.sonar.plugins.mutationanalysis.report.ReportFinder;
-import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisProfileDefinition;
-import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaProfileDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaRulesDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.KotlinProfileDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.KotlinRulesDefinition;
 import ch.devcon5.sonar.plugins.mutationanalysis.sensors.PitestSensor;
 import org.sonar.api.Plugin;
 import org.sonar.api.Properties;
@@ -42,9 +44,15 @@ import org.sonar.api.config.Configuration;
  * The properties define, which {@link org.sonar.api.config.Configuration} are configurable for the plugin.
  */
 @Properties({
-                @Property(key = MutationAnalysisPlugin.PITEST_SENSOR_ENABLED,
-                          name = "Active Pitest Sensor",
-                          description = "Enables the Sensor for PIT. Default is 'true'",
+                @Property(key = MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED,
+                          name = "Active Pitest Java Sensor",
+                          description = "Enables the Kotlin Sensor for PIT. Default is 'true'",
+                          type = PropertyType.BOOLEAN,
+                          defaultValue = "true",
+                          project = true),
+                @Property(key = MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED,
+                          name = "Active Pitest Kotlin Sensor",
+                          description = "Enables the Kotlin Sensor for PIT. Default is 'true'",
                           type = PropertyType.BOOLEAN,
                           defaultValue = "true",
                           project = true),
@@ -89,7 +97,9 @@ import org.sonar.api.config.Configuration;
             })
 public final class MutationAnalysisPlugin implements Plugin {
 
-  public static final String PITEST_SENSOR_ENABLED = "dc5.mutationAnalysis.pitest.sensor.enabled";
+
+  public static final String PITEST_JAVA_SENSOR_ENABLED = "dc5.mutationAnalysis.pitest.java.sensor.enabled";
+  public static final String PITEST_KOTLIN_SENSOR_ENABLED = "dc5.mutationAnalysis.pitest.kotlin.sensor.enabled";
   public static final String EXPERIMENTAL_FEATURE_ENABLED = "dc5.mutationAnalysis.experimentalFeatures.enabled";
   public static final String EFFORT_MUTANT_KILL = "dc5.mutationAnalysis.effort.mutantKill";
   public static final String EFFORT_FACTOR_MISSING_COVERAGE = "dc5.mutationAnalysis.effort.missingCoverage";
@@ -104,8 +114,10 @@ public final class MutationAnalysisPlugin implements Plugin {
 
     context.addExtensions(PitestReportParser.class,
                           ReportFinder.class,
-                          MutationAnalysisRulesDefinition.class,
-                          MutationAnalysisProfileDefinition.class,
+                          JavaRulesDefinition.class,
+                          KotlinRulesDefinition.class,
+                          JavaProfileDefinition.class,
+                          KotlinProfileDefinition.class,
                           PitestSensor.class,
                           MutationAnalysisMetrics.class,
                           MutationScoreComputer.class,

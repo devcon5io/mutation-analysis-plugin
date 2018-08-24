@@ -20,6 +20,7 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
+import static ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestUtils.assertContains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -27,10 +28,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -44,10 +47,17 @@ public class TestMetricsWriterTest {
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
 
+  private SensorTestHarness harness;
+
+  @Before
+  public void setUp() throws Exception {
+    this.harness = SensorTestHarness.builder().withTempFolder(folder).build();
+  }
+
   @Test
   public void writeMetrics_noMutants_noMetrics_noMeasure() {
 
-    final TestSensorContext context = TestSensorContext.create(folder.getRoot().toPath(), "test-module");
+    final TestSensorContext context = harness.createSensorContext();
 
     TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
 
@@ -62,7 +72,7 @@ public class TestMetricsWriterTest {
   @Test
   public void writeMetrics_oneMutant_measureCreated() throws Exception {
 
-    final TestSensorContext context = TestSensorContext.create(folder.getRoot().toPath(), "test-module");
+    final TestSensorContext context = harness.createSensorContext();
     context.addTestFile("CustomTest.java");
 
     final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
@@ -94,7 +104,7 @@ public class TestMetricsWriterTest {
   @Test
   public void writeMetrics_moreMutants_measureCreated() throws Exception {
 
-    final TestSensorContext context = TestSensorContext.create(folder.getRoot().toPath(), "test-module");
+    final TestSensorContext context = harness.createSensorContext();
     context.addTestFile("CustomTest.java");
     context.addTestFile("OtherTest.java");
 
@@ -139,16 +149,5 @@ public class TestMetricsWriterTest {
     assertEquals(4, measures.size());
   }
 
-  <G> G assertContains(List<G> container, Consumer<G> filter) {
 
-    return container.stream().filter(m -> {
-      try {
-        filter.accept(m);
-        return true;
-      } catch (AssertionError e) {
-        return false;
-      }
-    }).findFirst().orElseThrow(() -> new AssertionError("No element found matching assertions"));
-
-  }
 }

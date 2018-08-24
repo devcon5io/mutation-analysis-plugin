@@ -20,23 +20,10 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX;
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.REPOSITORY_KEY;
-
-import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
-import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition;
-
-public abstract class MutationAnalysisProfileDefinition implements BuiltInQualityProfilesDefinition {
+public class JavaProfileDefinition extends MutationAnalysisProfileDefinition {
 
    @Override
-   public void define(final Context context) {
-      final NewBuiltInQualityProfile mutationAnalysis = context.createBuiltInQualityProfile("Mutation Analysis", getLanguageKey());
-
-      MutationOperators.allMutagens().forEach(m -> mutationAnalysis.activateRule(REPOSITORY_KEY + "." + getLanguageKey(), MUTANT_RULES_PREFIX + m.getId()));
-
-      mutationAnalysis.done();
+   protected String getLanguageKey() {
+      return "java";
    }
-
-   protected abstract String getLanguageKey();
-
 }

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package ch.devcon5.sonar.plugins.mutationanalysis;
+package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 
 import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX;
 import static org.junit.Assert.assertEquals;
@@ -28,11 +28,9 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 
-import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.sonar.api.config.Configuration;
@@ -43,20 +41,19 @@ import org.sonar.api.server.rule.RulesDefinition.Context;
 import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MutationAnalysisRulesDefinitionTest {
+public class JavaRulesDefinitionTest {
 
   @Mock
   private Configuration configuration;
 
-  @InjectMocks
-  private MutationAnalysisRulesDefinition subject;
+  private JavaRulesDefinition subject;
 
   @Before
   public void setUp() throws Exception {
 
     when(configuration.get(anyString())).thenReturn(Optional.empty());
 
-    subject = new MutationAnalysisRulesDefinition(configuration, new RulesDefinitionXmlLoader());
+    subject = new JavaRulesDefinition(configuration, new RulesDefinitionXmlLoader());
   }
 
   @Test
@@ -69,7 +66,7 @@ public class MutationAnalysisRulesDefinitionTest {
     subject.define(context);
 
     // assert
-    RulesDefinition.Repository repository = context.repository(MutationAnalysisRulesDefinition.REPOSITORY_KEY);
+    RulesDefinition.Repository repository = context.repository(MutationAnalysisRulesDefinition.REPOSITORY_KEY  + ".java");
     assertNotNull(repository);
 
     assertEquals("java", repository.language());
