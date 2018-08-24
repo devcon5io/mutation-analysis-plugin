@@ -90,7 +90,11 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
         <!-- Logging Binding for Test output -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -110,7 +114,6 @@
             <version>${log4j.version}</version>
             <scope>test</scope>
         </dependency>
-
         <!-- unit tests -->
         <dependency>
             <groupId>org.sonarsource.sonarqube</groupId>
@@ -129,11 +132,6 @@
             <artifactId>mockito-all</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

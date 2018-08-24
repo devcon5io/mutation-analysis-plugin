@@ -169,7 +169,10 @@ public class RulesProcessor {
    private void applyMutantRule(final ResourceMutationMetrics resourceMetrics, final ActiveRule rule, final SensorContext context) {
 
       for (final Mutant mutant : resourceMetrics.getMutants()) {
-         if (violatesSurvivedMutantRule(rule, mutant) || violatesUncoveredMutantRule(rule, mutant) || violatesUnknownMutantStatusRule(rule, mutant) || violatesMutatorRule(rule,
+         if (violatesSurvivedMutantRule(rule, mutant)
+             || violatesUncoveredMutantRule(rule, mutant)
+             || violatesUnknownMutantStatusRule(rule, mutant)
+             || violatesMutatorRule(rule,
                                                                                                                                                                            mutant)) {
 
             context.newIssue()
@@ -195,7 +198,9 @@ public class RulesProcessor {
     */
    private boolean violatesSurvivedMutantRule(final ActiveRule rule, final Mutant mutant) {
 
-      return MutationAnalysisRulesDefinition.RULE_SURVIVED_MUTANT.equals(rule.getRuleKey()) && mutant.getState() == Mutant.State.SURVIVED;
+      return MutationAnalysisRulesDefinition.RULE_SURVIVED_MUTANT.equals(rule.getRuleKey())
+          && (mutant.getState() == Mutant.State.SURVIVED
+           || mutant.getState() == Mutant.State.NO_COVERAGE);
    }
 
    /**

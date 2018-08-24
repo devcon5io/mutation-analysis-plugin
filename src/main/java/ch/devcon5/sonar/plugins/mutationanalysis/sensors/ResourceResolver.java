@@ -51,7 +51,7 @@ public class ResourceResolver {
       } else {
          mainClass = classname;
       }
-      return mainClass.replaceAll("\\.", "/") + "." + language;
+      return mainClass.trim().replaceAll("\\.", "/") + "." + language;
    }
 
 }

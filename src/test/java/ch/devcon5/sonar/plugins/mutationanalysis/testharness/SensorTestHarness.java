@@ -141,9 +141,11 @@ public class SensorTestHarness {
       return profile;
    }
 
+   public Rule createRule(String language, final String ruleKey) {
+      return Rule.create(REPOSITORY_KEY + "." + language, ruleKey).setLanguage(language);
+   }
    public Rule createRule(final String ruleKey) {
-
-      return Rule.create(REPOSITORY_KEY + "." + language, ruleKey);
+      return createRule(this.language, ruleKey);
    }
 
    public Rule createRule(String ruleKey, String key, String value) {

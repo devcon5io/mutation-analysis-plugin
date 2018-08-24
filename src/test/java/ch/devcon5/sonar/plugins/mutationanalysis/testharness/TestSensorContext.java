@@ -129,10 +129,6 @@ public class TestSensorContext implements SensorContext {
       return configuration;
    }
 
-   public TestConfiguration getTestConfiguration(){
-      return (TestConfiguration) configuration;
-   }
-
    @Override
    public FileSystem fileSystem() {
 
@@ -290,7 +286,18 @@ public class TestSensorContext implements SensorContext {
       }
    }
 
-   private InputFile addTestFile(String filename, TestFileMetadata metadata) throws IOException {
+   /**
+    * Method for conveniently setting a test configuration
+    * @param key
+    *  the key of the configuration by which it can be retrieved as well
+    * @param aValue
+    */
+   public TestSensorContext setConfiguration(final String key, final Object aValue) {
+      ((TestConfiguration) configuration).set(key, aValue);
+      return this;
+   }
+
+  private InputFile addTestFile(String filename, TestFileMetadata metadata) throws IOException {
 
       final Path basePath = this.fs.baseDirPath();
       final Path filePath = basePath.resolve(filename);

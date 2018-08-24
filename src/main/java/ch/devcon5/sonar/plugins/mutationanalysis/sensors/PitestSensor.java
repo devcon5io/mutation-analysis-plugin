@@ -53,10 +53,6 @@ public class PitestSensor implements Sensor {
   private static final Logger LOG = LoggerFactory.getLogger(PitestSensor.class);
 
   /**
-   * the FileSystem reference to access the project resources
-   */
-  private final FileSystem fileSystem;
-  /**
    * the Settings for the Pitest Sonar plugin
    */
   private final Configuration settings;
@@ -78,7 +74,6 @@ public class PitestSensor implements Sensor {
    */
   public PitestSensor(final Configuration configuration, final RulesProfile rulesProfile, final FileSystem fileSystem) {
 
-    this.fileSystem = fileSystem;
     this.resourceResolver = new ResourceResolver(fileSystem);
     this.settings = configuration;
     this.rulesProcessor = new RulesProcessor(configuration, rulesProfile);
@@ -155,9 +150,7 @@ public class PitestSensor implements Sensor {
 
   private boolean isEnabled() {
 
-    final List<String> keys = getLanguageKeys();
-
-    return !keys.isEmpty() && fileSystem.hasFiles(fileSystem.predicates().hasLanguages(keys)) ;
+    return !getLanguageKeys().isEmpty();
   }
 
   /**

@@ -168,4 +168,17 @@ public class TestUtils {
         }).findFirst().orElseThrow(() -> new AssertionError("No element found matching assertions"));
 
     }
+
+    public static <G> void assertNotContains(List<G> container, Consumer<G> filter) {
+
+        container.stream().filter(m -> {
+            try {
+                filter.accept(m);
+                return false;
+            } catch (AssertionError e) {
+                return true;
+            }
+        }).findFirst().orElseThrow(() -> new AssertionError("No element found matching assertions"));
+
+    }
 }
