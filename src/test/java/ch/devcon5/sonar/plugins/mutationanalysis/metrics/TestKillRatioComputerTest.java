@@ -99,9 +99,26 @@ public class TestKillRatioComputerTest {
   }
 
   @Test
-  public void compute_noUnitTest_noOutputMeasure() {
+  public void compute_directory_aggregatedOutputMeasure() {
+
+    final TestMeasureComputerContext measureContext = harness.createMeasureContext("compKey", Component.Type.DIRECTORY);
+    measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 10);
+    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 1);
+
+    computer.compute(measureContext);
+
+    Measure ratio = measureContext.getMeasure(TEST_KILL_RATIO_KEY);
+
+    assertEquals(10.0, ratio.getDoubleValue(), 0.05);
+
+  }
+
+  @Test
+  public void compute_sourceFileIsNoUnitTest_noOutputMeasure() {
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContext("compKey", Component.Type.FILE);
+    measureContext.addInputMeasure(UTILITY_GLOBAL_MUTATIONS_KEY, 10);
+    measureContext.addInputMeasure(TEST_KILLS_KEY, 1);
 
     computer.compute(measureContext);
 
