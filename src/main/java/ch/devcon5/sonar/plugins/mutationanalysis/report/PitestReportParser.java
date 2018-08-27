@@ -129,7 +129,7 @@ public class PitestReportParser {
     *  a collection of mutants parsed from the stream
     * @throws XMLStreamException
     */
-   private Collection<Mutant> readMutants(final InputStream stream) throws XMLStreamException {
+   Collection<Mutant> readMutants(final InputStream stream) throws XMLStreamException {
       final XMLInputFactory inf = XMLInputFactory.newInstance();
       final XMLStreamReader reader = inf.createXMLStreamReader(stream);
       try {

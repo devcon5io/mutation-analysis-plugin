@@ -23,6 +23,7 @@ package ch.devcon5.sonar.plugins.mutationanalysis.report;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -34,12 +35,16 @@ import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class PitestReportParserTest {
 
    @Rule
    public TemporaryFolder folder = new TemporaryFolder();
+
+   @Rule
+   public ExpectedException expect = ExpectedException.none();
 
    private PitestReportParser subject;
 
@@ -156,6 +161,15 @@ public class PitestReportParserTest {
       Collection<Mutant> result = subject.parseMutants(missingFile);
 
       assertTrue(result.isEmpty());
+   }
+
+   @Test
+   public void readMutants_brokenXml_exceptionWithDetails() throws Exception {
+
+      expect.expect(XMLStreamException.class);
+      expect.expectMessage("ParseError at [row,col]:[23,5]\nMessage: sourceFile must be set");
+
+      subject.readMutants(getClass().getResourceAsStream("PitestReportParserTest_broken.xml"));
    }
 
 }
