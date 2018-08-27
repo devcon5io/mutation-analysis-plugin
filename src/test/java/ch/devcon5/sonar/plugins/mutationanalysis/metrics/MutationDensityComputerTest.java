@@ -42,7 +42,6 @@ import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
  */
 public class MutationDensityComputerTest {
 
-  public static final String MUTATION_DENSITY = MutationMetrics.MUTATIONS_DENSITY.key();
   private MeasureComputerTestHarness<MutationDensityComputer> harness;
   private MutationDensityComputer computer;
 
@@ -70,6 +69,9 @@ public class MutationDensityComputerTest {
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
+    measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 30);
+    measureContext.addInputMeasure(LINES_TO_COVER_KEY, 20);
+
     computer.compute(measureContext);
 
     assertNull(measureContext.getMeasure(MUTATIONS_DENSITY_KEY));
@@ -95,5 +97,29 @@ public class MutationDensityComputerTest {
 
     Measure density = measureContext.getMeasure(MUTATIONS_DENSITY_KEY);
     assertEquals(150.0, density.getDoubleValue(), 0.05);
+  }
+
+  @Test
+  public void compute_ZeroMutationsAndZeroLines_noDensityMetric() {
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
+
+    measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 0);
+    measureContext.addInputMeasure(LINES_TO_COVER_KEY, 0);
+
+    computer.compute(measureContext);
+
+    assertNull(measureContext.getMeasure(MUTATIONS_DENSITY_KEY));
+  }
+
+  @Test
+  public void compute_noLineMetrics_densitySetToZero() {
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
+
+    measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 30);
+
+    computer.compute(measureContext);
+
+    Measure density = measureContext.getMeasure(MUTATIONS_DENSITY_KEY);
+    assertEquals(0.0, density.getDoubleValue(), 0.05);
   }
 }
