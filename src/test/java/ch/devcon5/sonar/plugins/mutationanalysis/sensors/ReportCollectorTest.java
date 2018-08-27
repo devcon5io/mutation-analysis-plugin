@@ -23,12 +23,21 @@ package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.EXPERIMENTAL_FEATURE_ENABLED;
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.REPORT_DIRECTORY_KEY;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.Collection;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
@@ -91,6 +100,7 @@ public class ReportCollectorTest {
     assertEquals(moduleRoot, actualRoot);
   }
 
+
   @Test
   public void collectLocalMutants_defaultReportDirectory() throws IOException {
     final Path moduleRoot = folder.newFolder("test-module").toPath();
@@ -124,6 +134,8 @@ public class ReportCollectorTest {
     assertEquals(6, mutants.size());
   }
 
+
+
   @Test
   public void collectGlobalMutants_experimentalFeaturesDisable_noMutants() throws IOException {
 
@@ -140,14 +152,12 @@ public class ReportCollectorTest {
   }
 
   @Test
-  public void collectGlobalMutants_singleModule_customReportDirectory() throws IOException {
-    final String reportsDirectory = "target/reports";
-    configuration.set(REPORT_DIRECTORY_KEY, reportsDirectory);
+  public void collectGlobalMutants_singleModule_defaultReportDirectory() throws IOException {
     configuration.set(EXPERIMENTAL_FEATURE_ENABLED,true);
 
     final Path moduleRoot = folder.newFolder("test-module").toPath();
     createPom(moduleRoot);
-    createMutationReportsFile(moduleRoot, reportsDirectory, "ReportCollectorTest_mutations.xml");
+    createMutationReportsFile(moduleRoot, DEFAULT_PIT_REPORTS_DIR, "ReportCollectorTest_mutations.xml");
 
     final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
     final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
@@ -158,12 +168,14 @@ public class ReportCollectorTest {
   }
 
   @Test
-  public void collectGlobalMutants_singleModule_defaultReportDirectory() throws IOException {
+  public void collectGlobalMutants_singleModule_customReportDirectory() throws IOException {
+    final String reportsDirectory = "target/reports";
+    configuration.set(REPORT_DIRECTORY_KEY, reportsDirectory);
     configuration.set(EXPERIMENTAL_FEATURE_ENABLED,true);
 
     final Path moduleRoot = folder.newFolder("test-module").toPath();
     createPom(moduleRoot);
-    createMutationReportsFile(moduleRoot, DEFAULT_PIT_REPORTS_DIR, "ReportCollectorTest_mutations.xml");
+    createMutationReportsFile(moduleRoot, reportsDirectory, "ReportCollectorTest_mutations.xml");
 
     final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
     final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
@@ -221,6 +233,43 @@ public class ReportCollectorTest {
     assertEquals(12, mutants.size());
   }
 
+  @Test
+  public void exceptionHandling_of_isSamePath_fsMockCausesIOException_false() throws Exception {
+
+    //I found no other efficient way than using mockito to induce IOException on working with Path
+    FileSystemProvider fsProv = mock(FileSystemProvider.class);
+    FileSystem fs = mock(FileSystem.class);
+    Path aPath = mock(Path.class);
+
+    when(aPath.getFileSystem()).thenReturn(fs);
+    when(fs.provider()).thenReturn(fsProv);
+    when(fsProv.isSameFile(any(Path.class), any(Path.class))).thenThrow(IOException.class);
+
+    final ReportCollector collector = new ReportCollector(configuration, harness.createSensorContext().fileSystem());
+
+    assertFalse(collector.isSamePath(aPath, aPath));
+  }
+
+  @Test
+  public void exceptionHandling_of_readMutantsFromReport_fsMockCausesIOException_emptyResult() throws Exception {
+
+    //I found no other efficient way than using mockito to induce IOException on working with Path
+    FileSystemProvider fsProv = mock(FileSystemProvider.class);
+    FileSystem fs = mock(FileSystem.class);
+    File file = mock(File.class);
+    Path reportPath = mock(Path.class);
+
+    when(file.exists()).thenReturn(true);
+    when(reportPath.toFile()).thenReturn(file);
+    when(reportPath.getFileSystem()).thenReturn(fs);
+    when(fs.provider()).thenReturn(fsProv);
+    when(fsProv.newInputStream(eq(reportPath), any(OpenOption.class))).thenThrow(IOException.class);
+
+    final ReportCollector collector = new ReportCollector(configuration, harness.createSensorContext().fileSystem());
+
+    assertEquals(0, collector.readMutantsFromReport(reportPath).count());
+  }
+
   private void createPom(final Path moduleRoot, String... moduleNames) throws IOException {
 
     StringBuilder b = new StringBuilder(128);
@@ -237,12 +286,14 @@ public class ReportCollectorTest {
     Files.write(moduleRoot.resolve("pom.xml"), b.toString().getBytes("UTF-8"));
   }
 
-  private void createMutationReportsFile(final Path moduleRoot, final String reportsDirectory, final String resourceName) throws IOException {
+  private Path createMutationReportsFile(final Path moduleRoot, final String reportsDirectory, final String resourceName) throws IOException {
 
     final Path reportsDir = Files.createDirectories(moduleRoot.resolve(reportsDirectory));
+    final Path reportFile = reportsDir.resolve("mutations.xml");
     try (InputStream is = ReportCollectorTest.class.getResourceAsStream(resourceName);
-         OutputStream os = Files.newOutputStream(reportsDir.resolve("mutations.xml"))) {
+         OutputStream os = Files.newOutputStream(reportFile)) {
       IOUtils.copy(is, os);
     }
+    return reportFile;
   }
 }

@@ -70,6 +70,7 @@
         <junit.version>4.12</junit.version>
         <slf4j.version>1.7.6</slf4j.version>
         <log4j.version>2.0-rc1</log4j.version>
+        <mockito.version>2.21.0</mockito.version>
         <!-- license settings -->
         <license.owner>DevCon5 GmbH</license.owner>
         <license.title>Mutation Analysis Plugin</license.title>
@@ -130,6 +131,12 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test</artifactId>
             <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -253,7 +260,8 @@
                         <version>1.4.0</version>
                         <configuration>
                             <targetClasses>
-                                <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
+                                <param>ch.devcon5.sonar.plugins.mutationanalysis.sensors.ReportCollector</param>
+                                <!--<param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>-->
                             </targetClasses>
                             <targetTests>
                                 <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
