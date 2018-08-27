@@ -61,15 +61,12 @@ public class TotalMutationsComputer implements MeasureComputer {
       return;
     }
     final Component comp = context.getComponent();
-    if (comp.getType() == Component.Type.DIRECTORY && comp.getKey().endsWith(":/") || comp.getType() == Component.Type.FILE && comp.getKey()
-                                                                                                                                   .endsWith("pom.xml")) {
+    if (isModuleRootFolder(comp) || isPomFile(comp)) {
       LOG.info("Skipping module-root from analysis key={}", comp.getKey());
       return;
     }
 
-    if ((comp.getType() == Component.Type.FILE && comp.getFileAttributes().isUnitTest()) || (comp.getType() == Component.Type.DIRECTORY && comp.getKey()
-                                                                                                                                               .contains(
-                                                                                                                                                   ":src/test/"))) {
+    if (isTestSrcFolder(comp) || isUnitTestFile(comp)) {
       LOG.debug("Skipping test unit {} from processing", comp.getKey());
       return;
     }
@@ -77,6 +74,24 @@ public class TotalMutationsComputer implements MeasureComputer {
 
     computePercentage(context, UTILITY_GLOBAL_MUTATIONS, MUTATIONS_TOTAL, MUTATIONS_TOTAL_PERCENT);
     computePercentage(context, UTILITY_GLOBAL_ALIVE, MUTATIONS_ALIVE, MUTATIONS_ALIVE_PERCENT);
+  }
+
+  private boolean isModuleRootFolder(final Component comp) {
+    //omitting check for type==DIRECTORY here, because all component ending with :/ are directories
+    return comp.getKey().endsWith(":/");
+  }
+
+  private boolean isPomFile(final Component comp) {
+    //omitting check for type==FILE here, because all component ending with pom.xml are files
+    return comp.getKey().endsWith("pom.xml");
+  }
+
+  private boolean isTestSrcFolder(final Component comp) {
+    return comp.getType() == Component.Type.DIRECTORY && comp.getKey().contains(":src/test/");
+  }
+
+  private boolean isUnitTestFile(final Component comp) {
+    return comp.getType() == Component.Type.FILE && comp.getFileAttributes().isUnitTest();
   }
 
   private void computePercentage(final MeasureComputerContext context, final Metric globalMetric, final Metric localMetric, final Metric resultMetric) {
@@ -100,7 +115,7 @@ public class TotalMutationsComputer implements MeasureComputer {
 
     if (globalMutationsMeasure == null) {
       //the false (sequential stream) flag is equivalent to true (parallel stream) and can not be killed
-      mutationsGlobal = StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), false)
+      mutationsGlobal = StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), true)
                                      .mapToInt(Measure::getIntValue)
                                      .findFirst()
                                      .orElse(0);
@@ -119,7 +134,9 @@ public class TotalMutationsComputer implements MeasureComputer {
 
     if (localMutationsMeasure == null) {
       //the false (sequential stream) flag is equivalent to true (parallel stream) and can not be killed
-      mutationsLocal = (double) StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), false).mapToInt(Measure::getIntValue).sum();
+      mutationsLocal = (double) StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), true)
+                                             .mapToInt(Measure::getIntValue)
+                                             .sum();
       LOG.info("Component {} children have {} mutations ", context.getComponent(), mutationsLocal);
 
     } else {
