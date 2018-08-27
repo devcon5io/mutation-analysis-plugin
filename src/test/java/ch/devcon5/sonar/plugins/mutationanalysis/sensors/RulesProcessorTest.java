@@ -47,8 +47,6 @@ import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.sonar.api.batch.sensor.issue.Issue;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.rules.Rule;
@@ -58,7 +56,6 @@ import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
 /**
  *
  */
-@RunWith(MockitoJUnitRunner.class)
 public class RulesProcessorTest {
 
   private static final MutationOperator[] MUTATION_OPERATORS = MutationOperators.allMutagens().toArray(new MutationOperator[0]);

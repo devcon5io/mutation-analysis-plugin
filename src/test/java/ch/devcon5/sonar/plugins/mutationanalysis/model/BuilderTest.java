@@ -396,7 +396,7 @@ public class BuilderTest {
   @Test
   public void test_null_sourceFile_NullPointerException() throws Exception {
     expected.expect(NullPointerException.class);
-    expected.expectMessage("sourceFile must not be set");
+    expected.expectMessage("sourceFile must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
           .inClass("AClass")

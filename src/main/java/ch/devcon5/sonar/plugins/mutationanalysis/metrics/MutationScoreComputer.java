@@ -73,7 +73,7 @@ public class MutationScoreComputer implements MeasureComputer {
                 //modules with no mutants (0 total) are always 100% covered (0 of 0 is 100%, right?)
                 context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), 100.0);
             }
-        } else if(config.getBoolean(FORCE_MISSING_COVERAGE_TO_ZERO).orElse(false)){
+        } else if(config.getBoolean(FORCE_MISSING_COVERAGE_TO_ZERO).orElse(Boolean.FALSE)){
             context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), 0.0);
         }
     }

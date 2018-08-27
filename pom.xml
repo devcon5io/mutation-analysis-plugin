@@ -66,6 +66,7 @@
         <sonar.buildVersion>6.7</sonar.buildVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.min.version>1.8</jdk.min.version>
+        <kotlin.version>1.2.61</kotlin.version>
         <junit.version>4.12</junit.version>
         <slf4j.version>1.7.6</slf4j.version>
         <log4j.version>2.0-rc1</log4j.version>
@@ -74,8 +75,6 @@
         <license.title>Mutation Analysis Plugin</license.title>
         <license.years>2015-2016</license.years>
         <license.mailto>info@devcon5.ch</license.mailto>
-        <mockito.version>1.10.19</mockito.version>
-        <kotlin.version>1.2.61</kotlin.version>
     </properties>
 
     <dependencies>
@@ -125,12 +124,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

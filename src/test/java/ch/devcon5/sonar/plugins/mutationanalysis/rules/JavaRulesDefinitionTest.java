@@ -22,17 +22,12 @@ package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.Optional;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rules.RuleType;
@@ -40,18 +35,14 @@ import org.sonar.api.server.rule.RulesDefinition;
 import org.sonar.api.server.rule.RulesDefinition.Context;
 import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
 
-@RunWith(MockitoJUnitRunner.class)
 public class JavaRulesDefinitionTest {
 
-  @Mock
-  private Configuration configuration;
+  private Configuration configuration = new TestConfiguration();
 
   private JavaRulesDefinition subject;
 
   @Before
   public void setUp() throws Exception {
-
-    when(configuration.get(anyString())).thenReturn(Optional.empty());
 
     subject = new JavaRulesDefinition(configuration, new RulesDefinitionXmlLoader());
   }

@@ -560,7 +560,7 @@ public class Mutant {
     public Mutant build() {
 
       requireNonNull(state, "state must be set");
-      requireNonNull(sourceFile, "sourceFile must not be set");
+      requireNonNull(sourceFile, "sourceFile must be set");
       requireNonNull(mutatedClass, "mutatedClass must be set");
       requireNonNull(mutatedMethod, "mutatedMethod must be set");
       requireNonNull(methodDescription, "methodDescription must be set");

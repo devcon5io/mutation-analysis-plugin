@@ -20,14 +20,14 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.*;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_COVERAGE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_DETECTED_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
@@ -63,7 +63,7 @@ public class MutationScoreComputerTest {
   }
 
   @Test
-  public void compute_noMutations_forceToZeroNotConfigured_noMeasure() {
+  public void compute_noMutations_forceToZeroNotConfigured_defaultsToFalse_noMeasure() {
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
@@ -135,7 +135,7 @@ public class MutationScoreComputerTest {
 
   private void setForceMissingCoverageToZero(Boolean enabled) {
 
-    harness.getConfig().ifPresent(conf -> when(conf.getBoolean(MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO)).thenReturn(Optional.ofNullable(enabled)));
+    harness.getConfig().set(MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO, enabled);
   }
 
 }

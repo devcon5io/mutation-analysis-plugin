@@ -20,7 +20,11 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,21 +33,22 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestUtils;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ReportFinderTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    @InjectMocks
     private ReportFinder subject;
+
+    @Before
+    public void setUp() throws Exception {
+        subject = new ReportFinder();
+    }
 
     @Test
     public void testFindReport_existingReport() throws IOException {

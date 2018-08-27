@@ -21,36 +21,28 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.rules
 
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX
-import org.junit.runner.RunWith
-import org.mockito.Matchers.anyString
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.runners.MockitoJUnitRunner
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration
 import org.sonar.api.config.Configuration
 import org.sonar.api.rule.RuleStatus
 import org.sonar.api.rules.RuleType
 import org.sonar.api.server.rule.RulesDefinition
 import org.sonar.api.server.rule.RulesDefinitionXmlLoader
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.Before as BeforeTest
 import org.junit.Test as test
 
 
-@RunWith(MockitoJUnitRunner::class)
 class KotlinRulesDefinitionTest {
 
-    @Mock
-    private val configuration: Configuration? = null
+
+    private val configuration: Configuration = TestConfiguration()
 
     private var subject: KotlinRulesDefinition? = null
 
     @BeforeTest
     @Throws(Exception::class)
     fun setUp() {
-
-        `when`<Optional<String>>(configuration!!.get(anyString())).thenReturn(Optional.empty())
 
         subject = KotlinRulesDefinition(configuration, RulesDefinitionXmlLoader())
     }
