@@ -379,7 +379,7 @@ public class BuilderTest {
 
   @Test
   public void test_null_state_NullPointerException() throws Exception {
-    expected.expect(NullPointerException.class);
+    expected.expect(IllegalArgumentException.class);
     expected.expectMessage("state must be set");
     Mutant.builder()
           .inSourceFile("aFile.java")
@@ -395,7 +395,7 @@ public class BuilderTest {
   }
   @Test
   public void test_null_sourceFile_NullPointerException() throws Exception {
-    expected.expect(NullPointerException.class);
+    expected.expect(IllegalArgumentException.class);
     expected.expectMessage("sourceFile must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
@@ -411,7 +411,7 @@ public class BuilderTest {
 
   @Test
   public void test_null_mutatedClass_NullPointerException() throws Exception {
-    expected.expect(NullPointerException.class);
+    expected.expect(IllegalArgumentException.class);
     expected.expectMessage("mutatedClass must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
@@ -426,7 +426,7 @@ public class BuilderTest {
   }
   @Test
   public void test_null_mutatedMethod_NullPointerException() throws Exception {
-    expected.expect(NullPointerException.class);
+    expected.expect(IllegalArgumentException.class);
     expected.expectMessage("mutatedMethod must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
@@ -441,7 +441,7 @@ public class BuilderTest {
   }
   @Test
   public void test_null_mutatedMethodDesc_NullPointerException() throws Exception {
-    expected.expect(NullPointerException.class);
+    expected.expect(IllegalArgumentException.class);
     expected.expectMessage("methodDescription must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
@@ -456,7 +456,7 @@ public class BuilderTest {
   }
   @Test
   public void test_null_mutationOperator_NullPointerException() throws Exception {
-    expected.expect(NullPointerException.class);
+    expected.expect(IllegalArgumentException.class);
     expected.expectMessage("mutationOperator must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)
@@ -472,7 +472,7 @@ public class BuilderTest {
 
   @Test
   public void test_null_killingTest_NullPointerException() throws Exception {
-    expected.expect(NullPointerException.class);
+    expected.expect(IllegalArgumentException.class);
     expected.expectMessage("killingTest must be set");
     Mutant.builder()
           .mutantStatus(Mutant.State.KILLED)

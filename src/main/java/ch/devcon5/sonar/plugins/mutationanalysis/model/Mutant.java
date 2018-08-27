@@ -20,7 +20,6 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.model;
 
-import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Optional;
@@ -576,6 +575,12 @@ public class Mutant {
     public Builder withDescription(final String description) {
       this.description = description;
       return this;
+    }
+
+    private static <T> void requireNonNull(T obj, String message) {
+      if (obj == null) {
+        throw new IllegalArgumentException(message);
+      }
     }
   }
 }
