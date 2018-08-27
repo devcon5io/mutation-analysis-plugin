@@ -33,7 +33,7 @@ public class TestConfiguration implements Configuration {
 
    private final Map<String,String> settings = new ConcurrentHashMap<>();
 
-   TestConfiguration() {
+   public TestConfiguration() {
    }
 
    public TestConfiguration set(String key, Object value){

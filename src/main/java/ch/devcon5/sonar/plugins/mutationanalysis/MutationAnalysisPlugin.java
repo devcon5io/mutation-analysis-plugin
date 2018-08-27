@@ -112,19 +112,25 @@ public final class MutationAnalysisPlugin implements Plugin {
   @Override
   public void define(final Context context) {
 
-    context.addExtensions(PitestReportParser.class,
-                          ReportFinder.class,
-                          JavaRulesDefinition.class,
-                          KotlinRulesDefinition.class,
-                          JavaProfileDefinition.class,
-                          KotlinProfileDefinition.class,
-                          PitestSensor.class,
-                          MutationAnalysisMetrics.class,
-                          MutationScoreComputer.class,
-                          MutationDensityComputer.class,
-                          TotalMutationsComputer.class,
-                          TestKillRatioComputer.class,
-                          QuantitativeMeasureComputer.class);
+    //we add each extension separately although there is a method (addExtensions) accepting varargs that would handle this in one call.
+    //Background: varargs produce bytecode artifacts that cause mutations that can not be killed (i.e. reordering of varargs)
+    //Because of this plugin deals with mutations, it's also kind of an example how to run mutation testing and what impact on code bases it might have.
+    //This option was chosen because it allows to kill all mutants in this class + reduces the mutation density.
+    //The equivalent option would be to use the varargs, which would have the same LoC but just a single statement and lots of re-ordering mutations, which
+    //increased the mutation density + reduces the mutation coverage through unkillable mutations.
+    context.addExtension(PitestReportParser.class);
+    context.addExtension(ReportFinder.class);
+    context.addExtension(JavaRulesDefinition.class);
+    context.addExtension(KotlinRulesDefinition.class);
+    context.addExtension(JavaProfileDefinition.class);
+    context.addExtension(KotlinProfileDefinition.class);
+    context.addExtension(PitestSensor.class);
+    context.addExtension(MutationAnalysisMetrics.class);
+    context.addExtension(MutationScoreComputer.class);
+    context.addExtension(MutationDensityComputer.class);
+    context.addExtension(TotalMutationsComputer.class);
+    context.addExtension(TestKillRatioComputer.class);
+    context.addExtension(QuantitativeMeasureComputer.class);
   }
 
   public static boolean isExperimentalFeaturesEnabled(Configuration config){
