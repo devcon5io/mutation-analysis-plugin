@@ -25,7 +25,8 @@ import java.util.stream.StreamSupport;
 
 public final class Streams {
 
-   public Streams() {
+   private Streams() {
+      //to prevent instantiation of this class
    }
 
    public static <T> Stream<T> sequentialStream(Iterable<T> elements){

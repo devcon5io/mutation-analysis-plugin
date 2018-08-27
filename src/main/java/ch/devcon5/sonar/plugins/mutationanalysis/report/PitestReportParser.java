@@ -110,19 +110,33 @@ public class PitestReportParser {
          return Collections.emptyList();
       }
       try (InputStream stream = Files.newInputStream(report)) {
-         final XMLInputFactory inf = XMLInputFactory.newInstance();
-         final XMLStreamReader reader = inf.createXMLStreamReader(stream);
-         try {
-            result = readMutants(reader);
-         } catch (IllegalArgumentException e){
-            throw new XMLStreamException(e.getMessage(), reader.getLocation(),e);
-         }
+         result = readMutants(stream);
+
       } catch (XMLStreamException e) {
          LOG.warn("Parsing report failed: {}", e.getMessage());
          LOG.debug("Parsing error ", e);
          result = Collections.emptyList();
       }
       return result;
+   }
+
+   /**
+    * Reads mutants from the input stream which is assumed to be a stream of xml data. In case the stream contains invalid mutation description - i.e. mandatory information
+    * is mssing - an {@link XMLStreamException} containing the exact location of the fault is thrown.
+    * @param stream
+    *  the input stream containing the xml data
+    * @return
+    *  a collection of mutants parsed from the stream
+    * @throws XMLStreamException
+    */
+   private Collection<Mutant> readMutants(final InputStream stream) throws XMLStreamException {
+      final XMLInputFactory inf = XMLInputFactory.newInstance();
+      final XMLStreamReader reader = inf.createXMLStreamReader(stream);
+      try {
+         return readMutants(reader);
+      } catch (IllegalArgumentException e){
+         throw new XMLStreamException(e.getMessage(), reader.getLocation(),e);
+      }
    }
 
    /**
