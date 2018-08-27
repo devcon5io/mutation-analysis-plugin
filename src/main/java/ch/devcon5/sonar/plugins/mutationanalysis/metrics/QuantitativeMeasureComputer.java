@@ -22,8 +22,7 @@ package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.stream.StreamSupport;
-
+import ch.devcon5.sonar.plugins.mutationanalysis.Streams;
 import org.slf4j.Logger;
 import org.sonar.api.ce.measure.Measure;
 import org.sonar.api.ce.measure.MeasureComputer;
@@ -52,14 +51,11 @@ public class QuantitativeMeasureComputer implements MeasureComputer {
     LOG.info("Computing quantitative mutation metrics for {}", context.getComponent());
     MutationMetrics.getQuantitativeMetrics()
                    .stream()
-                   .filter(m -> !m.isPercentageType())
                    .filter(m -> !m.isHidden()) //exclude hidden metrics, see below
                    .map(Metric::getKey)
                    .filter(metricKey -> context.getMeasure(metricKey) == null)
                    .forEach(metricKey -> {
-                     int sum = StreamSupport.stream(context.getChildrenMeasures(metricKey).spliterator(), false)
-                                            .map(Measure::getIntValue)
-                                            .reduce(0, (s, i) -> s + i);
+                     int sum = Streams.parallelStream(context.getChildrenMeasures(metricKey)).map(Measure::getIntValue).reduce(0, (s, i) -> s + i);
                      if (sum > 0) {
                        LOG.info("Computed {} {} for {}", sum, metricKey, context.getComponent());
                        context.addMeasure(metricKey, sum);
@@ -72,9 +68,7 @@ public class QuantitativeMeasureComputer implements MeasureComputer {
                    .map(Metric::getKey)
                    .filter(metricKey -> context.getMeasure(metricKey) == null)
                    .forEach(metricKey -> {
-                     int first = StreamSupport.stream(context.getChildrenMeasures(metricKey).spliterator(), false)
-                                            .map(Measure::getIntValue)
-                                            .findFirst().orElse(0);
+                     int first = Streams.parallelStream(context.getChildrenMeasures(metricKey)).map(Measure::getIntValue).findFirst().orElse(0);
                      if (first > 0) {
                        LOG.info("Computed {} {} for {}", first, metricKey, context.getComponent());
                        context.addMeasure(metricKey, first);

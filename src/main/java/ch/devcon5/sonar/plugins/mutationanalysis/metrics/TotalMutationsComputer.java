@@ -20,12 +20,22 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.*;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE_PERCENT;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE_PERCENT_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_PERCENT;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_PERCENT_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_ALIVE;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_ALIVE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_MUTATIONS;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.stream.StreamSupport;
-
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
+import ch.devcon5.sonar.plugins.mutationanalysis.Streams;
 import org.slf4j.Logger;
 import org.sonar.api.ce.measure.Component;
 import org.sonar.api.ce.measure.Measure;
@@ -114,11 +124,10 @@ public class TotalMutationsComputer implements MeasureComputer {
     final Measure globalMutationsMeasure = context.getMeasure(metric.key());
 
     if (globalMutationsMeasure == null) {
-      //the false (sequential stream) flag is equivalent to true (parallel stream) and can not be killed
-      mutationsGlobal = StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), true)
-                                     .mapToInt(Measure::getIntValue)
-                                     .findFirst()
-                                     .orElse(0);
+      mutationsGlobal = Streams.parallelStream(context.getChildrenMeasures(metric.key()))
+                                             .mapToInt(Measure::getIntValue)
+                                             .findFirst()
+                                             .orElse(0);
       LOG.info("Component {} has no global mutation information, using first child's: {}", context.getComponent(), mutationsGlobal);
     } else {
       mutationsGlobal = globalMutationsMeasure.getIntValue();
@@ -133,8 +142,7 @@ public class TotalMutationsComputer implements MeasureComputer {
     final Measure localMutationsMeasure = context.getMeasure(metric.key());
 
     if (localMutationsMeasure == null) {
-      //the false (sequential stream) flag is equivalent to true (parallel stream) and can not be killed
-      mutationsLocal = (double) StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), true)
+      mutationsLocal = (double) Streams.parallelStream(context.getChildrenMeasures(metric.key()))
                                              .mapToInt(Measure::getIntValue)
                                              .sum();
       LOG.info("Component {} children have {} mutations ", context.getComponent(), mutationsLocal);
