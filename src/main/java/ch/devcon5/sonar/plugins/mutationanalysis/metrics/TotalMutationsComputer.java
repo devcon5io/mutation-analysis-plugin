@@ -84,12 +84,12 @@ public class TotalMutationsComputer implements MeasureComputer {
     final double mutationsGlobal = getMutationsGlobal(context, globalMetric);
     final double mutationsLocal = getMutationsLocal(context, localMetric);
 
-    if (mutationsGlobal > 0.0) {
+    if (mutationsGlobal == 0.0) {
+      LOG.info("No mutations found in project");
+    } else  {
       final double percentage = 100.0 * mutationsLocal / mutationsGlobal;
       LOG.info("Computed {} of {}% from ({} / {}) for {}", resultMetric.getName(), percentage, mutationsLocal, mutationsGlobal, context.getComponent());
       context.addMeasure(resultMetric.key(), percentage);
-    } else  {
-      LOG.info("No mutations found in project");
     }
   }
 
@@ -99,6 +99,7 @@ public class TotalMutationsComputer implements MeasureComputer {
     final Measure globalMutationsMeasure = context.getMeasure(metric.key());
 
     if (globalMutationsMeasure == null) {
+      //the false (sequential stream) flag is equivalent to true (parallel stream) and can not be killed
       mutationsGlobal = StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), false)
                                      .mapToInt(Measure::getIntValue)
                                      .findFirst()
@@ -117,7 +118,7 @@ public class TotalMutationsComputer implements MeasureComputer {
     final Measure localMutationsMeasure = context.getMeasure(metric.key());
 
     if (localMutationsMeasure == null) {
-
+      //the false (sequential stream) flag is equivalent to true (parallel stream) and can not be killed
       mutationsLocal = (double) StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), false).mapToInt(Measure::getIntValue).sum();
       LOG.info("Component {} children have {} mutations ", context.getComponent(), mutationsLocal);
 

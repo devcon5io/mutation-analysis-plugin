@@ -76,6 +76,9 @@ public class TotalMutationsComputerTest {
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
+    measureContext.addInputMeasure(GLOBAL_MUTATIONS, 10);
+    measureContext.addInputMeasure(MUTATIONS_TOTAL, 8);
+
     computer.compute(measureContext);
 
     assertNull(measureContext.getMeasure(TOTAL_PERCENT));
@@ -146,6 +149,9 @@ public class TotalMutationsComputerTest {
 
     measureContext.addInputMeasure(GLOBAL_MUTATIONS, 0);
     measureContext.addInputMeasure(GLOBAL_ALIVE, 0);
+
+    measureContext.addInputMeasure(MUTATIONS_ALIVE, 3);
+    measureContext.addInputMeasure(MUTATIONS_TOTAL, 3);
 
     computer.compute(measureContext);
 
