@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -148,7 +150,15 @@ public class TestUtils {
         File tempFile;
         if (path != null) {
             final String[] pathSegments = path.split("\\/");
-            final File newFolder = folder.newFolder(pathSegments);
+            File newFolder;
+
+            Path newPath = folder.getRoot().toPath().resolve(path);
+            if(!Files.exists(newPath)){
+                newFolder = folder.newFolder(pathSegments);
+            } else {
+                newFolder = newPath.toFile();
+            }
+
             tempFile = new File(newFolder, filename);
         } else {
             tempFile = folder.newFile(filename);

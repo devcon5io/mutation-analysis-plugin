@@ -26,7 +26,8 @@ import org.sonar.api.batch.fs.FileSystem;
 import org.sonar.api.batch.fs.InputFile;
 
 /**
- *
+ * Resolver that resolves any given Java or Kotlin class to its source class.
+ * If the class is a nested class, than it's parent is returned
  */
 public class ResourceResolver {
 
@@ -44,7 +45,7 @@ public class ResourceResolver {
    }
 
    private String getPathToSourceFile(String classname, String language) {
-      final int nestedClass = classname.lastIndexOf('$');
+      final int nestedClass = classname.indexOf('$');
       final String mainClass;
       if (nestedClass != -1) {
          mainClass = classname.substring(0, nestedClass);
