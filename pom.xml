@@ -260,8 +260,7 @@
                         <version>1.4.0</version>
                         <configuration>
                             <targetClasses>
-                                <param>ch.devcon5.sonar.plugins.mutationanalysis.sensors.ReportCollector</param>
-                                <!--<param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>-->
+                                <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
                             </targetClasses>
                             <targetTests>
                                 <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
