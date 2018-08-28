@@ -55,6 +55,8 @@ import org.sonar.api.batch.fs.internal.DefaultIndexedFile;
 import org.sonar.api.batch.fs.internal.DefaultInputFile;
 import org.sonar.api.batch.fs.internal.DefaultInputModule;
 import org.sonar.api.batch.fs.internal.Metadata;
+import org.sonar.api.batch.fs.internal.SensorStrategy;
+import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
 import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.rule.internal.DefaultActiveRules;
 import org.sonar.api.batch.rule.internal.NewActiveRule;
@@ -81,6 +83,7 @@ import org.sonar.api.config.Configuration;
 import org.sonar.api.config.Settings;
 import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.internal.SonarRuntimeImpl;
+import org.sonar.api.utils.PathUtils;
 import org.sonar.api.utils.Version;
 
 /**
@@ -88,450 +91,472 @@ import org.sonar.api.utils.Version;
  */
 public class TestSensorContext implements SensorContext {
 
-   private static final Logger LOGGER = getLogger(TestSensorContext.class);
+  private static final Logger LOGGER = getLogger(TestSensorContext.class);
 
-   private static final List<MutationOperator> MUTATION_OPERATORS = Collections.unmodifiableList(new ArrayList<>(MutationOperators.allMutagens()));
-   private final DefaultFileSystem fs;
-   private final InputModule inputModule;
-   private MapSettings settings = new MapSettings();
-   private Configuration configuration = new TestConfiguration();
-   private SonarRuntime runtime = SonarRuntimeImpl.forSonarQube(Version.create(7,3), SonarQubeSide.SCANNER);
-   private Version version = Version.create(6, 5);
-   private TestSensorStorage storage = new TestSensorStorage();
-   private ActiveRules activeRules = new DefaultActiveRules(Collections.emptyList());
+  private static final List<MutationOperator> MUTATION_OPERATORS = Collections.unmodifiableList(new ArrayList<>(MutationOperators.allMutagens()));
+  private final DefaultFileSystem fs;
+  private final InputModule inputModule;
+  private MapSettings settings = new MapSettings();
+  private Configuration configuration = new TestConfiguration();
+  private SonarRuntime runtime = SonarRuntimeImpl.forSonarQube(Version.create(7, 3), SonarQubeSide.SCANNER);
+  private Version version = Version.create(6, 5);
+  private TestSensorStorage storage = new TestSensorStorage();
+  private ActiveRules activeRules = new DefaultActiveRules(Collections.emptyList());
 
-   TestSensorContext(final Path basePath, String moduleName) {
+  TestSensorContext(final Path basePath, String moduleName) {
 
-      this.fs = new DefaultFileSystem(basePath).setWorkDir(basePath);
+    this.fs = new DefaultFileSystem(basePath).setWorkDir(basePath);
 
-      final ProjectDefinition pd = ProjectDefinition.create().setName(moduleName).setKey(moduleName).setBaseDir(basePath.toFile()).setWorkDir(basePath.toFile());
-      this.inputModule = new DefaultInputModule(pd);
-   }
+    final ProjectDefinition pd = ProjectDefinition.create().setName(moduleName).setKey(moduleName).setBaseDir(basePath.toFile()).setWorkDir(basePath.toFile());
+    this.inputModule = new DefaultInputModule(pd);
+  }
 
-   @Override
-   public Settings settings() {
+  public static MutationOperator getMutationOperatorForLine(final int line) {
 
-      return settings;
-   }
+    return MUTATION_OPERATORS.get(line % MUTATION_OPERATORS.size());
+  }
 
-   /**
-    * Uses configuration that is backed by the settings map. If not invoked, the configuration object is separated.
-    * @return
-    */
-   public TestSensorContext useBridgedConfiguration(){
-      this.configuration = settings.asConfig();
-      return this;
-   }
+  @Override
+  public Settings settings() {
 
-   @Override
-   public Configuration config() {
+    return settings;
+  }
 
-      return configuration;
-   }
+  @Override
+  public Configuration config() {
 
-   @Override
-   public FileSystem fileSystem() {
+    return configuration;
+  }
 
-      return fs;
-   }
+  @Override
+  public FileSystem fileSystem() {
 
-   @Override
-   public ActiveRules activeRules() {
+    return fs;
+  }
 
-      return activeRules;
-   }
+  @Override
+  public ActiveRules activeRules() {
 
-   @Override
-   public InputModule module() {
+    return activeRules;
+  }
 
-      return inputModule;
-   }
+  @Override
+  public InputModule module() {
 
-   @Override
-   public Version getSonarQubeVersion() {
+    return inputModule;
+  }
 
-      return version;
-   }
+  @Override
+  public Version getSonarQubeVersion() {
 
-   @Override
-   public SonarRuntime runtime() {
+    return version;
+  }
 
-      return runtime;
-   }
+  @Override
+  public SonarRuntime runtime() {
 
-   @Override
-   public boolean isCancelled() {
+    return runtime;
+  }
 
-      return false;
-   }
+  @Override
+  public boolean isCancelled() {
 
-   @Override
-   public <G extends Serializable> NewMeasure<G> newMeasure() {
+    return false;
+  }
 
-      return new DefaultMeasure<>(this.storage);
-   }
+  @Override
+  public <G extends Serializable> NewMeasure<G> newMeasure() {
 
-   @Override
-   public NewIssue newIssue() {
+    return new DefaultMeasure<>(this.storage);
+  }
 
-      return new DefaultIssue(this.storage);
-   }
+  @Override
+  public NewIssue newIssue() {
 
-   @Override
-   public NewHighlighting newHighlighting() {
+    return new DefaultIssue(this.storage);
+  }
 
-      return new DefaultHighlighting(this.storage);
-   }
+  @Override
+  public NewHighlighting newHighlighting() {
 
-   @Override
-   public NewSymbolTable newSymbolTable() {
+    return new DefaultHighlighting(this.storage);
+  }
 
-      return new DefaultSymbolTable(this.storage);
-   }
+  @Override
+  public NewSymbolTable newSymbolTable() {
 
-   @Override
-   public NewCoverage newCoverage() {
+    return new DefaultSymbolTable(this.storage);
+  }
 
-      return new DefaultCoverage(this.storage);
-   }
+  @Override
+  public NewCoverage newCoverage() {
 
-   @Override
-   public NewCpdTokens newCpdTokens() {
+    return new DefaultCoverage(this.storage);
+  }
 
-      return new DefaultCpdTokens(configuration, this.storage);
-   }
+  @Override
+  public NewCpdTokens newCpdTokens() {
 
-   @Override
-   public NewAnalysisError newAnalysisError() {
+    return new DefaultCpdTokens(configuration, this.storage);
+  }
 
-      return new DefaultAnalysisError();
-   }
+  @Override
+  public NewAnalysisError newAnalysisError() {
 
-   @Override
-   public void addContextProperty(final String key, final String value) {
+    return new DefaultAnalysisError();
+  }
 
-      this.storage.storeProperty(key, value);
-   }
+  @Override
+  public void addContextProperty(final String key, final String value) {
 
-   @Override
-   public void markForPublishing(final InputFile inputFile) {
+    this.storage.storeProperty(key, value);
+  }
 
-   }
+  @Override
+  public void markForPublishing(final InputFile inputFile) {
 
-   public MapSettings getSettings() {
+  }
 
-      return settings;
-   }
+  /**
+   * Uses configuration that is backed by the settings map. If not invoked, the configuration object is separated.
+   *
+   * @return
+   */
+  public TestSensorContext useBridgedConfiguration() {
 
-   public Configuration getConfiguration() {
+    this.configuration = settings.asConfig();
+    return this;
+  }
 
-      return configuration;
-   }
+  public MapSettings getSettings() {
 
-   public SonarRuntime getRuntime() {
+    return settings;
+  }
 
-      return runtime;
-   }
+  public Configuration getConfiguration() {
 
-   public TestSensorStorage getStorage() {
+    return configuration;
+  }
 
-      return storage;
-   }
+  public SonarRuntime getRuntime() {
 
-   public TestSensorContext withActiveRules(NewActiveRule... rules) {
+    return runtime;
+  }
 
-      this.activeRules = new DefaultActiveRules(Arrays.asList(rules));
-      return this;
-   }
+  public TestSensorStorage getStorage() {
 
-   public InputFile addTestFile(String filename) throws IOException {
+    return storage;
+  }
 
-      return addTestFile(filename, md -> {
-      });
-   }
+  public TestSensorContext withActiveRules(NewActiveRule... rules) {
 
-   public InputFile addTestFile(String filename, Consumer<TestFileMetadata> mdGenerator) throws IOException {
+    this.activeRules = new DefaultActiveRules(Arrays.asList(rules));
+    return this;
+  }
 
-      final TestFileMetadata metadata = new TestFileMetadata();
-      mdGenerator.accept(metadata);
+  public InputFile addTestFile(String filename) throws IOException {
 
-      return addTestFile(filename, metadata);
-   }
+    return addTestFile(filename, md -> {
+    });
+  }
 
-   public ResourceMutationMetrics newResourceMutationMetrics(String filename) {
+  public InputFile addTestFile(String filename, Consumer<TestFileMetadata> mdGenerator) throws IOException {
 
-      return newResourceMutationMetrics(filename, md -> {
-      });
-   }
+    final TestFileMetadata metadata = new TestFileMetadata();
+    mdGenerator.accept(metadata);
 
-   public ResourceMutationMetrics newResourceMutationMetrics(String filename, Consumer<TestFileMetadata> mdGenerator) {
+    return addTestFile(filename, metadata);
+  }
 
-      final TestFileMetadata metadata = new TestFileMetadata();
-      mdGenerator.accept(metadata);
-      try {
-         ResourceMutationMetrics rmm = new ResourceMutationMetrics(addTestFile(filename, metadata));
+  public ResourceMutationMetrics newResourceMutationMetrics(String filename) {
 
-         String desc = metadata.mutants.description;
+    return newResourceMutationMetrics(filename, md -> {
+    });
+  }
 
-         addMutants(rmm, Mutant.State.UNKNOWN, metadata.mutants.unknown, metadata.test.name, desc);
-         addMutants(rmm, Mutant.State.NO_COVERAGE, metadata.mutants.noCoverage, metadata.test.name, desc);
-         addMutants(rmm, Mutant.State.SURVIVED, metadata.mutants.survived, metadata.test.name, desc);
-         addMutants(rmm, Mutant.State.TIMED_OUT, metadata.mutants.timedOut, metadata.test.name, desc);
-         addMutants(rmm, Mutant.State.MEMORY_ERROR, metadata.mutants.memoryError, metadata.test.name, desc);
-         addMutants(rmm, Mutant.State.KILLED, metadata.mutants.killed, metadata.test.name, desc);
+  public ResourceMutationMetrics newResourceMutationMetrics(String filename, Consumer<TestFileMetadata> mdGenerator) {
 
-         return rmm;
-      } catch (IOException e) {
-         throw new RuntimeException("Failed to create test file", e);
+    final TestFileMetadata metadata = new TestFileMetadata();
+    mdGenerator.accept(metadata);
+    try {
+      ResourceMutationMetrics rmm = new ResourceMutationMetrics(addTestFile(filename, metadata));
+
+      String desc = metadata.mutants.description;
+
+      addMutants(rmm, Mutant.State.UNKNOWN, metadata.mutants.unknown, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.NO_COVERAGE, metadata.mutants.noCoverage, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.SURVIVED, metadata.mutants.survived, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.TIMED_OUT, metadata.mutants.timedOut, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.MEMORY_ERROR, metadata.mutants.memoryError, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.KILLED, metadata.mutants.killed, metadata.test.name, desc);
+
+      return rmm;
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to create test file", e);
+    }
+  }
+
+  /**
+   * Method for conveniently setting a test configuration
+   *
+   * @param key
+   *     the key of the configuration by which it can be retrieved as well
+   * @param aValue
+   */
+  public TestSensorContext setConfiguration(final String key, final Object aValue) {
+
+    ((TestConfiguration) configuration).set(key, aValue);
+    return this;
+  }
+
+  public DefaultInputFile registerFile(final String filename) {
+
+    return registerFile(filename, new TestFileMetadata());
+
+  }
+
+  public DefaultInputFile registerFile(final String filename, final TestFileMetadata metadata) {
+
+    final DefaultInputFile file = createNewInputFile(filename, metadata);
+    this.fs.add(file);
+    return file;
+  }
+
+  /**
+   * Scans the (physical) filesystem of the sensor context to register all files in the
+   * sensor filesystem (cached)
+   *
+   * @return
+   *
+   * @throws IOException
+   */
+  public TestSensorContext scanFiles() throws IOException {
+
+    final AtomicInteger files = new AtomicInteger();
+    final Path base = this.fs.baseDirPath();
+
+    Files.walkFileTree(base, new SimpleFileVisitor<Path>() {
+
+      @Override
+      public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+
+        final FileVisitResult result = super.visitFile(file, attrs);
+        registerFile(base.relativize(file).toString());
+        files.incrementAndGet();
+        return result;
       }
-   }
+    });
 
-   /**
-    * Method for conveniently setting a test configuration
-    * @param key
-    *  the key of the configuration by which it can be retrieved as well
-    * @param aValue
-    */
-   public TestSensorContext setConfiguration(final String key, final Object aValue) {
-      ((TestConfiguration) configuration).set(key, aValue);
-      return this;
-   }
+    LOGGER.info("Scanned {} files", files.get());
+    return this;
+  }
 
   private InputFile addTestFile(String filename, TestFileMetadata metadata) throws IOException {
 
-      final Path basePath = this.fs.baseDirPath();
-      final Path filePath = basePath.resolve(filename);
-      final Path fileDir = filePath.getParent();
-      if(!Files.exists(fileDir)){
-         Files.createDirectories(fileDir);
-      }
-      Files.createFile(filePath);
-
-      return registerFile(filename, metadata);
-   }
-
-   public DefaultInputFile registerFile(final String filename) {
-      return registerFile(filename, new TestFileMetadata());
-
-   }
-   public DefaultInputFile registerFile(final String filename, final TestFileMetadata metadata) {
-      final DefaultInputFile file = createNewInputFile(filename, metadata);
-      this.fs.add(file);
-      return file;
-   }
-
-   private DefaultInputFile createNewInputFile(final String filename, TestFileMetadata md) {
-
-      final String fileExtension = filename.substring(filename.lastIndexOf('.')+ 1);
-      final String language;
-      if("java".equals(fileExtension)){
-         language = "java";
-      } else
-      if("kt".equals(fileExtension)){
-         language = "kotlin";
-      } else {
-         language = "unknown";
-      }
-
-      final DefaultIndexedFile indexedFile = new DefaultIndexedFile(this.inputModule.key(), this.fs.baseDirPath(), filename, language);
-      final DefaultInputFile file = new DefaultInputFile(indexedFile, dif -> dif.setMetadata(md.toMetadata()));
-      file.checkMetadata();
-
-      return file;
-   }
-
-   private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count) {
-
-      addMutants(rmm, state, count, "ATest", null);
-   }
-
-   private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count, String testname, String desc) {
-
-      String filename = rmm.getResource().filename();
-
-      for (int i = 0; i < count; i++) {
-         rmm.addMutant(newMutant(filename, state, count + i, testname, desc));
-      }
-   }
-
-   private Mutant newMutant(String file, Mutant.State state, final int line, String testName, String description) {
-
-      return Mutant.builder()
-                   .mutantStatus(state)
-                   .inSourceFile(file)
-                   .inClass(file.substring(0, file.lastIndexOf('.')).replaceAll("/|\\\\", "."))
-                   .inMethod("aMethod")
-                   .withMethodParameters("desc")
-                   .inLine(line)
-                   .atIndex(0)
-                   .usingMutator(getMutationOperatorForLine(line))
-                   .killedBy(testName)
-                   .withDescription(description)
-                   .build();
-
-   }
-
-   public static MutationOperator getMutationOperatorForLine(final int line) {
-
-      return MUTATION_OPERATORS.get(line % MUTATION_OPERATORS.size());
-   }
-
-   /**
-    * Scans the (physical) filesystem of the sensor context to register all files in the
-    * sensor filesystem (cached)
-    * @return
-    * @throws IOException
-    */
-   public TestSensorContext scanFiles() throws IOException {
-
-      final AtomicInteger files = new AtomicInteger();
-      final Path base = this.fs.baseDirPath();
-
-      Files.walkFileTree(base, new SimpleFileVisitor<Path>(){
-
-         @Override
-         public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-            final FileVisitResult result = super.visitFile(file, attrs);
-            registerFile(base.relativize(file).toString());
-            files.incrementAndGet();
-            return result;
-         }
-      });
+    final Path basePath = this.fs.baseDirPath();
+    final Path filePath = basePath.resolve(filename);
+    final Path fileDir = filePath.getParent();
+    if (!Files.exists(fileDir)) {
+      Files.createDirectories(fileDir);
+    }
+    Files.createFile(filePath);
+
+    return registerFile(filename, metadata);
+  }
+
+  private DefaultInputFile createNewInputFile(final String filename, TestFileMetadata md) {
+
+    final String fileExtension = filename.substring(filename.lastIndexOf('.') + 1);
+    final String language;
+    if ("java".equals(fileExtension)) {
+      language = "java";
+    } else if ("kt".equals(fileExtension)) {
+      language = "kotlin";
+    } else {
+      language = "unknown";
+    }
+
+    DefaultIndexedFile indexedFile;
+    if (md.isTestResource) {
+      indexedFile = new DefaultIndexedFile(this.fs.baseDirPath().resolve(filename),
+                                           this.inputModule.key(),
+                                           PathUtils.sanitize(filename),
+                                           PathUtils.sanitize(filename),
+                                           InputFile.Type.TEST,
+                                           language,
+                                           TestInputFileBuilder.nextBatchId(),
+                                           new SensorStrategy());
+    } else {
+      indexedFile = new DefaultIndexedFile(this.inputModule.key(), this.fs.baseDirPath(), filename, language);
+    }
+    final DefaultInputFile file = new DefaultInputFile(indexedFile, dif -> dif.setMetadata(md.toMetadata()));
+    file.checkMetadata();
+
+    return file;
+  }
+
+  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count) {
+
+    addMutants(rmm, state, count, "ATest", null);
+  }
+
+  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count, String testname, String desc) {
+
+    String filename = rmm.getResource().filename();
+
+    for (int i = 0; i < count; i++) {
+      rmm.addMutant(newMutant(filename, state, count + i, testname, desc));
+    }
+  }
+
+  private Mutant newMutant(String file, Mutant.State state, final int line, String testName, String description) {
+
+    return Mutant.builder()
+                 .mutantStatus(state)
+                 .inSourceFile(file)
+                 .inClass(file.substring(0, file.lastIndexOf('.')).replaceAll("/|\\\\", "."))
+                 .inMethod("aMethod")
+                 .withMethodParameters("desc")
+                 .inLine(line)
+                 .atIndex(0)
+                 .usingMutator(getMutationOperatorForLine(line))
+                 .killedBy(testName)
+                 .withDescription(description)
+                 .build();
+
+  }
+
+  public static class TestFileMetadata {
+
+    public final TestFileMetadata.MutantMetadata mutants = new TestFileMetadata.MutantMetadata();
+    public final TestFileMetadata.TestMetadata test = new TestFileMetadata.TestMetadata();
+    public int lines = 1;
+    public int nonBlankLines = 1;
+    public String hash = "";
+    public int lastValidOffset = 1;
+    public boolean isTestResource;
 
-      LOGGER.info("Scanned {} files", files.get());
-      return this;
-   }
+    public Metadata toMetadata() {
 
-   public static class TestFileMetadata {
+      return new Metadata(lines, nonBlankLines, hash, IntStream.range(0, lines).map(i -> i * 80).toArray(), lastValidOffset);
+    }
 
-      public final TestFileMetadata.MutantMetadata mutants = new TestFileMetadata.MutantMetadata();
-      public final TestFileMetadata.TestMetadata test = new TestFileMetadata.TestMetadata();
-      public int lines = 1;
-      public int nonBlankLines = 1;
-      public String hash = "";
-      public int lastValidOffset = 1;
+    public static class MutantMetadata implements Serializable {
 
-      public Metadata toMetadata() {
+      private static final long serialVersionUID = 7717508300632296958L;
+      public int unknown = 0;
+      public int noCoverage = 0;
+      public int survived = 0;
+      public int memoryError = 0;
+      public int timedOut = 0;
+      public int killed = 0;
+      public String description;
+    }
 
-         return new Metadata(lines, nonBlankLines, hash, IntStream.range(0, lines).map(i -> i * 80).toArray(), lastValidOffset);
-      }
+    public static class TestMetadata implements Serializable {
 
-      public static class MutantMetadata implements Serializable {
+      private static final long serialVersionUID = 7691838474280645687L;
+      public String name = "ATest";
+    }
+  }
 
-         private static final long serialVersionUID = 7717508300632296958L;
-         public int unknown = 0;
-         public int noCoverage = 0;
-         public int survived = 0;
-         public int memoryError = 0;
-         public int timedOut = 0;
-         public int killed = 0;
-         public String description;
-      }
+  public static class TestSensorStorage implements SensorStorage {
 
-      public static class TestMetadata implements Serializable {
+    private List<Measure> measures = new ArrayList<>();
+    private List<Issue> issues = new ArrayList<>();
+    private List<DefaultHighlighting> highlightings = new ArrayList<>();
+    private List<DefaultCoverage> coverages = new ArrayList<>();
+    private List<DefaultCpdTokens> cpdTokens = new ArrayList<>();
+    private List<DefaultSymbolTable> symbolTables = new ArrayList<>();
+    private List<AnalysisError> analysisErrors = new ArrayList<>();
+    private Map<String, String> properties = new HashMap<>();
 
-         private static final long serialVersionUID = 7691838474280645687L;
-         public String name = "ATest";
-      }
-   }
+    @Override
+    public void store(final Measure measure) {
 
-   public static class TestSensorStorage implements SensorStorage {
+      measures.add(measure);
+    }
 
-      private List<Measure> measures = new ArrayList<>();
-      private List<Issue> issues = new ArrayList<>();
-      private List<DefaultHighlighting> highlightings = new ArrayList<>();
-      private List<DefaultCoverage> coverages = new ArrayList<>();
-      private List<DefaultCpdTokens> cpdTokens = new ArrayList<>();
-      private List<DefaultSymbolTable> symbolTables = new ArrayList<>();
-      private List<AnalysisError> analysisErrors = new ArrayList<>();
-      private Map<String, String> properties = new HashMap<>();
+    @Override
+    public void store(final Issue issue) {
 
-      @Override
-      public void store(final Measure measure) {
+      issues.add(issue);
+    }
 
-         measures.add(measure);
-      }
+    @Override
+    public void store(final DefaultHighlighting highlighting) {
 
-      @Override
-      public void store(final Issue issue) {
+      highlightings.add(highlighting);
+    }
 
-         issues.add(issue);
-      }
+    @Override
+    public void store(final DefaultCoverage defaultCoverage) {
 
-      @Override
-      public void store(final DefaultHighlighting highlighting) {
+      coverages.add(defaultCoverage);
+    }
 
-         highlightings.add(highlighting);
-      }
+    @Override
+    public void store(final DefaultCpdTokens defaultCpdTokens) {
 
-      @Override
-      public void store(final DefaultCoverage defaultCoverage) {
+      cpdTokens.add(defaultCpdTokens);
+    }
 
-         coverages.add(defaultCoverage);
-      }
+    @Override
+    public void store(final DefaultSymbolTable symbolTable) {
 
-      @Override
-      public void store(final DefaultCpdTokens defaultCpdTokens) {
+      symbolTables.add(symbolTable);
+    }
 
-         cpdTokens.add(defaultCpdTokens);
-      }
+    @Override
+    public void store(final AnalysisError analysisError) {
 
-      @Override
-      public void store(final DefaultSymbolTable symbolTable) {
+      analysisErrors.add(analysisError);
+    }
 
-         symbolTables.add(symbolTable);
-      }
+    @Override
+    public void storeProperty(final String key, final String value) {
 
-      @Override
-      public void store(final AnalysisError analysisError) {
+      properties.put(key, value);
+    }
 
-         analysisErrors.add(analysisError);
-      }
+    public List<Measure> getMeasures() {
 
-      @Override
-      public void storeProperty(final String key, final String value) {
+      return measures;
+    }
 
-         properties.put(key, value);
-      }
+    public List<Issue> getIssues() {
 
-      public List<Measure> getMeasures() {
+      return issues;
+    }
 
-         return measures;
-      }
+    public List<DefaultHighlighting> getHighlightings() {
 
-      public List<Issue> getIssues() {
+      return highlightings;
+    }
 
-         return issues;
-      }
+    public List<DefaultCoverage> getCoverages() {
 
-      public List<DefaultHighlighting> getHighlightings() {
+      return coverages;
+    }
 
-         return highlightings;
-      }
+    public List<DefaultCpdTokens> getCpdTokens() {
 
-      public List<DefaultCoverage> getCoverages() {
+      return cpdTokens;
+    }
 
-         return coverages;
-      }
+    public List<DefaultSymbolTable> getSymbolTables() {
 
-      public List<DefaultCpdTokens> getCpdTokens() {
+      return symbolTables;
+    }
 
-         return cpdTokens;
-      }
+    public List<AnalysisError> getAnalysisErrors() {
 
-      public List<DefaultSymbolTable> getSymbolTables() {
+      return analysisErrors;
+    }
 
-         return symbolTables;
-      }
+    public Map<String, String> getProperties() {
 
-      public List<AnalysisError> getAnalysisErrors() {
-
-         return analysisErrors;
-      }
-
-      public Map<String, String> getProperties() {
-
-         return properties;
-      }
-   }
+      return properties;
+    }
+  }
 }
