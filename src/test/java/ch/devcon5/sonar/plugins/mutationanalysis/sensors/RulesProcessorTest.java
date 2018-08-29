@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperator;
@@ -44,6 +45,12 @@ import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefi
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -85,21 +92,45 @@ public class RulesProcessorTest {
   @Test
   public void processRules_noRules_noMetrics_noIssues() {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = RulesProfile.create("test.profile", "java");
     final Collection<ResourceMutationMetrics> metrics = Collections.emptyList();
 
-    final RulesProcessor processor = new RulesProcessor(configuration, profile);
+    final ListAppender listAppender = new ListAppender();
+    final LoggerConfig rootLoggerConfig = addAppender(listAppender);
 
-    processor.processRules(metrics, context, "java");
+    //act
+    try {
+      final RulesProcessor processor = new RulesProcessor(configuration, profile);
+      processor.processRules(metrics, context, "java");
+    } finally {
+      rootLoggerConfig.removeAppender(listAppender.getName());
+    }
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
     assertTrue(issues.isEmpty());
+
+    final List<LogEvent> events = listAppender.getEvents();
+    assertTrue(events.stream()
+                     .filter(e -> e.getLevel() == Level.WARN)
+                     .map(e -> e.getMessage().getFormattedMessage())
+                     .anyMatch("/!\\ Pitest rule needs to be activated in the \"test.profile\" profile."::equals));
+  }
+
+  protected LoggerConfig addAppender(final ListAppender listAppender) {
+    final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    final LoggerConfig rootLoggerConfig = loggerContext.getConfiguration().getLoggerConfig("");
+    listAppender.start();
+    rootLoggerConfig.addAppender(listAppender, Level.ALL, null);
+    return rootLoggerConfig;
   }
 
   @Test
   public void processRules_survivorRuleActive_defaultEffortFactor_survivedMutant_issueCreated() {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(RULE_SURVIVED_MUTANT);
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -108,10 +139,11 @@ public class RulesProcessorTest {
       md.mutants.killed = 9;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_SURVIVED_MUTANT, "test-module:Test.java", 3, 1.0);
     assertIssueAtLine(issues.get(1), RULE_SURVIVED_MUTANT, "test-module:Test.java", 4, 1.0);
@@ -122,6 +154,7 @@ public class RulesProcessorTest {
   @Test
   public void processRules_survivorRuleActive_defaultEffortFactor_survivedMutant_withDescription_issueCreated() {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(RULE_SURVIVED_MUTANT);
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -131,22 +164,23 @@ public class RulesProcessorTest {
       md.mutants.description = "substituted foo with bar";
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
-    assertIssueAtLine(issues.get(0), RULE_SURVIVED_MUTANT, "test-module:Test.java", 3, 1.0, "Mutation: substituted foo with bar");
-    assertIssueAtLine(issues.get(1), RULE_SURVIVED_MUTANT, "test-module:Test.java", 4, 1.0, "Mutation: substituted foo with bar");
-    assertIssueAtLine(issues.get(2), RULE_SURVIVED_MUTANT, "test-module:Test.java", 5, 1.0, "Mutation: substituted foo with bar");
+    assertIssueAtLine(issues.get(0), RULE_SURVIVED_MUTANT, "test-module:Test.java", 3, 1.0, " Mutation: substituted foo with bar");
+    assertIssueAtLine(issues.get(1), RULE_SURVIVED_MUTANT, "test-module:Test.java", 4, 1.0, " Mutation: substituted foo with bar");
+    assertIssueAtLine(issues.get(2), RULE_SURVIVED_MUTANT, "test-module:Test.java", 5, 1.0, " Mutation: substituted foo with bar");
     assertEquals(3, issues.size());
   }
 
   @Test
   public void processRules_survivorRuleActive_customEffortFactor_survivedMutant_issueCreated() {
 
+    //arrange
     configuration.set(EFFORT_FACTOR_SURVIVED_MUTANT, 10.0);
-
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(RULE_SURVIVED_MUTANT);
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -155,10 +189,11 @@ public class RulesProcessorTest {
       md.mutants.killed = 9;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
     assertEquals(3, issues.size());
     assertIssueAtLine(issues.get(0), RULE_SURVIVED_MUTANT, "test-module:Test.java", 3, 10.0);
@@ -169,6 +204,7 @@ public class RulesProcessorTest {
   @Test
   public void processRules_uncoveredRuleActive_defaultEffortFactor_uncoveredMutant_issueCreated() {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(RULE_UNCOVERED_MUTANT);
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -177,10 +213,11 @@ public class RulesProcessorTest {
       md.mutants.killed = 9;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_UNCOVERED_MUTANT, "test-module:Test.java", 2, 1.0);
     assertIssueAtLine(issues.get(1), RULE_UNCOVERED_MUTANT, "test-module:Test.java", 3, 1.0);
@@ -190,8 +227,8 @@ public class RulesProcessorTest {
   @Test
   public void processRules_uncoveredRuleActive_customEffortFactor_uncoveredMutant_issueCreated() {
 
+    //arrange
     configuration.set(EFFORT_FACTOR_SURVIVED_MUTANT, 10.0);
-
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(RULE_UNCOVERED_MUTANT);
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -200,10 +237,11 @@ public class RulesProcessorTest {
       md.mutants.killed = 9;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_UNCOVERED_MUTANT, "test-module:Test.java", 2, 10.0);
     assertIssueAtLine(issues.get(1), RULE_UNCOVERED_MUTANT, "test-module:Test.java", 3, 10.0);
@@ -213,6 +251,7 @@ public class RulesProcessorTest {
   @Test
   public void processRules_unknownMutationStatusRuleActive_defaultEffortFactor_unknownMutationState_issueCreated() {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(RULE_UNKNOWN_MUTANT_STATUS);
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -221,10 +260,11 @@ public class RulesProcessorTest {
       md.mutants.killed = 9;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_UNKNOWN_MUTANT_STATUS, "test-module:Test.java", 2, 1.0);
     assertIssueAtLine(issues.get(1), RULE_UNKNOWN_MUTANT_STATUS, "test-module:Test.java", 3, 1.0);
@@ -234,8 +274,8 @@ public class RulesProcessorTest {
   @Test
   public void processRules_unknownMutationStatusRuleActive_customEffortFactor_unknownMutationState_issueCreated() {
 
+    //arrange
     configuration.set(EFFORT_FACTOR_SURVIVED_MUTANT, 10.0);
-
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(RULE_UNKNOWN_MUTANT_STATUS);
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -244,10 +284,11 @@ public class RulesProcessorTest {
       md.mutants.killed = 9;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
     assertIssueAtLine(issues.get(0), RULE_UNKNOWN_MUTANT_STATUS, "test-module:Test.java", 2, 10.0);
     assertIssueAtLine(issues.get(1), RULE_UNKNOWN_MUTANT_STATUS, "test-module:Test.java", 3, 10.0);
@@ -257,6 +298,7 @@ public class RulesProcessorTest {
   @Test
   public void processRules_mutatorRuleActive_defaultEffortFactor_mutantSurvived_issueCreated() {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(createMutationOperatorRules());
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -265,14 +307,14 @@ public class RulesProcessorTest {
       md.mutants.killed = 5;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final List<Issue> issues = context.getStorage().getIssues();
     assertEquals(23, issues.size());
     for(int i = 0, len = MUTATION_OPERATORS.length; i < len; i++){
-
       assertIssueAtLine(issues.get(i), "mutant." +MUTATION_OPERATORS[i].getId(), "test-module:Test.java", MUTATION_OPERATORS.length + i, 1.0);
     }
   }
@@ -280,6 +322,7 @@ public class RulesProcessorTest {
   @Test
   public void processRules_coverageThresholdRuleActive_defaultEffortFactor_coverageTooLow_issueCreated() {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(harness.createRule(RULE_MUTANT_COVERAGE, PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -287,19 +330,20 @@ public class RulesProcessorTest {
       md.mutants.killed = 9;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final Issue issue = context.getStorage().getIssues().get(0);
-    assertIssueAtLine(issue, RULE_MUTANT_COVERAGE, "test-module:Test.java", 0.6);
+    assertIssueAtLine(issue, RULE_MUTANT_COVERAGE, "test-module:Test.java", 1.0, "1 more mutants need to be killed to get the mutation coverage from 75.0% to 80.0%");
   }
 
   @Test
   public void processRules_coverageThresholdRuleActive_customEffortFactor_coverageTooLow_issueCreated() {
 
-    configuration.set(EFFORT_FACTOR_MISSING_COVERAGE, 10.0);
-
+    //arrange
+    configuration.set(EFFORT_FACTOR_MISSING_COVERAGE, 6.0);
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(harness.createRule(RULE_MUTANT_COVERAGE, PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -307,17 +351,19 @@ public class RulesProcessorTest {
       md.mutants.killed = 9;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     final Issue issue = context.getStorage().getIssues().get(0);
-    assertIssueAtLine(issue, RULE_MUTANT_COVERAGE, "test-module:Test.java", 6.0);
+    assertIssueAtLine(issue, RULE_MUTANT_COVERAGE, "test-module:Test.java", 6.0, "1 more mutants need to be killed to get the mutation coverage from 75.0% to 80.0%");
   }
 
   @Test
   public void processRules_coverageThresholdRuleActive_defaultEffortFactor_coverageThresholdHit_noIssueCreated() {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     final RulesProfile profile = harness.createRulesProfile(harness.createRule(RULE_MUTANT_COVERAGE, PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
@@ -325,11 +371,32 @@ public class RulesProcessorTest {
       md.mutants.killed = 8;
     }));
 
+    //act
     final RulesProcessor processor = new RulesProcessor(configuration, profile);
-
     processor.processRules(metrics, context, "java");
 
+    //assert
     assertTrue(context.getStorage().getIssues().isEmpty());
+  }
+
+  @Test
+  public void processRules_coverageThresholdRuleActive_gapIsSamllerThan05_RoundedUp_issueCreated() {
+
+    //arrange
+    final TestSensorContext context = harness.createSensorContext();
+    final RulesProfile profile = harness.createRulesProfile(harness.createRule(RULE_MUTANT_COVERAGE, PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
+    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
+      md.mutants.survived = 2;
+      md.mutants.killed = 7;
+    }));
+
+    //act
+    final RulesProcessor processor = new RulesProcessor(configuration, profile);
+    processor.processRules(metrics, context, "java");
+
+    //assert
+    final Issue issue = context.getStorage().getIssues().get(0);
+    assertIssueAtLine(issue, RULE_MUTANT_COVERAGE, "test-module:Test.java", 1.0, "1 more mutants need to be killed to get the mutation coverage from 77.8% to 80.0%");
   }
 
   private Rule[] createMutationOperatorRules() {
@@ -337,9 +404,9 @@ public class RulesProcessorTest {
     return Arrays.stream(MUTATION_OPERATORS).map(o -> harness.createRule("mutant." + o.getId())).toArray(Rule[]::new);
   }
 
-  private void assertIssueAtLine(final Issue issue, String ruleKey, String componentName, final double gap) {
+  private void assertIssueAtLine(final Issue issue, String ruleKey, String componentName, final double gap, String message) {
 
-    assertIssueAtLine(issue, ruleKey, componentName, -1, gap, null);
+    assertIssueAtLine(issue, ruleKey, componentName, -1, gap, message);
   }
 
   private void assertIssueAtLine(final Issue issue, String ruleKey, String componentName, int line, final double gap) {
@@ -350,20 +417,39 @@ public class RulesProcessorTest {
     assertEquals(ruleKey, issue.ruleKey().rule());
     assertEquals(componentName, issue.primaryLocation().inputComponent().key());
     assertEquals(gap, issue.gap(), 0.05);
+
+    final String message;
+
     if (line != -1) {
       assertEquals(line, issue.primaryLocation().textRange().start().line());
-
-      final String baseMessage = TestSensorContext.getMutationOperatorForLine(line).getViolationDescription();
-      if(description == null) {
-        assertEquals(baseMessage, issue.primaryLocation().message());
-      } else {
-        assertEquals(baseMessage + " " + description, issue.primaryLocation().message());
-      }
+      message = TestSensorContext.getMutationOperatorForLine(line).getViolationDescription() + optionalDescription(description);
     } else {
       assertNull("issue is not expected to have a textrange", issue.primaryLocation().textRange());
+      message = optionalDescription(description);
     }
 
+    assertEquals(message, issue.primaryLocation().message());
   }
 
+  private String optionalDescription(final String description) {
+    return description == null ? "" : description;
+  }
 
+  public static class ListAppender extends AbstractAppender {
+
+    private List<LogEvent> events = new CopyOnWriteArrayList<>();
+
+    protected ListAppender() {
+      super("listAppender", null, null);
+    }
+
+    @Override
+    public void append(final LogEvent logEvent) {
+      events.add(logEvent);
+    }
+
+    public List<LogEvent> getEvents() {
+      return events;
+    }
+  }
 }

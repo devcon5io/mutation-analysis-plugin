@@ -360,7 +360,7 @@ public class PitestSensorTest {
       assertContains(issues, i -> {
          assertEquals("mutant.coverage", i.ruleKey().rule());
          assertEquals("test-module:src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", i.primaryLocation().inputComponent().key());
-         assertEquals(3.6, i.gap(), 0.01);
+         assertEquals(4.0, i.gap(), 0.01);
          assertEquals("2 more mutants need to be killed to get the mutation coverage from 50.0% to 80.0%", i.primaryLocation().message());
       });
 

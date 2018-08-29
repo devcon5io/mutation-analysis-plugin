@@ -137,16 +137,14 @@ public class RulesProcessor {
       if (resourceMetrics.getMutationCoverage() < threshold) {
 
          final double minimumKilledMutants = resourceMetrics.getMutationsTotal() * threshold / 100.0;
-         final double additionalRequiredMutants = minimumKilledMutants - resourceMetrics.getMutationsKilled();
-
-         // TODO ensure that additional + miniumum > threshold
+         final double additionalRequiredMutants = Math.ceil(minimumKilledMutants - resourceMetrics.getMutationsKilled());
 
          context.newIssue()
                 .forRule(rule.getRule().ruleKey())
                 .gap(settings.getDouble(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE).orElse(1.0) * additionalRequiredMutants)
                 .at(newLocation().on(resourceMetrics.getResource())
                                  .message(String.format("%.0f more mutants need to be killed to get the mutation coverage from %.1f%% to %.1f%%",
-                                                        additionalRequiredMutants,
+                                                       additionalRequiredMutants,
                                                         actualCoverage,
                                                         threshold)))
                 .save();
