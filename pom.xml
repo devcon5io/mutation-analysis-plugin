@@ -257,11 +257,10 @@
                     <plugin>
                         <groupId>org.pitest</groupId>
                         <artifactId>pitest-maven</artifactId>
-                        <version>1.4.0</version>
+                        <version>1.4.2</version>
                         <configuration>
                             <targetClasses>
-                                <!--<param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>-->
-                                <param>ch.devcon5.sonar.plugins.mutationanalysis.sensors.RulesProcessor</param>
+                                <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
                             </targetClasses>
                             <targetTests>
                                 <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
