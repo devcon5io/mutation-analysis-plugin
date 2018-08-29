@@ -268,12 +268,6 @@ public class TestSensorContext implements SensorContext {
     return addTestFile(filename, metadata);
   }
 
-  public ResourceMutationMetrics newResourceMutationMetrics(String filename) {
-
-    return newResourceMutationMetrics(filename, md -> {
-    });
-  }
-
   public ResourceMutationMetrics newResourceMutationMetrics(String filename, Consumer<TestFileMetadata> mdGenerator) {
 
     final TestFileMetadata metadata = new TestFileMetadata();
@@ -395,10 +389,6 @@ public class TestSensorContext implements SensorContext {
     return file;
   }
 
-  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count) {
-
-    addMutants(rmm, state, count, "ATest", null);
-  }
 
   private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count, String testname, String desc) {
 

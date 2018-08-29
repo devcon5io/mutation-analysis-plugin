@@ -83,15 +83,7 @@ public class SourceMetricsWriterTest {
 
     final TestSensorContext context = harness.createSensorContext();
     final Collection<Mutant> globalMutants = generateMutants(20);
-    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
-      md.lines = 100;
-      md.mutants.unknown = 0;
-      md.mutants.noCoverage = 1;
-      md.mutants.survived = 2;
-      md.mutants.memoryError = 3;
-      md.mutants.timedOut = 4;
-      md.mutants.killed = 5;
-    }));
+    final Collection<ResourceMutationMetrics> metrics = generateMutantMetrics(context);
 
     smw.writeMetrics(metrics, context, globalMutants);
 
@@ -122,15 +114,7 @@ public class SourceMetricsWriterTest {
 
     final TestSensorContext context = harness.createSensorContext();
     final Collection<Mutant> globalMutants = Collections.emptyList();
-    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
-      md.lines = 100;
-      md.mutants.unknown = 0;
-      md.mutants.noCoverage = 1;
-      md.mutants.survived = 2;
-      md.mutants.memoryError = 3;
-      md.mutants.timedOut = 4;
-      md.mutants.killed = 5;
-    }));
+    final Collection<ResourceMutationMetrics> metrics = generateMutantMetrics(context);
 
     smw.writeMetrics(metrics, context, globalMutants);
 
@@ -273,6 +257,7 @@ public class SourceMetricsWriterTest {
     return getOptionalCoveragesByKey(expectedInputFile, context)
                   .orElseThrow(() -> new AssertionError("no input file found with filename=" + expectedInputFile));
   }
+
   private Optional<DefaultCoverage> getOptionalCoveragesByKey(final String expectedInputFile, final TestSensorContext context) {
 
     return context.getStorage()
@@ -280,6 +265,20 @@ public class SourceMetricsWriterTest {
                   .stream()
                   .filter(c -> expectedInputFile.equals(c.inputFile().filename()))
                   .findFirst();
+  }
+  @NotNull
+  private List<ResourceMutationMetrics> generateMutantMetrics(final TestSensorContext context) {
+
+    return Arrays.asList(
+        context.newResourceMutationMetrics("Test.java", md -> {
+          md.lines = 100;
+          md.mutants.unknown = 0;
+          md.mutants.noCoverage = 1;
+          md.mutants.survived = 2;
+          md.mutants.memoryError = 3;
+          md.mutants.timedOut = 4;
+          md.mutants.killed = 5;
+        }));
   }
 
   @NotNull

@@ -20,19 +20,24 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestUtils.assertContains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,59 +62,96 @@ public class TestMetricsWriterTest {
   @Test
   public void writeMetrics_noMutants_noMetrics_noMeasure() {
 
-    final TestSensorContext context = harness.createSensorContext();
-
-    TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
-
-    final Collection<Mutant> globalMutants = Collections.emptyList();
+    //arrange
     final Collection<ResourceMutationMetrics> metrics = Collections.emptyList();
+    final TestSensorContext context = harness.createSensorContext();
+    final Collection<Mutant> globalMutants = Collections.emptyList();
 
+    //act
+    final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
     smw.writeMetrics(metrics, context, globalMutants);
 
+    //assert
     assertTrue(context.getStorage().getMeasures().isEmpty());
   }
 
   @Test
-  public void writeMetrics_oneMutant_measureCreated() throws Exception {
+  public void writeMetrics_oneMutant_withKillingTest_measureCreated() throws Exception {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     context.addTestFile("CustomTest.java");
-
-    final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
-
     final Collection<Mutant> globalMutants = Collections.emptyList();
-    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Product.java", md -> {
+    final Collection<ResourceMutationMetrics> metrics = generateMutantMetrics(context, "CustomTest");
+
+    //act
+    final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
+    smw.writeMetrics(metrics, context, globalMutants);
+
+    //assert
+    final Map<String, Serializable> measures = getMeasuresByKey("test-module:CustomTest.java", context);
+    assertEquals(2, measures.size());
+    assertEquals(5, measures.get(MutationMetrics.TEST_KILLS_KEY));
+    assertEquals(7, measures.get(MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY));
+  }
+
+  @Test
+  public void writeMetrics_oneMutant_withGlobalMutants_measureCreated() throws Exception {
+
+    //arrange
+    final TestSensorContext context = harness.createSensorContext();
+    context.addTestFile("CustomTest.java");
+    final Collection<Mutant> globalMutants = generateMutants(20);
+    //generates mutant metrics that killed 5 tests
+    final Collection<ResourceMutationMetrics> metrics = generateMutantMetrics(context, "CustomTest");
+
+    //act
+    final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
+    smw.writeMetrics(metrics, context, globalMutants);
+
+    //assert
+    final Map<String, Serializable> measures = getMeasuresByKey("test-module:CustomTest.java", context);
+    assertEquals(2, measures.size());
+    assertEquals(5, measures.get(MutationMetrics.TEST_KILLS_KEY));
+    assertEquals(20, measures.get(MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY));
+  }
+
+  @Test
+  public void writeMetrics_oneMutant_killingTestEmpty_noMeasureCreated() throws Exception {
+
+    //arrange
+    final TestSensorContext context = harness.createSensorContext();
+    context.addTestFile("CustomTest.java");
+    final Collection<Mutant> globalMutants = Collections.emptyList();
+    final Collection<ResourceMutationMetrics> metrics = generateMutantMetrics(context, "");
+
+    //act
+    final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
+    smw.writeMetrics(metrics, context, globalMutants);
+
+    //assert
+    final Map<String, Serializable> measures = getMeasuresByKey("test-module:CustomTest.java", context);
+    assertTrue(measures.isEmpty());
+  }
+
+  @NotNull
+  private List<ResourceMutationMetrics> generateMutantMetrics(final TestSensorContext context, String testname) {
+
+    return Arrays.asList(context.newResourceMutationMetrics("Product.java", md -> {
       md.lines = 100;
       md.mutants.survived = 2;
       md.mutants.killed = 5;
-      md.test.name = "CustomTest";
+      md.test.name = testname;
     }));
-
-    smw.writeMetrics(metrics, context, globalMutants);
-
-    final List<Measure> measures = context.getStorage().getMeasures();
-
-    assertContains(measures, m -> {
-      assertEquals("test-module:CustomTest.java", m.inputComponent().key());
-      assertEquals("dc5_mutationAnalysis_mutations_testkills", m.metric().key());
-    });
-
-    assertContains(measures, m -> {
-      assertEquals("test-module:CustomTest.java", m.inputComponent().key());
-      assertEquals("dc5_mutationAnalysis_mutations_global", m.metric().key());
-    });
-    assertEquals(2, measures.size());
   }
 
   @Test
   public void writeMetrics_moreMutants_measureCreated() throws Exception {
 
+    //arrange
     final TestSensorContext context = harness.createSensorContext();
     context.addTestFile("CustomTest.java");
     context.addTestFile("OtherTest.java");
-
-    final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
-
     final Collection<Mutant> globalMutants = Collections.emptyList();
     final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Product.java", md -> {
       md.lines = 100;
@@ -123,31 +165,46 @@ public class TestMetricsWriterTest {
       md.test.name = "OtherTest";
     }));
 
+    //act
+    final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
     smw.writeMetrics(metrics, context, globalMutants);
 
-    final List<Measure> measures = context.getStorage().getMeasures();
+    //assert
+    final Map<String, Serializable> measures1 = getMeasuresByKey("test-module:CustomTest.java", context);
+    assertEquals(2, measures1.size());
+    assertEquals(5, measures1.get(MutationMetrics.TEST_KILLS_KEY));
+    assertEquals(12, measures1.get(MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY));
 
-    assertEquals(5, assertContains(measures, m -> {
-      assertEquals("test-module:CustomTest.java", m.inputComponent().key());
-      assertEquals("dc5_mutationAnalysis_mutations_testkills", m.metric().key());
-    }).value());
+    final Map<String, Serializable> measures2 = getMeasuresByKey("test-module:OtherTest.java", context);
+    assertEquals(2, measures2.size());
+    assertEquals(2, measures2.get(MutationMetrics.TEST_KILLS_KEY));
+    assertEquals(12, measures2.get(MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY));
+  }
+  private Map<String, Serializable> getMeasuresByKey(String expectedComponentKey, final TestSensorContext context) {
 
-    assertEquals(12, assertContains(measures, m -> {
-      assertEquals("test-module:CustomTest.java", m.inputComponent().key());
-      assertEquals("dc5_mutationAnalysis_mutations_global", m.metric().key());
-    }).value());
-    assertEquals(2,
-    assertContains(measures, m -> {
-      assertEquals("test-module:OtherTest.java", m.inputComponent().key());
-      assertEquals("dc5_mutationAnalysis_mutations_testkills", m.metric().key());
-    }).value());
-    assertEquals(12, assertContains(measures, m -> {
-      assertEquals("test-module:OtherTest.java", m.inputComponent().key());
-      assertEquals("dc5_mutationAnalysis_mutations_global", m.metric().key());
-    }).value());
+    return context.getStorage()
+                  .getMeasures()
+                  .stream()
+                  .filter(m -> expectedComponentKey.equals(m.inputComponent().key()))
+                  .collect(Collectors.toMap(m -> m.metric().key(), Measure::value));
+  }
+  private List<Mutant> generateMutants(final int count) {
 
-    assertEquals(4, measures.size());
+    return IntStream.range(0, count).mapToObj(this::newMutant).collect(Collectors.toList());
   }
 
+  private Mutant newMutant(int i) {
+
+    return Mutant.builder()
+                 .mutantStatus(Mutant.State.KILLED)
+                 .inSourceFile("Example.java")
+                 .inClass("Example")
+                 .inMethod("aMethod")
+                 .withMethodParameters("()")
+                 .usingMutator("BOOLEAN_FALSE_RETURN")
+                 .killedBy("Test")
+                 .inLine(i)
+                 .build();
+  }
 
 }

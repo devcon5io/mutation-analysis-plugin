@@ -43,7 +43,6 @@ import org.slf4j.Logger;
  */
 public class Mutant {
 
-  private final boolean detected;
   private final int lineNumber;
   private final int index;
   private final State state;
@@ -68,7 +67,6 @@ public class Mutant {
    */
   private Mutant(final Builder builder) {
 
-    this.detected = builder.detected;
     this.state = builder.state;
     this.sourceFile = builder.sourceFile;
     this.mutatedClass = builder.mutatedClass;
@@ -78,7 +76,7 @@ public class Mutant {
     this.mutationOperator = builder.mutationOperator;
     this.mutatorSuffix = builder.mutatorSuffix;
     this.index = builder.index;
-    this.killingTest = builder.detected ? builder.killingTest : "";
+    this.killingTest = builder.state.isDetected() ? builder.killingTest : "";
     this.description = builder.description;
     this.toString = "Mutant [sourceFile="
         + builder.sourceFile
@@ -99,7 +97,7 @@ public class Mutant {
         + (this.description == null ? "" : ", description=" + this.description)
         + "]";
     this.hashCode = calculateHashCode(this.index,
-                                      this.detected ? 1231 : 1237,
+                                      this.state.isDetected() ? 1231 : 1237,
                                       this.lineNumber,
                                       this.methodDescription.hashCode(),
                                       this.state.hashCode(),
@@ -132,7 +130,7 @@ public class Mutant {
    */
   public boolean isDetected() {
 
-    return detected;
+    return state.isDetected();
   }
 
   /**
@@ -212,7 +210,7 @@ public class Mutant {
 
   /**
    * @return the fully qualified name of the test including the test method that killed the test. If the mutant was
-   * not killed, this has to be an empty string, <code>null</code> is not allowed.
+   * not killed, this is an empty string and is never <code>null</code>.
    */
   public String getKillingTest() {
 
@@ -370,6 +368,17 @@ public class Mutant {
 
       return alive;
     }
+
+    /**
+     * Indicates whether the status represents mutant that has been detected. This is the
+     * negative version of {@link #isAlive()}
+     *
+     * @return <code>true</code> if the {@link Mutant} was detected.
+     */
+    public boolean isDetected() {
+
+      return !alive;
+    }
   }
 
   /**
@@ -380,7 +389,6 @@ public class Mutant {
 
     private static final Logger LOGGER = getLogger(Builder.class);
 
-    private boolean detected;
     private State state;
     private String sourceFile;
     private String mutatedClass;
@@ -405,7 +413,6 @@ public class Mutant {
      */
     public Builder mutantStatus(final State state) {
 
-      this.detected = !state.isAlive();
       this.state = state;
       return this;
     }
@@ -565,7 +572,7 @@ public class Mutant {
       requireNonNull(methodDescription, "methodDescription must be set");
       requireNonNull(mutationOperator, "mutationOperator must be set");
 
-      if (detected) {
+      if (!state.isAlive()) {
         requireNonNull(killingTest, "killingTest must be set");
       }
 

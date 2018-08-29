@@ -53,7 +53,6 @@ public class TestMetricsWriter {
 
     Map<TestDescriptor, List<Mutant>> testKills = metrics.stream()
                                                          .flatMap(rmm -> rmm.getMutants().stream())
-                                                         .filter(m -> isNotBlank(m.getKillingTest()))
                                                          .collect(Collectors.groupingBy(m -> new TestDescriptor(m.getKillingTest()), Collectors.toList()));
 
     final int total = globalMutants.isEmpty() ? sumTotal(metrics) : globalMutants.size();
@@ -65,11 +64,6 @@ public class TestMetricsWriter {
         context.newMeasure().forMetric(MutationMetrics.UTILITY_GLOBAL_MUTATIONS).on(f).withValue(total).save();
       });
     });
-  }
-
-  private boolean isNotBlank(final String t) {
-
-    return t != null && !t.trim().isEmpty();
   }
 
   private int sumTotal(final Collection<ResourceMutationMetrics> metrics) {
