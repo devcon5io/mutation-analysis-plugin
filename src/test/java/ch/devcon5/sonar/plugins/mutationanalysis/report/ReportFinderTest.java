@@ -69,9 +69,21 @@ public class ReportFinderTest {
     }
 
     @Test
-    public void testFindReport_noReportInDirectory() throws IOException {
+    public void testFindReport_noReportInDirectory_nullReportPath() throws IOException {
 
         final Path directory = folder.newFolder().toPath();
+
+        // act
+        final Path report = subject.findReport(directory);
+
+        // assert
+        assertNull(report);
+    }
+
+    @Test
+    public void testFindReport_noReportDirectory_nullReportPath() throws IOException {
+
+        final Path directory = Paths.get("nonexisting");
 
         // act
         final Path report = subject.findReport(directory);

@@ -75,11 +75,23 @@ public class JavaRulesDefinitionTest {
       assertNotNull(rule.htmlDescription());
     }
 
+    //all mutator rules
     assertEquals(26, rules.stream()
                           .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
-                          .filter(rule -> RuleType.BUG.equals(rule.type())).count());
-    assertEquals(6, rules.stream().filter(rule -> rule.status() == RuleStatus.BETA).count());
-    assertEquals(3, rules.stream().filter(rule -> rule.status() == RuleStatus.DEPRECATED).count());
+                          .filter(rule -> RuleType.BUG.equals(rule.type()))
+                          .count());
+     assertEquals(17, rules.stream()
+                           .filter(rule -> rule.status() == RuleStatus.READY)
+                           .filter(RulesDefinition.Rule::activatedByDefault)
+                           .count());
+    assertEquals(6, rules.stream()
+                         .filter(rule -> rule.status() == RuleStatus.BETA)
+                         .filter(rule -> !rule.activatedByDefault())
+                         .count());
+    assertEquals(3, rules.stream()
+                         .filter(rule -> rule.status() == RuleStatus.DEPRECATED)
+                         .filter(rule -> !rule.activatedByDefault())
+                         .count());
   }
 
 }

@@ -104,22 +104,21 @@ public class PitestSensorTest {
    @Test
    public void execute_AllSensorsDisabled_noIssuesOrMeasuresCreated() throws IOException {
 
+      //arrange
       final TestSensorContext context = disableBothSensors(harness.createSensorContext());
-
       createReportFile("PitestSensorTest_KotlinJava_mutations.xml");
-
       final RulesProfile profile = harness.createRulesProfile(
           harness.createRule("java",RULE_SURVIVED_MUTANT),
           harness.createRule("kotlin",RULE_SURVIVED_MUTANT)
           );
-
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/JavaExample.java", md -> md.lines = 200);
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/KotlinExample.kt", md -> md.lines = 200);
 
+      //act
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
-
       sensor.execute(context);
 
+      //assert
       assertTrue(context.getStorage().getIssues().isEmpty());
       assertTrue(context.getStorage().getMeasures().isEmpty());
    }
@@ -127,10 +126,9 @@ public class PitestSensorTest {
    @Test
    public void execute_JavaSensorsDisabled_noJavaIssuesOrMeasuresCreated() throws IOException {
 
-      final TestSensorContext context = enableOnlyKotlinSensor(harness.createSensorContext());
-
+      //arrange
+      final TestSensorContext context = disableJavaSensor(harness.createSensorContext());
       createReportFile("PitestSensorTest_KotlinJava_mutations.xml");
-
       final RulesProfile profile = harness.createRulesProfile(
           harness.createRule("java","mutant.survived"),
           harness.createRule("kotlin","mutant.survived")
@@ -139,10 +137,11 @@ public class PitestSensorTest {
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/JavaExample.java", md -> md.lines = 200);
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/KotlinExample.kt", md -> md.lines = 200);
 
+      //act
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
-
       sensor.execute(context);
 
+      //assert
       assertFalse(context.getStorage().getMeasures().isEmpty());
       final List<Issue> issues = context.getStorage().getIssues();
       assertContains(issues, i -> {
@@ -157,22 +156,21 @@ public class PitestSensorTest {
    @Test
    public void execute_KotlinSensorDisabled_noJavaIssuesOrMeasuresCreated() throws IOException {
 
-      final TestSensorContext context = enableOnlyJavaSensor(harness.createSensorContext());
-
+      //arrange
+      final TestSensorContext context = disableKotlingSensor(harness.createSensorContext());
       createReportFile("PitestSensorTest_KotlinJava_mutations.xml");
-
       final RulesProfile profile = harness.createRulesProfile(
           harness.createRule("java",RULE_SURVIVED_MUTANT),
           harness.createRule("kotlin",RULE_SURVIVED_MUTANT)
       );
-
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/JavaExample.java", md -> md.lines = 200);
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/KotlinExample.kt", md -> md.lines = 200);
 
+      //act
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
-
       sensor.execute(context);
 
+      //assert
       assertFalse(context.getStorage().getMeasures().isEmpty());
       final List<Issue> issues = context.getStorage().getIssues();
       assertContains(issues, i -> {
@@ -444,7 +442,7 @@ public class PitestSensorTest {
 
       this.harness = harness.changeLanguage("kotlin");
       createReportFile("PitestSensorTest_Kotlin_mutations.xml");
-      final TestSensorContext context = enableOnlyKotlinSensor(harness.createSensorContext().scanFiles());
+      final TestSensorContext context = disableJavaSensor(harness.createSensorContext().scanFiles());
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/KotlinExample.kt", md -> md.lines = 200);
 
       final RulesProfile profile = harness.createRulesProfile("mutant.uncovered");
@@ -488,12 +486,10 @@ public class PitestSensorTest {
       return context.setConfiguration(MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED, false)
                     .setConfiguration(MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED, false);
    }
-   private TestSensorContext enableOnlyKotlinSensor(final TestSensorContext context) {
-      return context.setConfiguration(MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED, false)
-                    .setConfiguration(MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED, true);
+   private TestSensorContext disableJavaSensor(final TestSensorContext context) {
+      return context.setConfiguration(MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED, false);
    }
-   private TestSensorContext enableOnlyJavaSensor(final TestSensorContext context) {
-      return context.setConfiguration(MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED, true)
-                    .setConfiguration(MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED, false);
+   private TestSensorContext disableKotlingSensor(final TestSensorContext context) {
+      return context.setConfiguration(MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED, false);
    }
 }

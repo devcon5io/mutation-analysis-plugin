@@ -20,6 +20,8 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.REPOSITORY_KEY;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +32,6 @@ import java.util.Map;
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
-import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.fs.FileSystem;
@@ -86,11 +87,27 @@ public class PitestSensor implements Sensor {
   public void describe(final SensorDescriptor descriptor) {
 
     descriptor.name("Mutation Analysis");
-    descriptor.onlyOnLanguages("java", "kotlin");
-    descriptor.createIssuesForRuleRepositories(
-            MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".java",
-            MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".kotlin");
 
+    descriptor.onlyOnLanguages(toArray("java", "kotlin"));
+    descriptor.createIssuesForRuleRepositories(toArray(REPOSITORY_KEY + ".java", REPOSITORY_KEY + ".kotlin"));
+
+  }
+
+  /**
+   * Helper method to produce an array out of two items without creating unkillable mutations.
+   *
+   *  a sane implementation would simply call a varargs method such as descriptor.onlyOnLanguages("java", "kotlin")
+   *
+   *  unfortunately the varargs produce un-killable mutations which was tried to avoid for the plugin
+   *  the list in combination with the stream to produce an array has no unkillable mutations
+   *  the list has no varargs (unlike Arrays.asList())
+   *  the stream to array requires no size argument that can be mutated
+   */
+  private String[] toArray(String element1, String element2) {
+    final List<String> list = new ArrayList<>();
+    list.add(element1);
+    list.add(element2);
+    return list.stream().toArray(String[]::new);
   }
 
   private List<String> getLanguageKeys(){
