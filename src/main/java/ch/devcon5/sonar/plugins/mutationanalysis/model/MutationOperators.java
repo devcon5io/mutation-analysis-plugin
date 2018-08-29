@@ -120,7 +120,6 @@ public final class MutationOperators {
         MutationOperator result = UNKNOWN;
         for (final MutationOperator mutationOperator : INSTANCES.values()) {
             if (mutagenKey.equals(mutationOperator.getId())
-                    || mutagenKey.equals(mutationOperator.getClassName())
                     || mutagenKey.startsWith(mutationOperator.getClassName())) {
                 result = mutationOperator;
                 break;
