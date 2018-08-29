@@ -379,6 +379,7 @@ public class MutantTest {
                                .inLine(expected.getLineNumber())
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator_EQUAL_IF")
+                               .withDescription(expected.getDescription().get())
                                .atIndex(expected.getIndex())
                                .killedBy(expected.getKillingTest())
                                .build();

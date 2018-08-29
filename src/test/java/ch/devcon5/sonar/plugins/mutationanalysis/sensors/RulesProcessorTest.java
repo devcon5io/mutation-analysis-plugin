@@ -34,22 +34,18 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperator;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaRulesDefinition;
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.LogRecordingAppender;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +71,7 @@ public class RulesProcessorTest {
    private RulesDefinition.Context rulesContext;
 
    private SensorTestHarness harness;
-   private ListAppender appender;
+   private LogRecordingAppender appender;
 
    @Before
    public void setUp() throws Exception {
@@ -88,7 +84,7 @@ public class RulesProcessorTest {
       this.rulesContext = new RulesDefinition.Context();
       this.def.define(rulesContext);
 
-      appender = new ListAppender();
+      appender = new LogRecordingAppender();
    }
 
    @After
@@ -446,34 +442,4 @@ public class RulesProcessorTest {
       return description == null ? "" : description;
    }
 
-   public static class ListAppender extends AbstractAppender implements AutoCloseable {
-
-      private List<LogEvent> events = new CopyOnWriteArrayList<>();
-
-      public ListAppender() {
-         super("listAppender", null, null);
-         getLoggerConfig().addAppender(this, Level.ALL, null);
-         this.start();
-      }
-
-      @Override
-      public void append(final LogEvent logEvent) {
-         events.add(logEvent);
-      }
-
-      public List<LogEvent> getEvents() {
-         return events;
-      }
-
-      private LoggerConfig getLoggerConfig() {
-         final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-         return loggerContext.getConfiguration().getLoggerConfig("");
-      }
-
-      @Override
-      public void close() throws Exception {
-         getLoggerConfig().removeAppender(getName());
-         this.stop();
-      }
-   }
 }
