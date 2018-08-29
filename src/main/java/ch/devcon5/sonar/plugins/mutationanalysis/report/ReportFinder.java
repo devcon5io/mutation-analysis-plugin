@@ -30,6 +30,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +135,9 @@ public class ReportFinder {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
       requireNonNull(file, "file must not be null");
-      if (matcher.matches(file.getFileName())) {
+
+      final Path filename = file.getFileName();
+      if (Objects.nonNull(filename) && matcher.matches(filename)) {
         reports.add(file);
       }
       return FileVisitResult.CONTINUE;

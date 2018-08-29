@@ -21,13 +21,14 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.report.ReportFinder.ReportFinderVisitor;
@@ -225,5 +226,21 @@ public class ReportFinderTest {
         visitor.visitFile(null, null);
     }
 
+    @Test
+    public void nullPath_ReportFinderVisitor() throws Exception {
 
+        final ReportFinderVisitor visitor =  new ReportFinderVisitor("mutatations.xml");
+
+        //according to javadoc, the filename can be null
+        //however at least on windows, its practically impossible to construct such a path
+        //therefore I find no other way than to mock the Path in order to check
+        //if implementation is null-safe
+        Path file = mock(Path.class);
+        when(file.getFileName()).thenReturn(null);
+
+        final FileVisitResult result = visitor.visitFile(file, null);
+
+        assertEquals(FileVisitResult.CONTINUE, result);
+        assertTrue(visitor.getReports().isEmpty());
+    }
 }
