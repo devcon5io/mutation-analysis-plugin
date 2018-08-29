@@ -21,35 +21,49 @@ package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertTrue;
 
+import java.nio.file.Paths;
 import java.util.Collection;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
-import org.junit.Before;
+import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.fs.internal.DefaultIndexedFile;
+import org.sonar.api.batch.fs.internal.DefaultInputFile;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ResourceMutationMetricsTest {
 
-    @Mock
-    private InputFile resource;
+    private InputFile resource = new DefaultInputFile(new DefaultIndexedFile("test", Paths.get("."), "src/main/java/example/Test.java", "java"), x -> {});
 
-    @Mock
-    private Mutant mutant;
+    private Mutant mutant = defaultMutantBuilder().mutantStatus(Mutant.State.UNKNOWN).build();
 
-    @InjectMocks
-    private ResourceMutationMetrics subject;
+    private Mutant.Builder defaultMutantBuilder() {
+        return Mutant.builder()
+                     .inSourceFile("Test.java")
+                     .inClass("example.Test")
+                .inMethod("helloWorld")
+                .withMethodParameters("(Ljava/lang/Object;)Z")
+                .usingMutator(MutationOperators.find("MATH"));
+    }
 
-    @Before
-    public void setUp() throws Exception {
+    private ResourceMutationMetrics subject = new ResourceMutationMetrics(resource);
 
-        when(mutant.getState()).thenReturn(Mutant.State.UNKNOWN);
+    @Test
+    public void testDefaults() throws Exception {
+        ResourceMutationMetrics rmm = new ResourceMutationMetrics(resource);
+
+        assertEquals(0, rmm.getMutationsDetected());
+        assertEquals(0, rmm.getMutationsTotal());
+        assertEquals(0, rmm.getMutationsKilled());
+        assertEquals(0, rmm.getMutationsMemoryError());
+        assertEquals(0, rmm.getMutationsNoCoverage());
+        assertEquals(0, rmm.getMutationsSurvived());
+        assertEquals(0, rmm.getMutationsTimedOut());
+        assertEquals(0, rmm.getMutationsUnknown());
+        assertEquals(0.0, rmm.getMutationCoverage(), 0.0001);
+        assertTrue(rmm.getMutants().isEmpty());
 
     }
 
@@ -87,7 +101,8 @@ public class ResourceMutationMetricsTest {
     public void testGetMutationsNoCoverage() throws Exception {
 
         // prepare
-        when(mutant.getState()).thenReturn(Mutant.State.NO_COVERAGE);
+        Mutant mutant = defaultMutantBuilder().mutantStatus(Mutant.State.NO_COVERAGE).build();
+
         subject.addMutant(mutant);
 
         // act
@@ -101,7 +116,7 @@ public class ResourceMutationMetricsTest {
     public void testGetMutationsKilled() throws Exception {
 
         // prepare
-        when(mutant.getState()).thenReturn(Mutant.State.KILLED);
+        Mutant mutant = defaultMutantBuilder().mutantStatus(Mutant.State.KILLED).killedBy("ATest").build();
         subject.addMutant(mutant);
 
         // act
@@ -115,7 +130,7 @@ public class ResourceMutationMetricsTest {
     public void testGetMutationsSurvived() throws Exception {
 
         // prepare
-        when(mutant.getState()).thenReturn(Mutant.State.SURVIVED);
+        Mutant mutant = defaultMutantBuilder().mutantStatus(Mutant.State.SURVIVED).build();
         subject.addMutant(mutant);
 
         // act
@@ -129,7 +144,7 @@ public class ResourceMutationMetricsTest {
     public void testGetMutationsMemoryError() throws Exception {
 
         // prepare
-        when(mutant.getState()).thenReturn(Mutant.State.MEMORY_ERROR);
+        Mutant mutant = defaultMutantBuilder().mutantStatus(Mutant.State.MEMORY_ERROR).killedBy("ATest").build();
         subject.addMutant(mutant);
 
         // act
@@ -143,7 +158,7 @@ public class ResourceMutationMetricsTest {
     public void testGetMutationsTimedOut() throws Exception {
 
         // prepare
-        when(mutant.getState()).thenReturn(Mutant.State.TIMED_OUT);
+        Mutant mutant = defaultMutantBuilder().mutantStatus(Mutant.State.TIMED_OUT).killedBy("ATest").build();
         subject.addMutant(mutant);
 
         // act
@@ -157,7 +172,7 @@ public class ResourceMutationMetricsTest {
     public void testGetMutationsUnknown() throws Exception {
 
         // prepare
-        when(mutant.getState()).thenReturn(Mutant.State.UNKNOWN);
+        Mutant mutant = defaultMutantBuilder().mutantStatus(Mutant.State.UNKNOWN).build();
         subject.addMutant(mutant);
 
         // act
@@ -171,33 +186,24 @@ public class ResourceMutationMetricsTest {
     public void testGetMutationsDetected() throws Exception {
 
         // prepare
-        when(mutant.isDetected()).thenReturn(true);
-        when(mutant.getState()).thenReturn(Mutant.State.KILLED);
-        subject.addMutant(mutant);
-        when(mutant.isDetected()).thenReturn(true);
-        when(mutant.getState()).thenReturn(Mutant.State.SURVIVED);
-        subject.addMutant(mutant);
-        when(mutant.isDetected()).thenReturn(false);
-        when(mutant.getState()).thenReturn(Mutant.State.NO_COVERAGE);
-        subject.addMutant(mutant);
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.KILLED).killedBy("ATest").build());
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.SURVIVED).build());
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.NO_COVERAGE).build());
 
         // act
         final int value = subject.getMutationsDetected();
 
         // assert
-        assertEquals(2, value);
+        assertEquals(1, value);
     }
 
     @Test
     public void testGetMutationCoverage() throws Exception {
 
         // prepare
-        when(mutant.getState()).thenReturn(Mutant.State.KILLED);
-        subject.addMutant(mutant);
-        when(mutant.getState()).thenReturn(Mutant.State.SURVIVED);
-        subject.addMutant(mutant);
-        when(mutant.getState()).thenReturn(Mutant.State.NO_COVERAGE);
-        subject.addMutant(mutant);
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.KILLED).killedBy("ATest").build());
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.SURVIVED).build());
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.NO_COVERAGE).build());
 
         // act
         final double value = subject.getMutationCoverage();
@@ -210,18 +216,15 @@ public class ResourceMutationMetricsTest {
     public void testGetMutationCoverage_fullCoverage() throws Exception {
 
         // prepare
-        when(mutant.getState()).thenReturn(Mutant.State.KILLED);
-        subject.addMutant(mutant);
-        when(mutant.getState()).thenReturn(Mutant.State.KILLED);
-        subject.addMutant(mutant);
-        when(mutant.getState()).thenReturn(Mutant.State.KILLED);
-        subject.addMutant(mutant);
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.KILLED).killedBy("ATest").build());
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.SURVIVED).build());
+        subject.addMutant(defaultMutantBuilder().mutantStatus(Mutant.State.NO_COVERAGE).build());
 
         // act
         final double value = subject.getMutationCoverage();
 
         // assert
-        assertEquals(100.0, value, 0.000001);
+        assertEquals(33.33, value, 0.01);
     }
 
     @Test

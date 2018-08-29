@@ -34,45 +34,50 @@ import org.sonar.api.measures.CoreMetrics;
  */
 public class MutationDensityComputer implements MeasureComputer {
 
-  private static final Logger LOG = getLogger(MutationDensityComputer.class);
+   private static final Logger LOG = getLogger(MutationDensityComputer.class);
 
-  private Configuration config;
+   private Configuration config;
 
-  public MutationDensityComputer(final Configuration config) {
+   public MutationDensityComputer(final Configuration config) {
 
-    this.config = config;
-  }
+      this.config = config;
+   }
 
-  @Override
-  public MeasureComputerDefinition define(final MeasureComputerDefinitionContext defContext) {
+   @Override
+   public MeasureComputerDefinition define(final MeasureComputerDefinitionContext defContext) {
 
-    return defContext.newDefinitionBuilder()
-                     .setInputMetrics(MutationMetrics.MUTATIONS_TOTAL.key(), CoreMetrics.LINES_TO_COVER_KEY)
-                     .setOutputMetrics(MutationMetrics.MUTATIONS_DENSITY.key())
-                     .build();
-  }
+      return defContext.newDefinitionBuilder()
+                       .setInputMetrics(MutationMetrics.MUTATIONS_TOTAL.key(), CoreMetrics.LINES_TO_COVER_KEY)
+                       .setOutputMetrics(MutationMetrics.MUTATIONS_DENSITY.key())
+                       .build();
+   }
 
-  @Override
-  public void compute(final MeasureComputerContext context) {
+   @Override
+   public void compute(final MeasureComputerContext context) {
 
-    if (!MutationAnalysisPlugin.isExperimentalFeaturesEnabled(config)) {
-      LOG.info("Experimental Features disabled");
-      return;
-    }
-
-    LOG.info("Computing Mutation Density for {}", context.getComponent());
-    final Measure lines = context.getMeasure(CoreMetrics.LINES_TO_COVER_KEY);
-    final Measure mutations = context.getMeasure(MutationMetrics.MUTATIONS_TOTAL.key());
-
-    if (mutations != null) {
-      final Double density;
-      if (lines != null) {
-        density = 100.0 * ((double) mutations.getIntValue() / (double) lines.getIntValue());
-      } else {
-        density = 0d;
+      if (!MutationAnalysisPlugin.isExperimentalFeaturesEnabled(config)) {
+         LOG.info("Experimental Features disabled");
+         return;
       }
-      LOG.info("Computed Mutation Density of {} for {}", density, context.getComponent());
-      context.addMeasure(MutationMetrics.MUTATIONS_DENSITY.key(), density);
-    }
-  }
+
+      LOG.info("Computing Mutation Density for {}", context.getComponent());
+      final Measure lines = context.getMeasure(CoreMetrics.LINES_TO_COVER_KEY);
+      final Measure mutations = context.getMeasure(MutationMetrics.MUTATIONS_TOTAL.key());
+
+      if (mutations == null) {
+         return;
+      }
+      final Double density;
+
+      if (lines == null) {
+         density = 0d;
+      } else {
+         density = 100.0 * ((double) mutations.getIntValue() / (double) lines.getIntValue());
+      }
+
+      if(!Double.isNaN(density)){
+         LOG.info("Computed Mutation Density of {} for {}", density, context.getComponent());
+         context.addMeasure(MutationMetrics.MUTATIONS_DENSITY.key(), density);
+      }
+   }
 }

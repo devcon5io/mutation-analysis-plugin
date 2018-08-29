@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
-import ch.devcon5.sonar.plugins.mutationanalysis.model.MutantBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,208 +57,213 @@ import org.slf4j.LoggerFactory;
  *   ...
  * &lt;/mutantions&gt;
  * </pre>
- *
  */
 public class PitestReportParser {
 
-  /**
-   * SLF4J Logger for this class
-   */
-  private static final Logger LOG = LoggerFactory.getLogger(PitestReportParser.class);
+   /**
+    * SLF4J Logger for this class
+    */
+   private static final Logger LOG = LoggerFactory.getLogger(PitestReportParser.class);
 
-  private static final String ATTR_DETECTED = "detected";
+   private static final String ATTR_STATUS = "status";
 
-  private static final String ATTR_STATUS = "status";
+   private static final String ELEMENT_KILLING_TEST = "killingTest";
 
-  private static final String ELEMENT_KILLING_TEST = "killingTest";
+   private static final String ELEMENT_DESCRIPTION = "description";
 
-  private static final String ELEMENT_INDEX = "index";
+   private static final String ELEMENT_INDEX = "index";
 
-  private static final String ELEMENT_MUTATOR = "mutator";
+   private static final String ELEMENT_MUTATOR = "mutator";
 
-  private static final String ELEMENT_LINE_NUMBER = "lineNumber";
+   private static final String ELEMENT_LINE_NUMBER = "lineNumber";
 
-  private static final String ELEMENT_METHOD_DESCRIPTION = "methodDescription";
+   private static final String ELEMENT_METHOD_DESCRIPTION = "methodDescription";
 
-  private static final String ELEMENT_MUTATED_METHOD = "mutatedMethod";
+   private static final String ELEMENT_MUTATED_METHOD = "mutatedMethod";
 
-  private static final String ELEMENT_MUTATED_CLASS = "mutatedClass";
+   private static final String ELEMENT_MUTATED_CLASS = "mutatedClass";
 
-  private static final String ELEMENT_SOURCE_FILE = "sourceFile";
+   private static final String ELEMENT_SOURCE_FILE = "sourceFile";
 
-  private static final String ELEMENT_MUTATION = "mutation";
+   private static final String ELEMENT_MUTATION = "mutation";
 
-  private static final String NAMESPACE_URI = null;
+   private static final String NAMESPACE_URI = null;
 
-  /**
-   * Parses the contents of the report file into a list of {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s. The report file must be a PIT report.
-   *
-   * @param report
-   *         the {@link Path} to the PIT report file to be parsed
-   *
-   * @return a {@link Collection} of {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s
-   *
-   * @throws IOException
-   *         if the report file could not be read
-   */
-  public Collection<Mutant> parseMutants(final Path report) throws IOException {
+   /**
+    * Parses the contents of the report file into a list of {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s. The report file must be a PIT report.
+    *
+    * @param report
+    *         the {@link Path} to the PIT report file to be parsed
+    *
+    * @return a {@link Collection} of {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s
+    *
+    * @throws IOException
+    *         if the report file could not be read
+    */
+   public Collection<Mutant> parseMutants(final Path report) throws IOException {
 
-    Collection<Mutant> result;
+      Collection<Mutant> result;
 
-    //TODO replace java.nio.Files API when migrating to JDK9+
-    if(!report.toFile().exists()){
-       LOG.debug("No report {} found", report);
-       return Collections.emptyList();
-    }
+      //TODO replace java.nio.Files API when migrating to JDK9+
+      if (!report.toFile().exists()) {
+         LOG.debug("No report {} found", report);
+         return Collections.emptyList();
+      }
+      try (InputStream stream = Files.newInputStream(report)) {
+         result = readMutants(stream);
 
-    try (InputStream stream = Files.newInputStream(report)) {
+      } catch (XMLStreamException e) {
+         LOG.warn("Parsing report failed: {}", e.getMessage());
+         LOG.debug("Parsing error ", e);
+         result = Collections.emptyList();
+      }
+      return result;
+   }
+
+   /**
+    * Reads mutants from the input stream which is assumed to be a stream of xml data. In case the stream contains invalid mutation description - i.e. mandatory information
+    * is mssing - an {@link XMLStreamException} containing the exact location of the fault is thrown.
+    * @param stream
+    *  the input stream containing the xml data
+    * @return
+    *  a collection of mutants parsed from the stream
+    * @throws XMLStreamException
+    */
+   Collection<Mutant> readMutants(final InputStream stream) throws XMLStreamException {
       final XMLInputFactory inf = XMLInputFactory.newInstance();
       final XMLStreamReader reader = inf.createXMLStreamReader(stream);
-      result = readMutants(reader);
-    } catch (XMLStreamException e) {
-      LOG.warn("Parsing report failed: {}", e.getMessage());
-      LOG.debug("Parsing error details ", e);
-      result = Collections.emptyList();
-    }
-    return result;
-  }
-
-  /**
-   * Reads the Mutants from the XML Stream. The method reads the stream for occurrences of &lt;mutation&gt; elements
-   * and then parses the element's contents into a {@link Mutant} instance.
-   *
-   * @param reader
-   *         the XMLStream to read
-   *
-   * @return a {@link Collection} of {@link Mutant}s found on the stream
-   *
-   * @throws XMLStreamException
-   */
-  private Collection<Mutant> readMutants(final XMLStreamReader reader) throws XMLStreamException {
-
-    final Collection<Mutant> result = new ArrayList<>();
-    int event;
-    while (reader.hasNext()) {
-      event = reader.next();
-      if(event == START_ELEMENT){
-          startElement(reader, result);
+      try {
+         return readMutants(reader);
+      } catch (IllegalArgumentException e){
+         throw new XMLStreamException(e.getMessage(), reader.getLocation(),e);
       }
-    }
+   }
 
-    return result;
-  }
+   /**
+    * Reads the Mutants from the XML Stream. The method reads the stream for occurrences of &lt;mutation&gt; elements
+    * and then parses the element's contents into a {@link Mutant} instance.
+    *
+    * @param reader
+    *         the XMLStream to read
+    *
+    * @return a {@link Collection} of {@link Mutant}s found on the stream
+    *
+    * @throws XMLStreamException
+    */
+   private Collection<Mutant> readMutants(final XMLStreamReader reader) throws XMLStreamException {
 
-  /**
-   * Is invoked when a new element is detected.
-   *
-   * @param reader
-   *         the reader whose cursor is at the new element's position
-   * @param result
-   *         the collection of mutants. if the new element declares a mutant, a new mutant will be added to the
-   *         collection
-   *
-   * @throws XMLStreamException
-   */
-  private void startElement(final XMLStreamReader reader, final Collection<Mutant> result) throws XMLStreamException {
-
-    if (ELEMENT_MUTATION.equals(reader.getLocalName())) {
-      final Mutant mutant = parseMutant(reader);
-      LOG.debug("Found mutant {}", mutant);
-      result.add(mutant);
-    }
-  }
-
-  /**
-   * The method assumes, the reader is at the start element position of a <code>&lt;mutation&gt;</code> element.
-   *
-   * @param reader
-   *
-   * @return
-   *
-   * @throws XMLStreamException
-   */
-  private Mutant parseMutant(final XMLStreamReader reader) throws XMLStreamException {
-
-    final MutantBuilder builder = Mutant.newMutant().detected(isMutantDetected(reader))
-                                        .mutantStatus(getMutantStatus(reader));
-    while (reader.hasNext()) {
-      final int event = reader.next();
-      if (event == START_ELEMENT) {
-        buildMutant(reader, builder);
-      } else if (event == END_ELEMENT && ELEMENT_MUTATION.equals(reader.getLocalName())) {
-        break;
+      final Collection<Mutant> result = new ArrayList<>();
+      int event;
+      while (reader.hasNext()) {
+         event = reader.next();
+         if (event == START_ELEMENT) {
+            startElement(reader, result);
+         }
       }
-    }
 
-    return builder.build();
-  }
+      return result;
+   }
 
-  /**
-   * Builds the {@link Mutant} by calling the builder methods of the builder on occurrence of the according mutant
-   * elements
-   *
-   * @param reader
-   *         the reader to read the elements from the XML stream
-   * @param builder
-   *         the builder for the current {@link Mutant} whose builder methods are invoked
-   *
-   * @throws XMLStreamException
-   */
-  private void buildMutant(final XMLStreamReader reader, final MutantBuilder builder) throws XMLStreamException {
+   /**
+    * Is invoked when a new element is detected.
+    *
+    * @param reader
+    *         the reader whose cursor is at the new element's position
+    * @param result
+    *         the collection of mutants. if the new element declares a mutant, a new mutant will be added to the
+    *         collection
+    *
+    * @throws XMLStreamException
+    */
+   private void startElement(final XMLStreamReader reader, final Collection<Mutant> result) throws XMLStreamException {
 
-    switch (reader.getLocalName()) {
-      case ELEMENT_SOURCE_FILE:
-        builder.inSourceFile(reader.getElementText());
-        break;
-      case ELEMENT_MUTATED_CLASS:
-        builder.inClass(reader.getElementText());
-        break;
-      case ELEMENT_MUTATED_METHOD:
-        builder.inMethod(reader.getElementText());
-        break;
-      case ELEMENT_METHOD_DESCRIPTION:
-        builder.withMethodParameters(reader.getElementText());
-        break;
-      case ELEMENT_LINE_NUMBER:
-        builder.inLine(Integer.parseInt(reader.getElementText()));
-        break;
-      case ELEMENT_MUTATOR:
-        builder.usingMutator(reader.getElementText());
-        break;
-      case ELEMENT_INDEX:
-        builder.atIndex(Integer.parseInt(reader.getElementText()));
-        break;
-      case ELEMENT_KILLING_TEST:
-        builder.killedBy(reader.getElementText());
-        break;
-      default:
-        break;
-    }
-  }
+      if (ELEMENT_MUTATION.equals(reader.getLocalName())) {
+         final Mutant mutant = parseMutant(reader);
+         LOG.debug("Found mutant {}", mutant);
+         result.add(mutant);
+      }
+   }
 
-  /**
-   * Reads the status of {@link Mutant} from the XMLStream.
-   *
-   * @param reader
-   *         the {@link XMLStreamReader} whose cursor is at the start element position of a &lt;mutation&gt; element
-   *
-   * @return the mutant status as a string
-   */
-  private String getMutantStatus(final XMLStreamReader reader) {
+   /**
+    * The method assumes, the reader is at the start element position of a <code>&lt;mutation&gt;</code> element.
+    *
+    * @param reader
+    *
+    * @return
+    *
+    * @throws XMLStreamException
+    */
+   private Mutant parseMutant(final XMLStreamReader reader) throws XMLStreamException {
 
-    return reader.getAttributeValue(NAMESPACE_URI, ATTR_STATUS);
-  }
+      final Mutant.Builder builder = Mutant.builder().mutantStatus(getMutantStatus(reader));
 
-  /**
-   * Checks if the mutant was detected or not
-   *
-   * @param reader
-   *         the {@link XMLStreamReader} whose cursor is at the start element position of a &lt;mutation&gt; element
-   *
-   * @return <code>true</code> if the mutant was detected
-   */
-  private boolean isMutantDetected(final XMLStreamReader reader) {
+      while (true) {
+         int event = reader.next();
+         if (event == START_ELEMENT) {
+            buildMutant(reader, builder);
+         } else if (event == END_ELEMENT && ELEMENT_MUTATION.equals(reader.getLocalName())) {
+            break;
+         }
+      }
+      return builder.build();
+   }
 
-    return Boolean.parseBoolean(reader.getAttributeValue(NAMESPACE_URI, ATTR_DETECTED));
-  }
+   /**
+    * Builds the {@link Mutant} by calling the builder methods of the builder on occurrence of the according mutant
+    * elements
+    *
+    * @param reader
+    *         the reader to read the elements from the XML stream
+    * @param builder
+    *         the builder for the current {@link Mutant} whose builder methods are invoked
+    *
+    * @throws XMLStreamException
+    */
+   private void buildMutant(final XMLStreamReader reader, final Mutant.Builder builder) throws XMLStreamException {
+
+      switch (reader.getLocalName()) {
+         case ELEMENT_SOURCE_FILE:
+            builder.inSourceFile(reader.getElementText());
+            break;
+         case ELEMENT_MUTATED_CLASS:
+            builder.inClass(reader.getElementText());
+            break;
+         case ELEMENT_MUTATED_METHOD:
+            builder.inMethod(reader.getElementText());
+            break;
+         case ELEMENT_METHOD_DESCRIPTION:
+            builder.withMethodParameters(reader.getElementText());
+            break;
+         case ELEMENT_LINE_NUMBER:
+            builder.inLine(Integer.parseInt(reader.getElementText()));
+            break;
+         case ELEMENT_MUTATOR:
+            builder.usingMutator(reader.getElementText());
+            break;
+         case ELEMENT_INDEX:
+            builder.atIndex(Integer.parseInt(reader.getElementText()));
+            break;
+         case ELEMENT_KILLING_TEST:
+            builder.killedBy(reader.getElementText());
+            break;
+         case ELEMENT_DESCRIPTION:
+            builder.withDescription(reader.getElementText());
+            break;
+         default:
+            break;
+      }
+   }
+
+   /**
+    * Reads the status of {@link Mutant} from the XMLStream.
+    *
+    * @param reader
+    *         the {@link XMLStreamReader} whose cursor is at the start element position of a &lt;mutation&gt; element
+    *
+    * @return the mutant status as a string
+    */
+   private String getMutantStatus(final XMLStreamReader reader) {
+
+      return reader.getAttributeValue(NAMESPACE_URI, ATTR_STATUS);
+   }
 }

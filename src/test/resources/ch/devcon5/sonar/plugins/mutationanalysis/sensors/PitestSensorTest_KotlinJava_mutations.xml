@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mutations>
+    <mutation detected='false' status='NO_COVERAGE' numberOfTestsRun='0'>
+        <sourceFile>KotlinExample.kt</sourceFile>
+        <mutatedClass>ch.devcon5.sonar.plugins.mutationanalysis.KotlinExample</mutatedClass>
+        <mutatedMethod>helloWorld</mutatedMethod>
+        <methodDescription>()V</methodDescription>
+        <lineNumber>28</lineNumber>
+        <mutator>org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator</mutator>
+        <index>8</index>
+        <block>0</block>
+        <killingTest/>
+        <description>negated conditional</description>
+    </mutation>
+    <mutation detected='false' status='NO_COVERAGE' numberOfTestsRun='0'>
+        <sourceFile>Mutant.java</sourceFile>
+        <mutatedClass>ch.devcon5.sonar.plugins.mutationanalysis.JavaExample</mutatedClass>
+        <mutatedMethod>equals</mutatedMethod>
+        <methodDescription>(Ljava/lang/Object;)Z</methodDescription>
+        <lineNumber>162</lineNumber>
+        <mutator>org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator</mutator>
+        <index>5</index>
+        <killingTest/>
+    </mutation>
+</mutations>

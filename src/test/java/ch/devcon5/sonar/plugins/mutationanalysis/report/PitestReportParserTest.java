@@ -23,6 +23,7 @@ package ch.devcon5.sonar.plugins.mutationanalysis.report;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -32,50 +33,143 @@ import java.util.Collection;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
 public class PitestReportParserTest {
 
-    private PitestReportParser subject;
+   @Rule
+   public TemporaryFolder folder = new TemporaryFolder();
 
-    @Before
-    public void setUp() {
+   @Rule
+   public ExpectedException expect = ExpectedException.none();
 
-        subject = new PitestReportParser();
-    }
+   private PitestReportParser subject;
 
-    @Test
-    public void testParseReport_findMutants() throws IOException, URISyntaxException {
+   @Before
+   public void setUp() {
 
-        // prepare
-        final Path report = Paths.get(getClass().getResource("PitestReportParserTest_mutations.xml").toURI());
+      subject = new PitestReportParser();
+   }
 
-        // act
-        final Collection<Mutant> mutants = subject.parseMutants(report);
+   @Test
+   public void parseReport_findMutants_withoutDescription() throws IOException, URISyntaxException {
 
-        // assert
-        assertEquals(3, mutants.size());
+      // prepare
+      final Path report = Paths.get(getClass().getResource("PitestReportParserTest_mutations.xml").toURI());
 
-        //@formatter:off
+      // act
+      final Collection<Mutant> mutants = subject.parseMutants(report);
 
-        assertTrue(mutants.contains( new Mutant(true,Mutant.State.KILLED,"Mutant.java",
-                "ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant","equals","(Ljava/lang/Object;)Z",162,
-                MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"),"",
-                5,"ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_different_false(ch"
-                                                    + ".devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")));
-        assertTrue(mutants.contains(new Mutant(false, Mutant.State.SURVIVED, "Mutant.java",
-                "ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant", "equals","(Ljava/lang/Object;)Z", 172,
-                MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"), "",
-                43,"")));
-        assertTrue(mutants.contains(new Mutant(false,Mutant.State.NO_COVERAGE,"Mutant.java",
-                "ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant","equals","(Ljava/lang/Object;)Z",175,
-                MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"),"",
-                55, "")));
-        // @formatter:on
+      // assert
+      assertEquals(3, mutants.size());
 
-        assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
-        assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.MEMORY_ERROR).count());
-        assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
+      assertTrue(mutants.contains(Mutant.builder()
+                                        .mutantStatus(Mutant.State.KILLED)
+                                        .inSourceFile("Mutant.java")
+                                        .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+                                        .inMethod("equals")
+                                        .withMethodParameters("(Ljava/lang/Object;)Z")
+                                        .inLine(162)
+                                        .atIndex(5)
+                                        .usingMutator(MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"))
+                                        .killedBy(
+                                                "ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_different_false(ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")
+                                        .build()));
 
-    }
+      assertTrue(mutants.contains(Mutant.builder()
+                                        .mutantStatus(Mutant.State.SURVIVED)
+                                        .inSourceFile("Mutant.java")
+                                        .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+                                        .inMethod("equals")
+                                        .withMethodParameters("(Ljava/lang/Object;)Z")
+                                        .inLine(172)
+                                        .atIndex(43)
+                                        .usingMutator(MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"))
+                                        .killedBy("")
+                                        .build()));
+      assertTrue(mutants.contains(Mutant.builder()
+                                        .mutantStatus(Mutant.State.NO_COVERAGE)
+                                        .inSourceFile("Mutant.java")
+                                        .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+                                        .inMethod("equals")
+                                        .withMethodParameters("(Ljava/lang/Object;)Z")
+                                        .inLine(175)
+                                        .atIndex(55)
+                                        .usingMutator(MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"))
+                                        .killedBy("")
+                                        .build()));
+
+      assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.UNKNOWN).count());
+      assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.MEMORY_ERROR).count());
+      assertEquals(0, mutants.stream().filter(m -> m.getState() == Mutant.State.TIMED_OUT).count());
+
+   }
+
+   @Test
+   public void parseReport_findMutants_withDescriptions() throws IOException, URISyntaxException {
+
+      // prepare
+      final Path report = Paths.get(getClass().getResource("PitestReportParserTest_mutationsWithDescriptions.xml").toURI());
+      final Mutant expected = Mutant.builder()
+                                    .mutantStatus(Mutant.State.KILLED)
+                                    .inSourceFile("Mutant.java")
+                                    .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+                                    .inMethod("equals")
+                                    .withMethodParameters("(Ljava/lang/Object;)Z")
+                                    .inLine(268)
+                                    .atIndex(8)
+                                    .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator")
+                                    .killedBy("ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_same_true(ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")
+                                    .withDescription("Substituted 1 with 0")
+                                    .build();
+
+      // act
+      final Collection<Mutant> mutants = subject.parseMutants(report);
+
+      // assert
+      assertEquals(expected, mutants.iterator().next());
+   }
+
+   @Test
+   public void parseReport_emptyFile_emptyList() throws Exception {
+
+      Path emptyFile = folder.newFile().toPath();
+
+      Collection<Mutant> result = subject.parseMutants(emptyFile);
+
+      assertTrue(result.isEmpty());
+   }
+
+   @Test
+   public void parseReport_brokenXml_emptyList() throws Exception {
+
+      final Path report = Paths.get(getClass().getResource("PitestReportParserTest_broken.xml").toURI());
+
+      Collection<Mutant> result = subject.parseMutants(report);
+
+      assertTrue(result.isEmpty());
+   }
+
+   @Test
+   public void parseReport_nonExistingFile_emptyList() throws Exception {
+
+      Path missingFile = Paths.get("anyNonExistingPath");
+
+      Collection<Mutant> result = subject.parseMutants(missingFile);
+
+      assertTrue(result.isEmpty());
+   }
+
+   @Test
+   public void readMutants_brokenXml_exceptionWithDetails() throws Exception {
+
+      expect.expect(XMLStreamException.class);
+      expect.expectMessage("ParseError at [row,col]:[23,5]\nMessage: sourceFile must be set");
+
+      subject.readMutants(getClass().getResourceAsStream("PitestReportParserTest_broken.xml"));
+   }
+
 }

@@ -30,163 +30,176 @@ import org.junit.Test;
 
 public class MutationOperatorTest {
 
-    @Test(expected = NullPointerException.class)
-    public void testMutator_nullId_exception() throws Exception {
+   @Test(expected = NullPointerException.class)
+   public void testMutator_nullId_exception() throws Exception {
 
-        new MutationOperator(null, "", "", "", new URL("file:///"));
+      new MutationOperator(null, "", "", "", new URL("file:///"));
 
-    }
+   }
 
-    @Test(expected = NullPointerException.class)
-    public void testMutator_nullName_exception() throws Exception {
+   @Test(expected = NullPointerException.class)
+   public void testMutator_nullName_exception() throws Exception {
 
-        new MutationOperator("", null, "", "", new URL("file:///"));
+      new MutationOperator("", null, "", "", new URL("file:///"));
 
-    }
+   }
 
-    @Test(expected = NullPointerException.class)
-    public void testMutator_nullViolationDescription_exception() throws Exception {
+   @Test(expected = NullPointerException.class)
+   public void testMutator_nullViolationDescription_exception() throws Exception {
 
-        new MutationOperator("", "", "", null, new URL("file:///"));
+      new MutationOperator("", "", "", null, new URL("file:///"));
 
-    }
+   }
 
-    @Test
-    public void testMutator_nullArgument() throws Exception {
+   @Test
+   public void testMutator_nullArguments() throws Exception {
 
-        final MutationOperator mutationOperator = new MutationOperator("id", "name", null, "violationDescription", null);
-        assertEquals("id", mutationOperator.getId());
-        assertEquals("name", mutationOperator.getName());
-        assertEquals("violationDescription", mutationOperator.getViolationDescription());
-        assertNull(mutationOperator.getClassName());
-        assertNotNull(mutationOperator.getMutagenDescriptionLocation());
-        assertFalse(mutationOperator.getMutagenDescriptionLocation().isPresent());
-        assertNotNull(mutationOperator.getMutagenDescriptionLocation());
-        assertEquals(Optional.empty(), mutationOperator.getMutagenDescriptionLocation());
-        assertNotNull(mutationOperator.getMutagenDescriptionLocation());
+      final MutationOperator mutationOperator = new MutationOperator("id", "name", null, "violationDescription", null);
+      assertEquals("id", mutationOperator.getId());
+      assertEquals("name", mutationOperator.getName());
+      assertEquals("violationDescription", mutationOperator.getViolationDescription());
+      assertNull(mutationOperator.getClassName());
+      assertNotNull(mutationOperator.getMutagenDescriptionLocation());
+      assertFalse(mutationOperator.getMutagenDescriptionLocation().isPresent());
+      assertNotNull(mutationOperator.getMutagenDescriptionLocation());
+      assertEquals(Optional.empty(), mutationOperator.getMutagenDescriptionLocation());
+      assertNotNull(mutationOperator.getMutagenDescriptionLocation());
 
-    }
+   }
 
-    @Test
-    public void testGetId() throws Exception {
+   @Test
+   public void testGetId() throws Exception {
 
-        final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-        assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-    }
+      final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+      assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
+   }
 
+   @Test
+   public void testGetMutatorDescriptionLocation() throws Exception {
 
+      final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final Optional<URL> descriptorLocation = mutationOperator.getMutagenDescriptionLocation();
+      assertNotNull(descriptorLocation);
+      assertTrue(descriptorLocation.isPresent());
+   }
 
-    @Test
-    public void testGetMutatorDescriptionLocation() throws Exception {
+   @Test
+   public void testGetMutatorDescription() throws Exception {
 
-        final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final Optional<URL> descriptorLocation = mutationOperator.getMutagenDescriptionLocation();
-        assertNotNull(descriptorLocation);
-        assertTrue(descriptorLocation.isPresent());
-    }
+      final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final String desc = mutationOperator.getMutagenDescription();
+      assertNotNull(desc);
+   }
 
-    @Test
-    public void testGetMutatorDescription() throws Exception {
+   @Test
+   public void testGetMutatorDescription_exceptionOccured_noDescription() throws Exception {
 
-        final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final String desc = mutationOperator.getMutagenDescription();
-        assertNotNull(desc);
-    }
+      final MutationOperator mutationOperator = new MutationOperator("test", "aName", "aClass", "aViolationDescription", new URL("file://localhost:1"));
+      final String desc = mutationOperator.getMutagenDescription();
+      assertEquals("No description", desc);
+   }
 
-    @Test
-    public void testGetViolationDescription() throws Exception {
+   @Test
+   public void testGetViolationDescription() throws Exception {
 
-        final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final String violationDesc = mutationOperator.getViolationDescription();
-        assertNotNull(violationDesc);
-    }
+      final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final String violationDesc = mutationOperator.getViolationDescription();
+      assertNotNull(violationDesc);
+   }
 
-    @Test
-    public void testGetName() throws Exception {
+   @Test
+   public void testGetName() throws Exception {
 
-        final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final String name = mutationOperator.getName();
-        assertEquals("Argument Propagation Mutator", name);
-    }
+      final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final String name = mutationOperator.getName();
+      assertEquals("Argument Propagation Mutator", name);
+   }
 
-    @Test
-    public void testGetClassName() throws Exception {
+   @Test
+   public void testGetClassName() throws Exception {
 
-        final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final String className = mutationOperator.getClassName();
-        assertEquals("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator", className);
-    }
+      final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final String className = mutationOperator.getClassName();
+      assertEquals("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator", className);
+   }
 
-    @Test
-    public void testEquals_null_false() throws Exception {
+   @Test
+   public void testGetClassName_fromCustomOperator() throws Exception {
 
-        final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-        assertNotEquals(argumentPropagation, null);
-    }
+      final MutationOperator mutationOperator = new MutationOperator("test", "aName", "aClass", "aViolationDescription", new URL("file://localhost:1"));
+      final String className = mutationOperator.getClassName();
+      assertEquals("aClass", className);
+   }
 
-    @Test
-    public void testEquals_different_false() throws Exception {
+   @Test
+   public void testEquals_null_false() throws Exception {
 
-        final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final MutationOperator conditionalsBoundary = MutationOperators.find("CONDITIONALS_BOUNDARY");
-        assertNotEquals(argumentPropagation, conditionalsBoundary);
-    }
+      final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
+      assertNotEquals(argumentPropagation, null);
+   }
 
-    @Test
-    public void testEquals_differentClass_false() throws Exception {
+   @Test
+   public void testEquals_different_false() throws Exception {
 
-        final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-        assertNotEquals(argumentPropagation, new Object());
-    }
+      final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final MutationOperator conditionalsBoundary = MutationOperators.find("CONDITIONALS_BOUNDARY");
+      assertNotEquals(argumentPropagation, conditionalsBoundary);
+   }
 
-    @Test
-    public void testEquals_same_true() throws Exception {
+   @Test
+   public void testEquals_differentClass_false() throws Exception {
 
-        final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-        assertEquals(argumentPropagation, argumentPropagation);
-    }
+      final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
+      assertNotEquals(argumentPropagation, new Object());
+   }
 
-    @Test
-    public void testEquals_equalsId_true() throws Exception {
+   @Test
+   public void testEquals_same_true() throws Exception {
 
-        final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final MutationOperator other = new MutationOperator("ARGUMENT_PROPAGATION", "someName", "someClass", "someDescription", new URL(
-                "file:///"));
-        assertEquals(argumentPropagation, other);
-    }
+      final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
+      assertEquals(argumentPropagation, argumentPropagation);
+   }
 
-    @Test
-    public void testHashCode_reproducible() throws Exception {
+   @Test
+   public void testEquals_equalsId_true() throws Exception {
 
-        final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final int expectedHashCode = 31 + mutationOperator.getId().hashCode();
+      final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final MutationOperator other = new MutationOperator("ARGUMENT_PROPAGATION", "someName", "someClass", "someDescription", new URL("file:///"));
+      assertEquals(argumentPropagation, other);
+   }
 
-        assertEquals(expectedHashCode, mutationOperator.hashCode());
+   @Test
+   public void testHashCode_reproducible() throws Exception {
 
-    }
+      final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final int expectedHashCode = 31 + mutationOperator.getId().hashCode();
 
-    @Test
-    public void testHashCode_sameMutator() throws Exception {
+      assertEquals(expectedHashCode, mutationOperator.hashCode());
 
-        final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-        assertEquals(argumentPropagation.hashCode(), argumentPropagation.hashCode());
-    }
+   }
 
-    @Test
-    public void testHashCode_otherMutatorObject() throws Exception {
+   @Test
+   public void testHashCode_sameMutator() throws Exception {
 
-        final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-        final MutationOperator conditionalsBoundary = MutationOperators.find("CONDITIONALS_BOUNDARY");
+      final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
+      assertEquals(argumentPropagation.hashCode(), argumentPropagation.hashCode());
+   }
 
-        assertNotEquals(argumentPropagation.hashCode(), conditionalsBoundary.hashCode());
-    }
+   @Test
+   public void testHashCode_otherMutatorObject() throws Exception {
 
-    @Test
-    public void testGetMutagenDescription() throws Exception {
-        String expected = IOUtils.toString(MutationOperator.class.getResourceAsStream("/ch/devcon5/sonar/plugins/mutationanalysis/model/ARGUMENT_PROPAGATION.html"));
-        final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-        String actual = argumentPropagation.getMutagenDescription();
-        assertEquals(expected, actual);
-    }
+      final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
+      final MutationOperator conditionalsBoundary = MutationOperators.find("CONDITIONALS_BOUNDARY");
+
+      assertNotEquals(argumentPropagation.hashCode(), conditionalsBoundary.hashCode());
+   }
+
+   @Test
+   public void testGetMutagenDescription() throws Exception {
+      String expected = IOUtils.toString(MutationOperator.class.getResourceAsStream("/ch/devcon5/sonar/plugins/mutationanalysis/model/ARGUMENT_PROPAGATION.html"));
+      final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
+      String actual = argumentPropagation.getMutagenDescription();
+      assertEquals(expected, actual);
+   }
 
 }
