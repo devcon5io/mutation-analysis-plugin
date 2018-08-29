@@ -18,20 +18,24 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
+package ch.devcon5.sonar.plugins.mutationanalysis.testharness;
 
-import static org.mockito.Mockito.mock;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -39,6 +43,8 @@ import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperator;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
+import org.slf4j.Logger;
+import org.sonar.api.SonarQubeSide;
 import org.sonar.api.SonarRuntime;
 import org.sonar.api.batch.bootstrap.ProjectDefinition;
 import org.sonar.api.batch.fs.FileSystem;
@@ -49,6 +55,8 @@ import org.sonar.api.batch.fs.internal.DefaultIndexedFile;
 import org.sonar.api.batch.fs.internal.DefaultInputFile;
 import org.sonar.api.batch.fs.internal.DefaultInputModule;
 import org.sonar.api.batch.fs.internal.Metadata;
+import org.sonar.api.batch.fs.internal.SensorStrategy;
+import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
 import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.rule.internal.DefaultActiveRules;
 import org.sonar.api.batch.rule.internal.NewActiveRule;
@@ -74,24 +82,28 @@ import org.sonar.api.batch.sensor.symbol.internal.DefaultSymbolTable;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.config.Settings;
 import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.internal.SonarRuntimeImpl;
+import org.sonar.api.utils.PathUtils;
 import org.sonar.api.utils.Version;
 
 /**
- *
+ * Sensor context allowing to read files and record issues and measures
  */
 public class TestSensorContext implements SensorContext {
+
+  private static final Logger LOGGER = getLogger(TestSensorContext.class);
 
   private static final List<MutationOperator> MUTATION_OPERATORS = Collections.unmodifiableList(new ArrayList<>(MutationOperators.allMutagens()));
   private final DefaultFileSystem fs;
   private final InputModule inputModule;
   private MapSettings settings = new MapSettings();
-  private Configuration configuration = mock(Configuration.class);
-  private SonarRuntime runtime = mock(SonarRuntime.class);
+  private Configuration configuration = new TestConfiguration();
+  private SonarRuntime runtime = SonarRuntimeImpl.forSonarQube(Version.create(7, 3), SonarQubeSide.SCANNER);
   private Version version = Version.create(6, 5);
   private TestSensorStorage storage = new TestSensorStorage();
   private ActiveRules activeRules = new DefaultActiveRules(Collections.emptyList());
 
-  private TestSensorContext(final Path basePath, String moduleName) {
+  TestSensorContext(final Path basePath, String moduleName) {
 
     this.fs = new DefaultFileSystem(basePath).setWorkDir(basePath);
 
@@ -99,9 +111,9 @@ public class TestSensorContext implements SensorContext {
     this.inputModule = new DefaultInputModule(pd);
   }
 
-  public static TestSensorContext create(Path basePath, String moduleName) {
+  public static MutationOperator getMutationOperatorForLine(final int line) {
 
-    return new TestSensorContext(basePath, moduleName);
+    return MUTATION_OPERATORS.get(line % MUTATION_OPERATORS.size());
   }
 
   @Override
@@ -205,6 +217,17 @@ public class TestSensorContext implements SensorContext {
 
   }
 
+  /**
+   * Uses configuration that is backed by the settings map. If not invoked, the configuration object is separated.
+   *
+   * @return
+   */
+  public TestSensorContext useBridgedConfiguration() {
+
+    this.configuration = settings.asConfig();
+    return this;
+  }
+
   public MapSettings getSettings() {
 
     return settings;
@@ -245,12 +268,6 @@ public class TestSensorContext implements SensorContext {
     return addTestFile(filename, metadata);
   }
 
-  public ResourceMutationMetrics newResourceMutationMetrics(String filename) {
-
-    return newResourceMutationMetrics(filename, md -> {
-    });
-  }
-
   public ResourceMutationMetrics newResourceMutationMetrics(String filename, Consumer<TestFileMetadata> mdGenerator) {
 
     final TestFileMetadata metadata = new TestFileMetadata();
@@ -258,12 +275,14 @@ public class TestSensorContext implements SensorContext {
     try {
       ResourceMutationMetrics rmm = new ResourceMutationMetrics(addTestFile(filename, metadata));
 
-      addMutants(rmm, Mutant.State.UNKNOWN, metadata.mutants.unknown, metadata.test.name);
-      addMutants(rmm, Mutant.State.NO_COVERAGE, metadata.mutants.noCoverage, metadata.test.name);
-      addMutants(rmm, Mutant.State.SURVIVED, metadata.mutants.survived, metadata.test.name);
-      addMutants(rmm, Mutant.State.TIMED_OUT, metadata.mutants.timedOut, metadata.test.name);
-      addMutants(rmm, Mutant.State.MEMORY_ERROR, metadata.mutants.memoryError, metadata.test.name);
-      addMutants(rmm, Mutant.State.KILLED, metadata.mutants.killed, metadata.test.name);
+      String desc = metadata.mutants.description;
+
+      addMutants(rmm, Mutant.State.UNKNOWN, metadata.mutants.unknown, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.NO_COVERAGE, metadata.mutants.noCoverage, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.SURVIVED, metadata.mutants.survived, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.TIMED_OUT, metadata.mutants.timedOut, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.MEMORY_ERROR, metadata.mutants.memoryError, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.KILLED, metadata.mutants.killed, metadata.test.name, desc);
 
       return rmm;
     } catch (IOException e) {
@@ -271,56 +290,141 @@ public class TestSensorContext implements SensorContext {
     }
   }
 
-  private InputFile addTestFile(String filename, TestFileMetadata metadata) throws IOException {
+  /**
+   * Method for conveniently setting a test configuration
+   *
+   * @param key
+   *     the key of the configuration by which it can be retrieved as well
+   * @param aValue
+   */
+  public TestSensorContext setConfiguration(final String key, final Object aValue) {
 
-    final Path basePath = this.fs.baseDirPath();
-    final Path filePath = basePath.resolve(filename);
-    Files.createFile(filePath);
+    ((TestConfiguration) configuration).set(key, aValue);
+    return this;
+  }
 
-    final DefaultInputFile file = createNewInputFile(filename, "java", metadata);
+  public DefaultInputFile registerFile(final String filename) {
+
+    return registerFile(filename, new TestFileMetadata());
+
+  }
+
+  public DefaultInputFile registerFile(final String filename, final TestFileMetadata metadata) {
+
+    final DefaultInputFile file = createNewInputFile(filename, metadata);
     this.fs.add(file);
     return file;
   }
 
-  private DefaultInputFile createNewInputFile(final String filename, String language, TestFileMetadata md) {
+  /**
+   * Scans the (physical) filesystem of the sensor context to register all files in the
+   * sensor filesystem (cached)
+   *
+   * @return
+   *
+   * @throws IOException
+   */
+  public TestSensorContext scanFiles() throws IOException {
 
-    final DefaultIndexedFile indexedFile = new DefaultIndexedFile(this.inputModule.key(), this.fs.baseDirPath(), filename, language);
+    final AtomicInteger files = new AtomicInteger();
+    final Path base = this.fs.baseDirPath();
+
+    Files.walkFileTree(base, new SimpleFileVisitor<Path>() {
+
+      @Override
+      public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+
+        final FileVisitResult result = super.visitFile(file, attrs);
+        registerFile(base.relativize(file).toString());
+        files.incrementAndGet();
+        return result;
+      }
+    });
+
+    LOGGER.info("Scanned {} files", files.get());
+    return this;
+  }
+
+  private InputFile addTestFile(String filename, TestFileMetadata metadata) throws IOException {
+
+    final Path basePath = this.fs.baseDirPath();
+    final Path filePath = basePath.resolve(filename);
+    final Path fileDir = filePath.getParent();
+    if (!Files.exists(fileDir)) {
+      Files.createDirectories(fileDir);
+    }
+    Files.createFile(filePath);
+
+    return registerFile(filename, metadata);
+  }
+
+  private DefaultInputFile createNewInputFile(final String filename, TestFileMetadata md) {
+
+    final String fileExtension = filename.substring(filename.lastIndexOf('.') + 1);
+    final String language;
+    if ("java".equals(fileExtension)) {
+      language = "java";
+    } else if ("kt".equals(fileExtension)) {
+      language = "kotlin";
+    } else {
+      language = "unknown";
+    }
+
+    DefaultIndexedFile indexedFile;
+    if (md.isTestResource) {
+      indexedFile = new DefaultIndexedFile(this.fs.baseDirPath().resolve(filename),
+                                           this.inputModule.key(),
+                                           PathUtils.sanitize(filename),
+                                           PathUtils.sanitize(filename),
+                                           InputFile.Type.TEST,
+                                           language,
+                                           TestInputFileBuilder.nextBatchId(),
+                                           new SensorStrategy());
+    } else {
+      indexedFile = new DefaultIndexedFile(this.inputModule.key(), this.fs.baseDirPath(), filename, language);
+    }
     final DefaultInputFile file = new DefaultInputFile(indexedFile, dif -> dif.setMetadata(md.toMetadata()));
     file.checkMetadata();
 
     return file;
   }
 
-  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count) {
 
-    addMutants(rmm, state, count, "ATest");
-  }
-
-  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count, String testname) {
+  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count, String testname, String desc) {
 
     String filename = rmm.getResource().filename();
 
     for (int i = 0; i < count; i++) {
-      rmm.addMutant(newMutant(filename, state, count + i, testname));
+      rmm.addMutant(newMutant(filename, state, count + i, testname, desc));
     }
   }
 
-  private Mutant newMutant(String file, Mutant.State state, final int line, String testName) {
+  private Mutant newMutant(String file, Mutant.State state, final int line, String testName, String description) {
 
-    String className = file.substring(0, file.lastIndexOf('.')).replaceAll("/|\\\\", ".");
-    MutationOperator mutator = MUTATION_OPERATORS.get(line % MUTATION_OPERATORS.size());
+    return Mutant.builder()
+                 .mutantStatus(state)
+                 .inSourceFile(file)
+                 .inClass(file.substring(0, file.lastIndexOf('.')).replaceAll("/|\\\\", "."))
+                 .inMethod("aMethod")
+                 .withMethodParameters("desc")
+                 .inLine(line)
+                 .atIndex(0)
+                 .usingMutator(getMutationOperatorForLine(line))
+                 .killedBy(testName)
+                 .withDescription(description)
+                 .build();
 
-    return new Mutant(!state.isAlive(), state, file, className, "aMethod", "decs", line, mutator, "", 0, state.isAlive() ? "" : testName);
   }
 
   public static class TestFileMetadata {
 
-    public final MutantMetadata mutants = new MutantMetadata();
-    public final TestMetadata test = new TestMetadata();
+    public final TestFileMetadata.MutantMetadata mutants = new TestFileMetadata.MutantMetadata();
+    public final TestFileMetadata.TestMetadata test = new TestFileMetadata.TestMetadata();
     public int lines = 1;
     public int nonBlankLines = 1;
     public String hash = "";
     public int lastValidOffset = 1;
+    public boolean isTestResource;
 
     public Metadata toMetadata() {
 
@@ -336,6 +440,7 @@ public class TestSensorContext implements SensorContext {
       public int memoryError = 0;
       public int timedOut = 0;
       public int killed = 0;
+      public String description;
     }
 
     public static class TestMetadata implements Serializable {

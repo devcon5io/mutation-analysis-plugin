@@ -17,24 +17,17 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package ch.devcon5.sonar.plugins.mutationanalysis;
+package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 
 import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.Optional;
 
-import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rules.RuleType;
@@ -42,21 +35,16 @@ import org.sonar.api.server.rule.RulesDefinition;
 import org.sonar.api.server.rule.RulesDefinition.Context;
 import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
 
-@RunWith(MockitoJUnitRunner.class)
-public class MutationAnalysisRulesDefinitionTest {
+public class JavaRulesDefinitionTest {
 
-  @Mock
-  private Configuration configuration;
+  private Configuration configuration = new TestConfiguration();
 
-  @InjectMocks
-  private MutationAnalysisRulesDefinition subject;
+  private JavaRulesDefinition subject;
 
   @Before
   public void setUp() throws Exception {
 
-    when(configuration.get(anyString())).thenReturn(Optional.empty());
-
-    subject = new MutationAnalysisRulesDefinition(configuration, new RulesDefinitionXmlLoader());
+    subject = new JavaRulesDefinition(configuration, new RulesDefinitionXmlLoader());
   }
 
   @Test
@@ -69,7 +57,7 @@ public class MutationAnalysisRulesDefinitionTest {
     subject.define(context);
 
     // assert
-    RulesDefinition.Repository repository = context.repository(MutationAnalysisRulesDefinition.REPOSITORY_KEY);
+    RulesDefinition.Repository repository = context.repository(MutationAnalysisRulesDefinition.REPOSITORY_KEY  + ".java");
     assertNotNull(repository);
 
     assertEquals("java", repository.language());
@@ -87,11 +75,23 @@ public class MutationAnalysisRulesDefinitionTest {
       assertNotNull(rule.htmlDescription());
     }
 
+    //all mutator rules
     assertEquals(26, rules.stream()
                           .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
-                          .filter(rule -> RuleType.BUG.equals(rule.type())).count());
-    assertEquals(6, rules.stream().filter(rule -> rule.status() == RuleStatus.BETA).count());
-    assertEquals(3, rules.stream().filter(rule -> rule.status() == RuleStatus.DEPRECATED).count());
+                          .filter(rule -> RuleType.BUG.equals(rule.type()))
+                          .count());
+     assertEquals(17, rules.stream()
+                           .filter(rule -> rule.status() == RuleStatus.READY)
+                           .filter(RulesDefinition.Rule::activatedByDefault)
+                           .count());
+    assertEquals(6, rules.stream()
+                         .filter(rule -> rule.status() == RuleStatus.BETA)
+                         .filter(rule -> !rule.activatedByDefault())
+                         .count());
+    assertEquals(3, rules.stream()
+                         .filter(rule -> rule.status() == RuleStatus.DEPRECATED)
+                         .filter(rule -> !rule.activatedByDefault())
+                         .count());
   }
 
 }

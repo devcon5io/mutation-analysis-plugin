@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.ce.measure.MeasureComputer;
@@ -125,6 +126,21 @@ public class QuantitativeMeasureComputerTest {
     assertNull(measureContext.getMeasure(TEST_KILLS_KEY));
     assertNull(measureContext.getMeasure(UTILITY_GLOBAL_MUTATIONS_KEY));
     assertNull(measureContext.getMeasure(UTILITY_GLOBAL_ALIVE_KEY));
+  }
+
+  @Test
+  public void compute_skipPreExistingMeasures() {
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
+
+    measureContext.addMeasure(MUTATIONS_TOTAL_KEY, 999);
+    measureContext.addMeasure(UTILITY_GLOBAL_MUTATIONS_KEY, 888);
+    measureContext.addChildrenMeasures(MUTATIONS_TOTAL_KEY, 16,17,18);
+    measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 10,10,10);
+
+    computer.compute(measureContext);
+
+    assertEquals(999, measureContext.getMeasure(MUTATIONS_TOTAL_KEY).getIntValue());
+    assertEquals(888, measureContext.getMeasure(UTILITY_GLOBAL_MUTATIONS_KEY).getIntValue());
   }
 
 

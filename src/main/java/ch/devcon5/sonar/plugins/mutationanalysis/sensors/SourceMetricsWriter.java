@@ -88,7 +88,7 @@ public class SourceMetricsWriter {
     LOG.debug("Saving resource metrics for {}", resource);
 
     if (resourceMetrics.getMutationsKilled() > 0) {
-      NewCoverage newCov = context.newCoverage().onFile(resource);
+      final NewCoverage newCov = context.newCoverage().onFile(resource);
       for (Mutant m : resourceMetrics.getMutants()) {
         if (Mutant.State.KILLED == m.getState()) {
           newCov.lineHits(m.getLineNumber(), 1);

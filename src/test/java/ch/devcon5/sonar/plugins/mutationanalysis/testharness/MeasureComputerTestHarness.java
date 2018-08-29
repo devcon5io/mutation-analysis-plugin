@@ -18,14 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
+package ch.devcon5.sonar.plugins.mutationanalysis.testharness;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import org.sonar.api.ce.measure.Component;
@@ -42,14 +39,14 @@ import org.sonar.api.config.Configuration;
 public class MeasureComputerTestHarness<T extends MeasureComputer> {
 
   private final T computer;
-  private final Configuration config;
+  private final TestConfiguration config;
 
   public MeasureComputerTestHarness(final T computer) {
 
-    this(computer, null);
+    this(computer, new TestConfiguration());
   }
 
-  public MeasureComputerTestHarness(final T computer, final Configuration configuration) {
+  public MeasureComputerTestHarness(final T computer, final TestConfiguration configuration) {
 
     this.computer = computer;
     this.config = configuration;
@@ -59,8 +56,8 @@ public class MeasureComputerTestHarness<T extends MeasureComputer> {
   public static <T extends MeasureComputer> MeasureComputerTestHarness<T> createFor(Class<T> computer) {
 
     try {
-      Constructor<T> c = computer.getConstructor(Configuration.class);
-      Configuration configuration = mock(Configuration.class);
+      final Constructor<T> c = computer.getConstructor(Configuration.class);
+      final TestConfiguration configuration = new TestConfiguration();
       return new MeasureComputerTestHarness<>(c.newInstance(configuration), configuration);
     } catch (NoSuchMethodException e) {
       try {
@@ -79,13 +76,12 @@ public class MeasureComputerTestHarness<T extends MeasureComputer> {
   }
 
   public void enableExperimentalFeatures(final boolean enabled) {
-
-    getConfig().ifPresent(conf -> when(conf.getBoolean(MutationAnalysisPlugin.EXPERIMENTAL_FEATURE_ENABLED)).thenReturn(Optional.of(enabled)));
+    config.set(MutationAnalysisPlugin.EXPERIMENTAL_FEATURE_ENABLED, enabled);
   }
 
-  public Optional<Configuration> getConfig() {
+  public TestConfiguration getConfig() {
 
-    return Optional.ofNullable(config);
+    return config;
   }
 
   public TestMeasureComputerContext createMeasureContextForSourceFile(String componentKey) {

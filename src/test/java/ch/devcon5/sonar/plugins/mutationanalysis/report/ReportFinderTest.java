@@ -24,26 +24,34 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 
-import ch.devcon5.sonar.plugins.mutationanalysis.TestUtils;
+import ch.devcon5.sonar.plugins.mutationanalysis.report.ReportFinder.ReportFinderVisitor;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestUtils;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ReportFinderTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    @InjectMocks
+    @Rule
+    public ExpectedException expects = ExpectedException.none();
+
     private ReportFinder subject;
+
+    @Before
+    public void setUp() throws Exception {
+        subject = new ReportFinder();
+    }
 
     @Test
     public void testFindReport_existingReport() throws IOException {
@@ -61,9 +69,21 @@ public class ReportFinderTest {
     }
 
     @Test
-    public void testFindReport_noReportInDirectory() throws IOException {
+    public void testFindReport_noReportInDirectory_nullReportPath() throws IOException {
 
         final Path directory = folder.newFolder().toPath();
+
+        // act
+        final Path report = subject.findReport(directory);
+
+        // assert
+        assertNull(report);
+    }
+
+    @Test
+    public void testFindReport_noReportDirectory_nullReportPath() throws IOException {
+
+        final Path directory = Paths.get("nonexisting");
 
         // act
         final Path report = subject.findReport(directory);
@@ -205,5 +225,26 @@ public class ReportFinderTest {
         // assert
         assertNotNull(report);
         assertEquals(newReport.toPath(), report);
+    }
+
+    @Test
+    public void nullCheck_ReportFinderVisitor() throws Exception {
+
+        expects.expect(IllegalArgumentException.class);
+        expects.expectMessage("file must not be null");
+
+        ReportFinderVisitor visitor =  new ReportFinderVisitor("mutatations.xml");
+        visitor.visitFile(null, null);
+    }
+
+    @Test
+    public void nullPath_ReportFinderVisitor() throws Exception {
+
+        final ReportFinderVisitor visitor =  new ReportFinderVisitor("mutatations.xml");
+
+        final FileVisitResult result = visitor.visitFile(Paths.get("/"), null);
+
+        assertEquals(FileVisitResult.CONTINUE, result);
+        assertTrue(visitor.getReports().isEmpty());
     }
 }

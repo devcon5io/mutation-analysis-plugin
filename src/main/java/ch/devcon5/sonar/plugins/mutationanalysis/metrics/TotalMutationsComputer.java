@@ -20,12 +20,22 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.*;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE_PERCENT;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE_PERCENT_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_PERCENT;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_PERCENT_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_ALIVE;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_ALIVE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_MUTATIONS;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.stream.StreamSupport;
-
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
+import ch.devcon5.sonar.plugins.mutationanalysis.Streams;
 import org.slf4j.Logger;
 import org.sonar.api.ce.measure.Component;
 import org.sonar.api.ce.measure.Measure;
@@ -61,15 +71,12 @@ public class TotalMutationsComputer implements MeasureComputer {
       return;
     }
     final Component comp = context.getComponent();
-    if (comp.getType() == Component.Type.DIRECTORY && comp.getKey().endsWith(":/") || comp.getType() == Component.Type.FILE && comp.getKey()
-                                                                                                                                   .endsWith("pom.xml")) {
+    if (isModuleRootFolder(comp) || isPomFile(comp)) {
       LOG.info("Skipping module-root from analysis key={}", comp.getKey());
       return;
     }
 
-    if ((comp.getType() == Component.Type.FILE && comp.getFileAttributes().isUnitTest()) || (comp.getType() == Component.Type.DIRECTORY && comp.getKey()
-                                                                                                                                               .contains(
-                                                                                                                                                   ":src/test/"))) {
+    if (isTestSrcFolder(comp) || isUnitTestFile(comp)) {
       LOG.debug("Skipping test unit {} from processing", comp.getKey());
       return;
     }
@@ -79,18 +86,35 @@ public class TotalMutationsComputer implements MeasureComputer {
     computePercentage(context, UTILITY_GLOBAL_ALIVE, MUTATIONS_ALIVE, MUTATIONS_ALIVE_PERCENT);
   }
 
+  private boolean isModuleRootFolder(final Component comp) {
+    //omitting check for type==DIRECTORY here, because all component ending with :/ are directories
+    return comp.getKey().endsWith(":/");
+  }
+
+  private boolean isPomFile(final Component comp) {
+    //omitting check for type==FILE here, because all component ending with pom.xml are files
+    return comp.getKey().endsWith("pom.xml");
+  }
+
+  private boolean isTestSrcFolder(final Component comp) {
+    return comp.getType() == Component.Type.DIRECTORY && comp.getKey().contains(":src/test/");
+  }
+
+  private boolean isUnitTestFile(final Component comp) {
+    return comp.getType() == Component.Type.FILE && comp.getFileAttributes().isUnitTest();
+  }
+
   private void computePercentage(final MeasureComputerContext context, final Metric globalMetric, final Metric localMetric, final Metric resultMetric) {
 
     final double mutationsGlobal = getMutationsGlobal(context, globalMetric);
     final double mutationsLocal = getMutationsLocal(context, localMetric);
 
-    if (mutationsGlobal > 0.0) {
+    if (mutationsGlobal == 0.0) {
+      LOG.info("No mutations found in project");
+    } else  {
       final double percentage = 100.0 * mutationsLocal / mutationsGlobal;
       LOG.info("Computed {} of {}% from ({} / {}) for {}", resultMetric.getName(), percentage, mutationsLocal, mutationsGlobal, context.getComponent());
       context.addMeasure(resultMetric.key(), percentage);
-    } else {
-      LOG.info("No mutations found in project");
-      context.addMeasure(resultMetric.key(), 0.0);
     }
   }
 
@@ -100,10 +124,10 @@ public class TotalMutationsComputer implements MeasureComputer {
     final Measure globalMutationsMeasure = context.getMeasure(metric.key());
 
     if (globalMutationsMeasure == null) {
-      mutationsGlobal = StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), false)
-                                     .mapToInt(Measure::getIntValue)
-                                     .findFirst()
-                                     .orElse(0);
+      mutationsGlobal = Streams.parallelStream(context.getChildrenMeasures(metric.key()))
+                                             .mapToInt(Measure::getIntValue)
+                                             .findFirst()
+                                             .orElse(0);
       LOG.info("Component {} has no global mutation information, using first child's: {}", context.getComponent(), mutationsGlobal);
     } else {
       mutationsGlobal = globalMutationsMeasure.getIntValue();
@@ -118,8 +142,9 @@ public class TotalMutationsComputer implements MeasureComputer {
     final Measure localMutationsMeasure = context.getMeasure(metric.key());
 
     if (localMutationsMeasure == null) {
-
-      mutationsLocal = (double) StreamSupport.stream(context.getChildrenMeasures(metric.key()).spliterator(), false).mapToInt(Measure::getIntValue).sum();
+      mutationsLocal = (double) Streams.parallelStream(context.getChildrenMeasures(metric.key()))
+                                             .mapToInt(Measure::getIntValue)
+                                             .sum();
       LOG.info("Component {} children have {} mutations ", context.getComponent(), mutationsLocal);
 
     } else {

@@ -105,6 +105,13 @@ public class TestDescriptorTest {
   }
 
   @Test
+  public void test_equals_null() {
+    TestDescriptor td1 = new TestDescriptor("some.package.ClassName.testMethod_one(some.package.ClassName)");
+
+    assertNotEquals(td1, null);
+  }
+
+  @Test
   public void test_equals_differentClass() {
     TestDescriptor td1 = new TestDescriptor("some.package.ClassName.testMethod_one(some.package.ClassName)");
 

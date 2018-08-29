@@ -21,33 +21,77 @@
 package ch.devcon5.sonar.plugins.mutationanalysis;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationAnalysisMetrics;
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationDensityComputer;
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationScoreComputer;
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.QuantitativeMeasureComputer;
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.TestKillRatioComputer;
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.TotalMutationsComputer;
+import ch.devcon5.sonar.plugins.mutationanalysis.report.PitestReportParser;
+import ch.devcon5.sonar.plugins.mutationanalysis.report.ReportFinder;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaProfileDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaRulesDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.KotlinProfileDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.KotlinRulesDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.sensors.PitestSensor;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.sonar.api.Plugin;
+import org.sonar.api.SonarQubeSide;
 import org.sonar.api.SonarRuntime;
+import org.sonar.api.internal.SonarRuntimeImpl;
+import org.sonar.api.utils.Version;
 
-@RunWith(MockitoJUnitRunner.class)
 public class MutationAnalysisPluginTest {
 
-    @InjectMocks
-    private MutationAnalysisPlugin subject;
 
-    @Mock
-    private SonarRuntime sonarRuntime;
+   private SonarRuntime sonarRuntime = SonarRuntimeImpl.forSonarQube(Version.create(7, 3), SonarQubeSide.SCANNER);
 
-    @Test
-    public void testDefine() throws Exception {
 
-        Plugin.Context context = new Plugin.Context(sonarRuntime);
+   @Test
+   public void testDefine() throws Exception {
 
-        subject.define(context);
+      MutationAnalysisPlugin plugin = new MutationAnalysisPlugin();
+      Plugin.Context context = new Plugin.Context(sonarRuntime);
 
-        assertFalse(context.getExtensions().isEmpty());
+      plugin.define(context);
 
-    }
+      assertTrue(context.getExtensions().contains(PitestReportParser.class));
+      assertTrue(context.getExtensions().contains(PitestReportParser.class));
+      assertTrue(context.getExtensions().contains(ReportFinder.class));
+      assertTrue(context.getExtensions().contains(JavaRulesDefinition.class));
+      assertTrue(context.getExtensions().contains(KotlinRulesDefinition.class));
+      assertTrue(context.getExtensions().contains(JavaProfileDefinition.class));
+      assertTrue(context.getExtensions().contains(KotlinProfileDefinition.class));
+      assertTrue(context.getExtensions().contains(PitestSensor.class));
+      assertTrue(context.getExtensions().contains(MutationAnalysisMetrics.class));
+      assertTrue(context.getExtensions().contains(MutationScoreComputer.class));
+      assertTrue(context.getExtensions().contains(MutationDensityComputer.class));
+      assertTrue(context.getExtensions().contains(TotalMutationsComputer.class));
+      assertTrue(context.getExtensions().contains(TestKillRatioComputer.class));
+      assertTrue(context.getExtensions().contains(QuantitativeMeasureComputer.class));
+
+   }
+
+   @Test
+   public void experimentalFeaturesEnabled_default_false() throws Exception {
+
+      TestConfiguration configuration = new TestConfiguration();
+
+      assertFalse(MutationAnalysisPlugin.isExperimentalFeaturesEnabled(configuration));
+
+   }
+
+   @Test
+   public void experimentalFeaturesEnabled_configured_true() throws Exception {
+
+      TestConfiguration configuration = new TestConfiguration();
+      configuration.set("dc5.mutationAnalysis.experimentalFeatures.enabled", true);
+
+      assertTrue(MutationAnalysisPlugin.isExperimentalFeaturesEnabled(configuration));
+
+   }
 
 }

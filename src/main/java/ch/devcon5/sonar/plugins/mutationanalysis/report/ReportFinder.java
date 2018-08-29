@@ -21,7 +21,12 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +61,7 @@ public class ReportFinder {
   public Path findReport(final Path reportDirectory) throws IOException {
 
     //TODO replace java.nio.Files API when migrating to JDK9+
-    if (reportDirectory == null || !reportDirectory.toFile().exists() || !reportDirectory.toFile().isDirectory()) {
+    if (reportDirectory == null || !reportDirectory.toFile().exists() ) {
       LOG.warn("ReportDirectory {} is no valid directory", reportDirectory);
       return null;
     }
@@ -113,7 +118,7 @@ public class ReportFinder {
   /**
    * Recursive search report xml
    */
-  private static class ReportFinderVisitor extends SimpleFileVisitor<Path> {
+  static class ReportFinderVisitor extends SimpleFileVisitor<Path> {
 
     private final PathMatcher matcher;
 
@@ -123,21 +128,24 @@ public class ReportFinder {
       return reports;
     }
 
-    private ReportFinderVisitor(String pattern) {
+    ReportFinderVisitor(String pattern) {
       matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-      Objects.requireNonNull(file);
-      Objects.requireNonNull(attrs);
+      requireNonNull(file, "file must not be null");
 
-      Path name = file.getFileName();
-      if (Objects.nonNull(name) && matcher.matches(name)) {
+      final Path filename = file.getFileName();
+      if (Objects.nonNull(filename) && matcher.matches(filename)) {
         reports.add(file);
       }
       return FileVisitResult.CONTINUE;
     }
+    private static <T> void requireNonNull(T obj, String message) {
+      if (obj == null) {
+        throw new IllegalArgumentException(message);
+      }
+    }
   }
-
 }

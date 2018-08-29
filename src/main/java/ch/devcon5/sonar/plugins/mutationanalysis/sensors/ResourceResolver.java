@@ -26,30 +26,33 @@ import org.sonar.api.batch.fs.FileSystem;
 import org.sonar.api.batch.fs.InputFile;
 
 /**
- *
+ * Resolver that resolves any given Java or Kotlin class to its source class.
+ * If the class is a nested class, than it's parent is returned
  */
 public class ResourceResolver {
 
-    private FileSystem fs;
+   private FileSystem fs;
 
-    public ResourceResolver(final FileSystem fs) {
-        this.fs = fs;
-    }
+   public ResourceResolver(final FileSystem fs) {
+      this.fs = fs;
+   }
 
-    public Optional<InputFile> resolve(String classname){
+   public Optional<InputFile> resolve(String classname) {
 
-        return Optional.ofNullable(fs.inputFile(fs.predicates().matchesPathPattern("**/" + getPathToSourceFile(classname))));
-    }
+      return Optional.ofNullable(fs.inputFile(fs.predicates()
+                                                .or(fs.predicates().matchesPathPattern("**/" + getPathToSourceFile(classname, "java")),
+                                                    fs.predicates().matchesPathPattern("**/" + getPathToSourceFile(classname, "kt")))));
+   }
 
-    private String getPathToSourceFile(String classname){
-        final int nestedClass = classname.lastIndexOf('$');
-        final String mainClass;
-        if(nestedClass != -1){
-            mainClass = classname.substring(0, nestedClass);
-        } else {
-            mainClass = classname;
-        }
-        return mainClass.replaceAll("\\.","/")  + ".java";
-    }
+   private String getPathToSourceFile(String classname, String language) {
+      final int nestedClass = classname.indexOf('$');
+      final String mainClass;
+      if (nestedClass != -1) {
+         mainClass = classname.substring(0, nestedClass);
+      } else {
+         mainClass = classname;
+      }
+      return mainClass.trim().replaceAll("\\.", "/") + "." + language;
+   }
 
 }

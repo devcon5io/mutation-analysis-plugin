@@ -28,8 +28,10 @@ import ch.devcon5.sonar.plugins.mutationanalysis.metrics.TestKillRatioComputer;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.TotalMutationsComputer;
 import ch.devcon5.sonar.plugins.mutationanalysis.report.PitestReportParser;
 import ch.devcon5.sonar.plugins.mutationanalysis.report.ReportFinder;
-import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisProfileDefinition;
-import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaProfileDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaRulesDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.KotlinProfileDefinition;
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.KotlinRulesDefinition;
 import ch.devcon5.sonar.plugins.mutationanalysis.sensors.PitestSensor;
 import org.sonar.api.Plugin;
 import org.sonar.api.Properties;
@@ -38,14 +40,19 @@ import org.sonar.api.PropertyType;
 import org.sonar.api.config.Configuration;
 
 /**
- * This class is the entry point for all PIT extensions. The properties define, which {@link org.sonar.api.config.Configuration} are
- * configurable
- * for the plugin.
+ * This class is the entry point for the Mutation Analysis Plugin.
+ * The properties define, which {@link org.sonar.api.config.Configuration} are configurable for the plugin.
  */
 @Properties({
-                @Property(key = MutationAnalysisPlugin.PITEST_SENSOR_ENABLED,
-                          name = "Active Pitest Sensor",
-                          description = "Enables the Sensor for PIT. Default is 'true'",
+                @Property(key = MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED,
+                          name = "Active Pitest Java Sensor",
+                          description = "Enables the Kotlin Sensor for PIT. Default is 'true'",
+                          type = PropertyType.BOOLEAN,
+                          defaultValue = "true",
+                          project = true),
+                @Property(key = MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED,
+                          name = "Active Pitest Kotlin Sensor",
+                          description = "Enables the Kotlin Sensor for PIT. Default is 'true'",
                           type = PropertyType.BOOLEAN,
                           defaultValue = "true",
                           project = true),
@@ -77,33 +84,53 @@ import org.sonar.api.config.Configuration;
                           name = "Effort Factor: Survived Mutant ",
                           description = "Factor that is applied to any of the survived mutant rule to calculate effort to fix",
                           type = PropertyType.FLOAT,
-                          project = true)
+                          project = true),
+                @Property(key = MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO,
+                          name = "Force missing coverage to zero",
+                          description = "If a project has no mutation report, it's coverage is forced to zero. If disabled, no coverage metric is calculated",
+                          type = PropertyType.BOOLEAN,
+                          defaultValue = "false"
+                          //the project=true setting doesn't seem to have an effect on compute engine side
+                          // see https://community.sonarsource.com/t/plugin-development-project-level-settings-have-no-effect-in-ce/1528
+                          //, project = true
+                ),
             })
 public final class MutationAnalysisPlugin implements Plugin {
 
-  public static final String PITEST_SENSOR_ENABLED = "dc5.mutationAnalysis.pitest.sensor.enabled";
+
+  public static final String PITEST_JAVA_SENSOR_ENABLED = "dc5.mutationAnalysis.pitest.java.sensor.enabled";
+  public static final String PITEST_KOTLIN_SENSOR_ENABLED = "dc5.mutationAnalysis.pitest.kotlin.sensor.enabled";
   public static final String EXPERIMENTAL_FEATURE_ENABLED = "dc5.mutationAnalysis.experimentalFeatures.enabled";
   public static final String EFFORT_MUTANT_KILL = "dc5.mutationAnalysis.effort.mutantKill";
   public static final String EFFORT_FACTOR_MISSING_COVERAGE = "dc5.mutationAnalysis.effort.missingCoverage";
   public static final String EFFORT_FACTOR_SURVIVED_MUTANT = "dc5.mutationAnalysis.effort.survivedMutant";
+  public static final String FORCE_MISSING_COVERAGE_TO_ZERO = "dc5.mutationAnalysis.missingCoverage.force2zero";
   public static final String REPORT_DIRECTORY_KEY = "dc5.mutationAnalysis.pitest.sensor.reports.directory";
   public static final String REPORT_DIRECTORY_DEF = "target/pit-reports";
-  public static final String DEFAULT_EFFORT_TO_KILL_MUTANT = "15min";
+  public static final String DEFAULT_EFFORT_TO_KILL_MUTANT = "5min";
 
   @Override
   public void define(final Context context) {
 
-    context.addExtensions(PitestReportParser.class,
-                          ReportFinder.class,
-                          MutationAnalysisRulesDefinition.class,
-                          MutationAnalysisProfileDefinition.class,
-                          PitestSensor.class,
-                          MutationAnalysisMetrics.class,
-                          MutationScoreComputer.class,
-                          MutationDensityComputer.class,
-                          TotalMutationsComputer.class,
-                          TestKillRatioComputer.class,
-                          QuantitativeMeasureComputer.class);
+    //we add each extension separately although there is a method (addExtensions) accepting varargs that would handle this in one call.
+    //Background: varargs produce bytecode artifacts that cause mutations that can not be killed (i.e. reordering of varargs)
+    //Because of this plugin deals with mutations, it's also kind of an example how to run mutation testing and what impact on code bases it might have.
+    //This option was chosen because it allows to kill all mutants in this class + reduces the mutation density.
+    //The equivalent option would be to use the varargs, which would have the same LoC but just a single statement and lots of re-ordering mutations, which
+    //increased the mutation density + reduces the mutation coverage through unkillable mutations.
+    context.addExtension(PitestReportParser.class);
+    context.addExtension(ReportFinder.class);
+    context.addExtension(JavaRulesDefinition.class);
+    context.addExtension(KotlinRulesDefinition.class);
+    context.addExtension(JavaProfileDefinition.class);
+    context.addExtension(KotlinProfileDefinition.class);
+    context.addExtension(PitestSensor.class);
+    context.addExtension(MutationAnalysisMetrics.class);
+    context.addExtension(MutationScoreComputer.class);
+    context.addExtension(MutationDensityComputer.class);
+    context.addExtension(TotalMutationsComputer.class);
+    context.addExtension(TestKillRatioComputer.class);
+    context.addExtension(QuantitativeMeasureComputer.class);
   }
 
   public static boolean isExperimentalFeaturesEnabled(Configuration config){

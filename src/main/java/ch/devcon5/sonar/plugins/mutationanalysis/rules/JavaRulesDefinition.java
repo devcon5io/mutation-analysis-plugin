@@ -20,23 +20,30 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX;
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.REPOSITORY_KEY;
+import org.sonar.api.config.Configuration;
+import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
 
-import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
-import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition;
+/**
+ * The definition of pitest rules. A new repository is created for the Pitest plugin and Java language. The rules are
+ * defined in the rules.xml file in the classpath. The rule keys are accessible as constants.
+ */
+public class JavaRulesDefinition extends MutationAnalysisRulesDefinition {
 
-public abstract class MutationAnalysisProfileDefinition implements BuiltInQualityProfilesDefinition {
+  /**
+   * Constructor to create the pitest rules definitions and repository. The constructor is invoked by Sonar.
+   *
+   * @param settings
+   *         the settings of the Pitest-Sensor pluin
+   * @param xmlLoader
+   */
+  public JavaRulesDefinition(final Configuration settings, final RulesDefinitionXmlLoader xmlLoader) {
+    super(settings, xmlLoader);
+  }
 
-   @Override
-   public void define(final Context context) {
-      final NewBuiltInQualityProfile mutationAnalysis = context.createBuiltInQualityProfile("Mutation Analysis", getLanguageKey());
+  @Override
+  protected String getLanguageKey() {
+    return "java";
+  }
 
-      MutationOperators.allMutagens().forEach(m -> mutationAnalysis.activateRule(REPOSITORY_KEY + "." + getLanguageKey(), MUTANT_RULES_PREFIX + m.getId()));
-
-      mutationAnalysis.done();
-   }
-
-   protected abstract String getLanguageKey();
 
 }
