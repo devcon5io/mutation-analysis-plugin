@@ -21,11 +21,15 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,7 +117,7 @@ public class ReportFinder {
   /**
    * Recursive search report xml
    */
-  private static class ReportFinderVisitor extends SimpleFileVisitor<Path> {
+  static class ReportFinderVisitor extends SimpleFileVisitor<Path> {
 
     private final PathMatcher matcher;
 
@@ -123,20 +127,23 @@ public class ReportFinder {
       return reports;
     }
 
-    private ReportFinderVisitor(String pattern) {
+    ReportFinderVisitor(String pattern) {
       matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-      Objects.requireNonNull(file);
-      Objects.requireNonNull(attrs);
-
-      Path name = file.getFileName();
-      if (Objects.nonNull(name) && matcher.matches(name)) {
+      requireNonNull(file, "file must not be null");
+      if (matcher.matches(file.getFileName())) {
         reports.add(file);
       }
       return FileVisitResult.CONTINUE;
+    }
+  }
+
+  private static <T> void requireNonNull(T obj, String message) {
+    if (obj == null) {
+      throw new IllegalArgumentException(message);
     }
   }
 
