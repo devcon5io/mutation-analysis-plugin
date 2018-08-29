@@ -142,12 +142,10 @@ public class ReportFinder {
       }
       return FileVisitResult.CONTINUE;
     }
-  }
-
-  private static <T> void requireNonNull(T obj, String message) {
-    if (obj == null) {
-      throw new IllegalArgumentException(message);
+    private static <T> void requireNonNull(T obj, String message) {
+      if (obj == null) {
+        throw new IllegalArgumentException(message);
+      }
     }
   }
-
 }
