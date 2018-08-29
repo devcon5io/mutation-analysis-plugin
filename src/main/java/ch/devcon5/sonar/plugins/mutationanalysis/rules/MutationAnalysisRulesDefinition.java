@@ -114,7 +114,7 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
     for (final NewRule rule : repository.rules()) {
       rule.setDebtRemediationFunction(rule.debtRemediationFunctions()
                                           .linearWithOffset(settings.get(EFFORT_MUTANT_KILL)
-                                                                    .orElse(DEFAULT_EFFORT_TO_KILL_MUTANT), "15min"));
+                                                                    .orElse(DEFAULT_EFFORT_TO_KILL_MUTANT), "7min"));
       rule.setGapDescription("Effort to kill the mutant(s)");
     }
     repository.done();

@@ -107,7 +107,7 @@ public final class MutationAnalysisPlugin implements Plugin {
   public static final String FORCE_MISSING_COVERAGE_TO_ZERO = "dc5.mutationAnalysis.missingCoverage.force2zero";
   public static final String REPORT_DIRECTORY_KEY = "dc5.mutationAnalysis.pitest.sensor.reports.directory";
   public static final String REPORT_DIRECTORY_DEF = "target/pit-reports";
-  public static final String DEFAULT_EFFORT_TO_KILL_MUTANT = "15min";
+  public static final String DEFAULT_EFFORT_TO_KILL_MUTANT = "5min";
 
   @Override
   public void define(final Context context) {
