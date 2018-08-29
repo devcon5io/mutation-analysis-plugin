@@ -22,6 +22,7 @@ package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.List;
 
@@ -43,6 +44,9 @@ import org.sonar.api.rules.ActiveRule;
 public class RulesProcessor {
 
    private static final Logger LOG = getLogger(RulesProcessor.class);
+
+   private static final ThreadLocal<DecimalFormat> NO_DECIMAL_PLACE = ThreadLocal.withInitial(() -> new DecimalFormat("#"));
+   private static final ThreadLocal<DecimalFormat> ONE_DECIMAL_PLACE = ThreadLocal.withInitial(() -> new DecimalFormat("#.0"));
 
    private final Configuration settings;
 
@@ -142,13 +146,32 @@ public class RulesProcessor {
          context.newIssue()
                 .forRule(rule.getRule().ruleKey())
                 .gap(settings.getDouble(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE).orElse(1.0) * additionalRequiredMutants)
-                .at(newLocation().on(resourceMetrics.getResource())
-                                 .message(String.format("%.0f more mutants need to be killed to get the mutation coverage from %.1f%% to %.1f%%",
-                                                       additionalRequiredMutants,
-                                                        actualCoverage,
-                                                        threshold)))
+                .at(newLocation().on(resourceMetrics.getResource()).message(generateThresholdViolationMessage(actualCoverage, threshold, additionalRequiredMutants)))
                 .save();
       }
+   }
+
+   private String generateThresholdViolationMessage(final double actualCoverage, final double threshold, final double additionalRequiredMutants) {
+      //
+      // this method's implementation is a demonstration of how a 'killing spree' might affect your code.
+      // a sane implementation would simply use String.format
+      //
+      // String.format("%.0f more mutants need to be killed to get the mutation coverage from %.1f%% to %.1f%%",new Object[]{additionalRequiredMutants,actualCoverage,threshold})
+      //
+      // But this creates an un-killable mutant through the varargs parameter it takes (something like Substituted 3 -> 4)
+      // Secondly, despite best practices the StringBuilder is not initialized with an initial size hint as the value of
+      // size hint is also an un-killable mutant as it only affects the resizing of the backing array but has no impact to the outcome
+      //
+      final DecimalFormat noDecimalPlace = NO_DECIMAL_PLACE.get();
+      final DecimalFormat oneDecimalPlace = ONE_DECIMAL_PLACE.get();
+      return new StringBuilder().append(noDecimalPlace.format(additionalRequiredMutants))
+                                .append(" more mutants need to be killed to get the mutation coverage from ")
+                                .append(oneDecimalPlace.format(actualCoverage))
+                                .append('%')
+                                .append(" to ")
+                                .append(oneDecimalPlace.format(threshold))
+                                .append('%')
+                                .toString();
    }
 
    /**
@@ -167,10 +190,7 @@ public class RulesProcessor {
    private void applyMutantRule(final ResourceMutationMetrics resourceMetrics, final ActiveRule rule, final SensorContext context) {
 
       for (final Mutant mutant : resourceMetrics.getMutants()) {
-         if (violatesSurvivedMutantRule(rule, mutant)
-             || violatesUncoveredMutantRule(rule, mutant)
-             || violatesUnknownMutantStatusRule(rule, mutant)
-             || violatesMutatorRule(rule,
+         if (violatesSurvivedMutantRule(rule, mutant) || violatesUncoveredMutantRule(rule, mutant) || violatesUnknownMutantStatusRule(rule, mutant) || violatesMutatorRule(rule,
                                                                                                                                                                            mutant)) {
 
             context.newIssue()
@@ -196,9 +216,8 @@ public class RulesProcessor {
     */
    private boolean violatesSurvivedMutantRule(final ActiveRule rule, final Mutant mutant) {
 
-      return MutationAnalysisRulesDefinition.RULE_SURVIVED_MUTANT.equals(rule.getRuleKey())
-          && (mutant.getState() == Mutant.State.SURVIVED
-           || mutant.getState() == Mutant.State.NO_COVERAGE);
+      return MutationAnalysisRulesDefinition.RULE_SURVIVED_MUTANT.equals(rule.getRuleKey()) && (mutant.getState() == Mutant.State.SURVIVED
+              || mutant.getState() == Mutant.State.NO_COVERAGE);
    }
 
    /**
