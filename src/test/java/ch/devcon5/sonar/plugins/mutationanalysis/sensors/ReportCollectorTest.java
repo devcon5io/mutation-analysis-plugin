@@ -24,6 +24,7 @@ import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.E
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.REPORT_DIRECTORY_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -46,6 +47,7 @@ import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -70,7 +72,7 @@ public class ReportCollectorTest {
   }
 
   @Test
-  public void findProjectRoot_singleModuleProject() throws IOException {
+  public void findProjectRoot_singleModuleMavenProject() throws IOException {
 
     final Path moduleRoot = folder.newFolder("test-module").toPath();
     createPom(moduleRoot);
@@ -84,7 +86,22 @@ public class ReportCollectorTest {
   }
 
   @Test
-  public void findProjectRoot_multiModuleProject() throws IOException {
+  public void findProjectRoot_singleModuleMavenProjectWithoutConfigurationFile() throws IOException {
+
+    //This test is for obtain 100% of mutation analysis
+    final Path moduleRoot = folder.newFolder("test-module").toPath();
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path root = collector.findProjectRoot(moduleRoot);
+
+    assertTrue(!root.resolve("pom.xml").toFile().exists());
+  }
+
+
+  @Test
+  public void findProjectRoot_multiModuleMavenProject() throws IOException {
 
     final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
     final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
@@ -100,6 +117,36 @@ public class ReportCollectorTest {
     assertEquals(moduleRoot, actualRoot);
   }
 
+  @Test
+  public void findProjectRoot_singleModuleGradleProject() throws IOException {
+
+    final Path moduleRoot = folder.newFolder("test-module").toPath();
+    createSettings(moduleRoot);
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path root = collector.findProjectRoot(moduleRoot);
+
+    assertEquals(moduleRoot, root);
+  }
+
+  @Test
+  public void findProjectRoot_multiModuleGradleProject() throws IOException {
+
+    final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
+
+    createSettings(moduleRoot, "child-module");
+    createSettings(childModuleRoot);
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path actualRoot = collector.findProjectRoot(childModuleRoot);
+
+    assertEquals(moduleRoot, actualRoot);
+  }
 
   @Test
   public void collectLocalMutants_defaultReportDirectory() throws IOException {
@@ -133,8 +180,6 @@ public class ReportCollectorTest {
 
     assertEquals(6, mutants.size());
   }
-
-
 
   @Test
   public void collectGlobalMutants_experimentalFeaturesDisable_noMutants() throws IOException {
@@ -284,6 +329,17 @@ public class ReportCollectorTest {
     b.append("</project>");
 
     Files.write(moduleRoot.resolve("pom.xml"), b.toString().getBytes("UTF-8"));
+  }
+
+  private void createSettings(Path moduleRoot, String... moduleNames) throws IOException {
+    StringBuilder b = new StringBuilder(128);
+    b.append("rootProject.name = \'test-root-project\'\n\n");
+    if (moduleNames.length > 0) {
+      for (String module : moduleNames) {
+        b.append("include \'").append(module).append("\'\n)");
+      }
+    }
+    Files.write(moduleRoot.resolve("settings.gradle"), b.toString().getBytes("UTF-8"));
   }
 
   private Path createMutationReportsFile(final Path moduleRoot, final String reportsDirectory, final String resourceName) throws IOException {
