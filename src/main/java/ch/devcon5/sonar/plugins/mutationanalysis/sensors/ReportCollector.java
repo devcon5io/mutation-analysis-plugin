@@ -103,12 +103,15 @@ public class ReportCollector {
     }
 
     private List<Path> getModulePaths(final Path parentPath) {
+        List<Path> modulePaths = Collections.emptyList();
         try {
             if (parentPath.resolve(SETTINGS_GRADLE).toFile().exists()) {
-                return getModulePathsForGradle(parentPath.resolve(SETTINGS_GRADLE));
+                modulePaths = getModulePathsForGradle(parentPath.resolve(SETTINGS_GRADLE));
             }
-            return getModulePathsForMaven(parentPath.resolve(POM_XML));
-
+            if (parentPath.resolve(POM_XML).toFile().exists()) {
+                modulePaths = getModulePathsForMaven(parentPath.resolve(POM_XML));
+            }
+            return modulePaths;
         } catch (IOException | XPathExpressionException e) {
             LOG.warn("Could not parse {}", parentPath.toAbsolutePath(), e);
             return Collections.emptyList();
@@ -119,16 +122,16 @@ public class ReportCollector {
 
         final Path parent = configurationFilePath.getParent();
         final List<String> modulePaths = new ArrayList<>();
-            final InputSource is;
-            is = new InputSource(new FileReader(configurationFilePath.toFile()));
-            //TODO add support for profile-activated modules
-            final NodeList modules = (NodeList) this.xpath.evaluate("//*[local-name() = 'module']", is, XPathConstants.NODESET);
-            //creating a pre-sized list is - mutation wise - equivalent to creating the list without size hint
-            //we choose the less efficient way of not pre-sizing the array because this kills another mutant
-            //nevertheless, if the size known before creation, one should create the issue with size
-            for (int i = 0, len = modules.getLength(); i < len; i++) {
-                modulePaths.add(modules.item(i).getTextContent());
-            }
+        final InputSource is;
+        is = new InputSource(new FileReader(configurationFilePath.toFile()));
+        //TODO add support for profile-activated modules
+        final NodeList modules = (NodeList) this.xpath.evaluate("//*[local-name() = 'module']", is, XPathConstants.NODESET);
+        //creating a pre-sized list is - mutation wise - equivalent to creating the list without size hint
+        //we choose the less efficient way of not pre-sizing the array because this kills another mutant
+        //nevertheless, if the size known before creation, one should create the issue with size
+        for (int i = 0, len = modules.getLength(); i < len; i++) {
+            modulePaths.add(modules.item(i).getTextContent());
+        }
         return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
     }
 
