@@ -13,9 +13,7 @@ jdk:
 jobs:
   include:
     - stage: compile & unit test
-      script: mvn clean package
-    - stage: sonar analysis
-      script: mvn sonar:sonar
+      script: mvn clean package sonar:sonar
 
 cache:
   directories:
