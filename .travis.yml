@@ -9,8 +9,13 @@ addons:
 
 jdk:
   - oraclejdk8
-script:
-  - mvn clean package sonar:sonar
+
+jobs:
+  include:
+    - stage: compile & unit test
+      script: mvn clean package
+    - stage: sonar analysis
+      script: mvn sonar:sonar
 
 cache:
   directories:
