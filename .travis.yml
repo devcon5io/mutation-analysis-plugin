@@ -13,8 +13,8 @@ jdk:
 jobs:
   include:
     - script: mvn clean package
-    - script: mvn sonar:sonar
-
+    - if: type = pull_request
+      script: mvn sonar:sonar
 
 cache:
   directories:
