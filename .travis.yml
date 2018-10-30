@@ -13,7 +13,7 @@ jdk:
 jobs:
   include:
     - script: mvn clean package
-    - if: type = pull_request
+    - if: type != pull_request
       script: mvn sonar:sonar
 
 cache:
