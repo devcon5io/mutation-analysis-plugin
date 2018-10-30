@@ -13,7 +13,8 @@ jdk:
 jobs:
   include:
     - script: mvn clean package
-    - script: sonar:sonar
+    - script: mvn sonar:sonar
+
 
 cache:
   directories:
