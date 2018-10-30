@@ -12,8 +12,9 @@ jdk:
 
 jobs:
   include:
-    - stage: compile & unit test
-      script: mvn clean package sonar:sonar
+    - script: mvn clean package
+    - if: type = pull_request
+      script: mvn sonar:sonar
 
 cache:
   directories:
