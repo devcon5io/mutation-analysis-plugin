@@ -24,6 +24,7 @@ import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.E
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.REPORT_DIRECTORY_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -70,7 +71,7 @@ public class ReportCollectorTest {
   }
 
   @Test
-  public void findProjectRoot_singleModuleProject() throws IOException {
+  public void findProjectRoot_singleModuleMavenProject() throws IOException {
 
     final Path moduleRoot = folder.newFolder("test-module").toPath();
     createPom(moduleRoot);
@@ -84,7 +85,7 @@ public class ReportCollectorTest {
   }
 
   @Test
-  public void findProjectRoot_multiModuleProject() throws IOException {
+  public void findProjectRoot_multiModuleMavenProject() throws IOException {
 
     final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
     final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
@@ -100,6 +101,123 @@ public class ReportCollectorTest {
     assertEquals(moduleRoot, actualRoot);
   }
 
+  @Test
+  public void findProjectRoot_multiModuleMavenProjectWithMalformedPom() throws IOException {
+
+    final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
+
+    createMalFormedPom(moduleRoot, "child-module");
+    createPom(childModuleRoot);
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path actualRoot = collector.findProjectRoot(childModuleRoot);
+
+    assertEquals(childModuleRoot, actualRoot);
+  }
+
+  @Test
+  public void findProjectRoot_singleModuleGradleProject() throws IOException {
+
+    final Path moduleRoot = folder.newFolder("test-module").toPath();
+    createSettings(moduleRoot);
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path root = collector.findProjectRoot(moduleRoot);
+
+    assertEquals(moduleRoot, root);
+  }
+
+  @Test
+  public void findProjectRoot_multiModuleGradleProject() throws IOException {
+
+    final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
+
+    createSettings(moduleRoot, "child-module");
+    createSettings(childModuleRoot);
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path actualRoot = collector.findProjectRoot(childModuleRoot);
+
+    assertEquals(moduleRoot, actualRoot);
+  }
+
+  @Test
+  public void findProjectRoot_multiModuleProjectWithoutConfigurationFiles() throws IOException {
+
+    final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path actualRoot = collector.findProjectRoot(childModuleRoot);
+
+    assertEquals(childModuleRoot, actualRoot);
+  }
+
+
+  @Test
+  public void findProjectRoot_multiModuleGradleProjectWithSettingsFileAndPomFileMalformed() throws IOException {
+
+    final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
+
+    createMalFormedSettings(moduleRoot, "child-module");
+    createSettings(childModuleRoot);
+    createMalFormedPom(moduleRoot, "child-module");
+    createPom(childModuleRoot);
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path actualRoot = collector.findProjectRoot(childModuleRoot);
+
+    assertEquals(childModuleRoot, actualRoot);
+  }
+
+  @Test
+  public void findProjectRoot_multiGradleProjectWithSettingsFileMalformedAndAValidPomFile() throws IOException {
+
+    final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
+
+    createMalFormedSettings(moduleRoot, "child-module");
+    createSettings(childModuleRoot);
+    createPom(moduleRoot, "child-module");
+    createPom(childModuleRoot);
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path actualRoot = collector.findProjectRoot(childModuleRoot);
+
+    assertEquals(moduleRoot, actualRoot);
+  }
+
+  @Test
+  public void findProjectRoot_multiModuleGradleProjectWithMalformedSettings() throws IOException {
+
+    final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
+
+    createMalFormedSettings(moduleRoot, "child-module");
+    createPom(childModuleRoot);
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path actualRoot = collector.findProjectRoot(childModuleRoot);
+
+    assertEquals(childModuleRoot, actualRoot);
+  }
 
   @Test
   public void collectLocalMutants_defaultReportDirectory() throws IOException {
@@ -133,8 +251,6 @@ public class ReportCollectorTest {
 
     assertEquals(6, mutants.size());
   }
-
-
 
   @Test
   public void collectGlobalMutants_experimentalFeaturesDisable_noMutants() throws IOException {
@@ -285,6 +401,45 @@ public class ReportCollectorTest {
 
     Files.write(moduleRoot.resolve("pom.xml"), b.toString().getBytes("UTF-8"));
   }
+
+  private void createMalFormedPom(final Path moduleRoot, String... moduleNames) throws IOException {
+
+    StringBuilder b = new StringBuilder(128);
+    b.append("<project>");
+    if (moduleNames.length > 0) {
+      b.append("<malformed>");
+      for (String module : moduleNames) {
+        b.append("<module>").append(module).append("</module>");
+      }
+      b.append("</realMalformed>");
+    }
+    b.append("</project>");
+
+    Files.write(moduleRoot.resolve("pom.xml"), b.toString().getBytes("UTF-8"));
+  }
+
+  private void createSettings(Path moduleRoot, String... moduleNames) throws IOException {
+    StringBuilder b = new StringBuilder(128);
+    b.append("rootProject.name = \'test-root-project\'\n\n");
+    if (moduleNames.length > 0) {
+      for (String module : moduleNames) {
+        b.append("include \'").append(module).append("\'\n)");
+      }
+    }
+    Files.write(moduleRoot.resolve("settings.gradle"), b.toString().getBytes("UTF-8"));
+  }
+
+  private void createMalFormedSettings(Path moduleRoot, String... moduleNames) throws IOException {
+    StringBuilder b = new StringBuilder(128);
+    b.append("rootProject.name = \'test-root-project\'\n\n");
+    if (moduleNames.length > 0) {
+      for (String module : moduleNames) {
+        b.append("malformed \'").append(module).append("\'\n)");
+      }
+    }
+    Files.write(moduleRoot.resolve("settings.gradle"), b.toString().getBytes("UTF-8"));
+  }
+
 
   private Path createMutationReportsFile(final Path moduleRoot, final String reportsDirectory, final String resourceName) throws IOException {
 
