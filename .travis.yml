@@ -12,9 +12,10 @@ jdk:
 
 jobs:
   include:
-    - script: mvn clean package
     - if: type != pull_request
-      script: mvn sonar:sonar
+      script: mvn clean package sonar:sonar
+    - if: type = pull_request
+      script: mvn clean package
 
 cache:
   directories:
