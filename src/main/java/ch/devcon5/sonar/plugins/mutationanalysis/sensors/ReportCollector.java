@@ -103,15 +103,20 @@ public class ReportCollector {
     }
 
     private List<Path> getModulePaths(final Path parentPath) {
-        List<Path> modulePaths = Collections.emptyList();
+        final SortedSet<Path> pathSet = new TreeSet<>();
         try {
-            if (parentPath.resolve(SETTINGS_GRADLE).toFile().exists()) {
-                modulePaths = getModulePathsForGradle(parentPath.resolve(SETTINGS_GRADLE));
-            }
+
+            //checking both maven and gradle module and retaining unique modules
+            //for the case, when a project has both maven pom and gradle setting
+            //to get the union of both modules
+
             if (parentPath.resolve(POM_XML).toFile().exists()) {
-                modulePaths = getModulePathsForMaven(parentPath.resolve(POM_XML));
+                pathSet.addAll(getModulePathsForMaven(parentPath.resolve(POM_XML)));
             }
-            return modulePaths;
+            if (parentPath.resolve(SETTINGS_GRADLE).toFile().exists()) {
+                pathSet.addAll(getModulePathsForGradle(parentPath.resolve(SETTINGS_GRADLE)));
+            }
+            return new ArrayList<>(pathSet);
         } catch (IOException | XPathExpressionException e) {
             LOG.warn("Could not parse {}", parentPath.toAbsolutePath(), e);
             return Collections.emptyList();

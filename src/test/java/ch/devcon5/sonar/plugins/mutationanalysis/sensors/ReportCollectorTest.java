@@ -24,7 +24,6 @@ import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.E
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.REPORT_DIRECTORY_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -68,6 +67,42 @@ public class ReportCollectorTest {
   public void setUp() throws Exception {
     this.harness = SensorTestHarness.builder().withTempFolder(folder).build();
     this.configuration = harness.createConfiguration();
+  }
+
+  @Test
+  public void findProjectRoot_noMavenOrGradleProject_noModules() throws IOException {
+
+    final Path moduleRoot = folder.newFolder("test-module").toPath();
+    final Path childModuleRoot1 = Files.createDirectories(moduleRoot.resolve("child-module-1"));
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path root = collector.findProjectRoot(childModuleRoot1);
+
+    //the collector should take the childModuleRoot as project root as it should
+    //not recognize the moduleRoot as root as there is no pom
+    assertEquals(childModuleRoot1, root);
+  }
+
+  @Test
+  public void findProjectRoot_MavenAndGradleProject_findRootFromAllChildren() throws IOException {
+
+    final Path moduleRoot = folder.newFolder("test-module").toPath();
+    final Path mvnChildModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module-mvn"));
+    final Path gradleChildModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module-grdl"));
+
+    createPom(moduleRoot, "child-module-mvn");
+    createPom(mvnChildModuleRoot);
+    createSettings(moduleRoot, "child-module-grdl");
+    createSettings(gradleChildModuleRoot);
+
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    assertEquals(moduleRoot, collector.findProjectRoot(mvnChildModuleRoot));
+    assertEquals(moduleRoot, collector.findProjectRoot(gradleChildModuleRoot));
   }
 
   @Test
