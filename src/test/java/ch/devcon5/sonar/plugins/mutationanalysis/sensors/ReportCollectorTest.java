@@ -69,6 +69,7 @@ public class ReportCollectorTest {
     this.configuration = harness.createConfiguration();
   }
 
+
   @Test
   public void findProjectRoot_noMavenOrGradleProject_noModules() throws IOException {
 
@@ -352,6 +353,33 @@ public class ReportCollectorTest {
     createMutationReportsFile(childModule2Root, DEFAULT_PIT_REPORTS_DIR, "ReportCollectorTest_mutations.xml");
 
     final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Collection<Mutant> mutants = collector.collectGlobalMutants(context);
+
+    assertEquals(12, mutants.size());
+  }
+
+  @Test
+  public void collectGlobalMutants_multiModule_rootFolderFromSettings() throws IOException {
+    configuration.set(EXPERIMENTAL_FEATURE_ENABLED,true);
+
+    final Path parentRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path moduleRoot = Files.createDirectories(parentRoot.resolve("parent"));
+    final Path childModule1Root = Files.createDirectories(moduleRoot.resolve("child-module1"));
+    final Path childModule2Root = Files.createDirectories(parentRoot.resolve("child-module2"));
+
+    configuration.set("dc5.mutationAnalysis.project.root", moduleRoot);
+
+    createPom(parentRoot); //no child modules defined here
+    createPom(moduleRoot, "child-module1","../child-module2");
+    createPom(childModule1Root);
+    createPom(childModule2Root);
+
+    createMutationReportsFile(childModule1Root, DEFAULT_PIT_REPORTS_DIR, "ReportCollectorTest_mutations.xml");
+    createMutationReportsFile(childModule2Root, DEFAULT_PIT_REPORTS_DIR, "ReportCollectorTest_mutations.xml");
+
+    final TestSensorContext context = harness.changeBasePath(parentRoot).createSensorContext();
     final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
 
     final Collection<Mutant> mutants = collector.collectGlobalMutants(context);
