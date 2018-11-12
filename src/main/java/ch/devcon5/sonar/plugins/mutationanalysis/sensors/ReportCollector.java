@@ -151,7 +151,7 @@ public class ReportCollector {
       try (InputStream is = Files.newInputStream(childPomXml)) {
         final InputSource in = new InputSource(is);
         return Optional.ofNullable((String) this.xpath.evaluate(XPATH_RELATIVE_PARENT_PATH, in, STRING))
-                       .filter(String::isEmpty)
+                       .filter(relPath -> !relPath.isEmpty())
                        .map(child::resolve);
       } catch (IOException | XPathExpressionException e) {
         LOG.debug("Could not parse pom {}", childPomXml, e);
