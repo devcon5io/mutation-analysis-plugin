@@ -20,17 +20,29 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
+import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.PROJECT_ROOT_FOLDER;
+import static javax.xml.xpath.XPathConstants.NODESET;
+import static javax.xml.xpath.XPathConstants.STRING;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,8 +61,16 @@ import org.xml.sax.InputSource;
  */
 public class ReportCollector {
 
+  /*
+  This whole class should be refactored. For the moment it is ok-ish, but once other build tools
+  are supported (i.e. from the JS world), it might be better to split support for multiple tools
+  into different classes.
+   */
+
   public static final String POM_XML = "pom.xml";
   public static final String SETTINGS_GRADLE = "settings.gradle";
+  private static final String XPATH_RELATIVE_PARENT_PATH = "//*[local-name() = 'project']/*[local-name() = 'parent']/*[local-name() = 'relativePath']";
+  private static final String XPATH_MODULE = "//*[local-name() = 'module']";
   private static final Logger LOG = getLogger(ReportCollector.class);
   private final Configuration settings;
   private final FileSystem fileSystem;
@@ -103,21 +123,41 @@ public class ReportCollector {
   }
 
   private Optional<Path> getProjectRootFromSettings() {
-    return settings.get("dc5.mutationAnalysis.project.root").map(Paths::get);
+
+    return settings.get(PROJECT_ROOT_FOLDER).map(Paths::get);
   }
 
   Path findProjectRoot(Path child) {
 
     LOG.debug("Searching project root for {}", child);
-    //TODO support parents by relative path
-    final Path parentPath = child.getParent();
+
+    final Path parentPath = getRelativeParentPathFromPom(child).orElseGet(child::getParent);
+
     final List<Path> childModules = getModulePaths(parentPath);
+
     if (childModules.stream().anyMatch(module -> isSamePath(child, module))) {
       LOG.debug("Path {} is parent module of {}", parentPath, child);
       return findProjectRoot(parentPath);
     }
+
     LOG.debug("Path {} is not a child of {}", child, parentPath);
     return child;
+  }
+
+  private Optional<Path> getRelativeParentPathFromPom(final Path child) {
+
+    final Path childPomXml = child.resolve(POM_XML);
+    if (childPomXml.toFile().exists()) {
+      try (InputStream is = Files.newInputStream(childPomXml)) {
+        final InputSource in = new InputSource(is);
+        return Optional.ofNullable((String) this.xpath.evaluate(XPATH_RELATIVE_PARENT_PATH, in, STRING))
+                       .filter(String::isEmpty)
+                       .map(child::resolve);
+      } catch (IOException | XPathExpressionException e) {
+        LOG.debug("Could not parse pom {}", childPomXml, e);
+      }
+    }
+    return Optional.empty();
   }
 
   private List<Path> getModulePaths(final Path parentPath) {
@@ -146,17 +186,19 @@ public class ReportCollector {
 
     final Path parent = configurationFilePath.getParent();
     final List<String> modulePaths = new ArrayList<>();
-    final InputSource is;
-    is = new InputSource(new FileReader(configurationFilePath.toFile()));
-    //TODO add support for profile-activated modules
-    final NodeList modules = (NodeList) this.xpath.evaluate("//*[local-name() = 'module']", is, XPathConstants.NODESET);
-    //creating a pre-sized list is - mutation wise - equivalent to creating the list without size hint
-    //we choose the less efficient way of not pre-sizing the array because this kills another mutant
-    //nevertheless, if the size known before creation, one should create the issue with size
-    for (int i = 0, len = modules.getLength(); i < len; i++) {
-      modulePaths.add(modules.item(i).getTextContent());
+
+    try (InputStream is = Files.newInputStream(configurationFilePath)) {
+      final InputSource in = new InputSource(is);
+      //TODO add support for profile-activated modules
+      final NodeList modules = (NodeList) this.xpath.evaluate(XPATH_MODULE, in, NODESET);
+      //creating a pre-sized list is - mutation wise - equivalent to creating the list without size hint
+      //we choose the less efficient way of not pre-sizing the array because this kills another mutant
+      //nevertheless, if the size known before creation, one should create the issue with size
+      for (int i = 0, len = modules.getLength(); i < len; i++) {
+        modulePaths.add(modules.item(i).getTextContent());
+      }
+      return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
     }
-    return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
   }
 
   private List<Path> getModulePathsForGradle(Path configurationFilePath) throws IOException {

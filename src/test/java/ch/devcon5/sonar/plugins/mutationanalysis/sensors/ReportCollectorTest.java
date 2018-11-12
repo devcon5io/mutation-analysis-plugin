@@ -65,10 +65,10 @@ public class ReportCollectorTest {
 
   @Before
   public void setUp() throws Exception {
+
     this.harness = SensorTestHarness.builder().withTempFolder(folder).build();
     this.configuration = harness.createConfiguration();
   }
-
 
   @Test
   public void findProjectRoot_noMavenOrGradleProject_noModules() throws IOException {
@@ -97,7 +97,6 @@ public class ReportCollectorTest {
     createPom(mvnChildModuleRoot);
     createSettings(moduleRoot, "child-module-grdl");
     createSettings(gradleChildModuleRoot);
-
 
     final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
     final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
@@ -199,7 +198,6 @@ public class ReportCollectorTest {
     assertEquals(childModuleRoot, actualRoot);
   }
 
-
   @Test
   public void findProjectRoot_multiModuleGradleProjectWithSettingsFileAndPomFileMalformed() throws IOException {
 
@@ -257,6 +255,7 @@ public class ReportCollectorTest {
 
   @Test
   public void collectLocalMutants_defaultReportDirectory() throws IOException {
+
     final Path moduleRoot = folder.newFolder("test-module").toPath();
 
     createPom(moduleRoot);
@@ -305,7 +304,8 @@ public class ReportCollectorTest {
 
   @Test
   public void collectGlobalMutants_singleModule_defaultReportDirectory() throws IOException {
-    configuration.set(EXPERIMENTAL_FEATURE_ENABLED,true);
+
+    configuration.set(EXPERIMENTAL_FEATURE_ENABLED, true);
 
     final Path moduleRoot = folder.newFolder("test-module").toPath();
     createPom(moduleRoot);
@@ -321,9 +321,10 @@ public class ReportCollectorTest {
 
   @Test
   public void collectGlobalMutants_singleModule_customReportDirectory() throws IOException {
+
     final String reportsDirectory = "target/reports";
     configuration.set(REPORT_DIRECTORY_KEY, reportsDirectory);
-    configuration.set(EXPERIMENTAL_FEATURE_ENABLED,true);
+    configuration.set(EXPERIMENTAL_FEATURE_ENABLED, true);
 
     final Path moduleRoot = folder.newFolder("test-module").toPath();
     createPom(moduleRoot);
@@ -339,13 +340,14 @@ public class ReportCollectorTest {
 
   @Test
   public void collectGlobalMutants_multiModule_defaultReportDirectory() throws IOException {
-    configuration.set(EXPERIMENTAL_FEATURE_ENABLED,true);
+
+    configuration.set(EXPERIMENTAL_FEATURE_ENABLED, true);
 
     final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
     final Path childModule1Root = Files.createDirectories(moduleRoot.resolve("child-module1"));
     final Path childModule2Root = Files.createDirectories(moduleRoot.resolve("child-module2"));
 
-    createPom(moduleRoot, "child-module1","child-module2");
+    createPom(moduleRoot, "child-module1", "child-module2");
     createPom(childModule1Root);
     createPom(childModule2Root);
 
@@ -362,7 +364,8 @@ public class ReportCollectorTest {
 
   @Test
   public void collectGlobalMutants_multiModule_rootFolderFromSettings() throws IOException {
-    configuration.set(EXPERIMENTAL_FEATURE_ENABLED,true);
+
+    configuration.set(EXPERIMENTAL_FEATURE_ENABLED, true);
 
     final Path parentRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
     final Path moduleRoot = Files.createDirectories(parentRoot.resolve("parent"));
@@ -372,7 +375,7 @@ public class ReportCollectorTest {
     configuration.set("dc5.mutationAnalysis.project.root", moduleRoot);
 
     createPom(parentRoot); //no child modules defined here
-    createPom(moduleRoot, "child-module1","../child-module2");
+    createPom(moduleRoot, "child-module1", "../child-module2");
     createPom(childModule1Root);
     createPom(childModule2Root);
 
@@ -388,16 +391,42 @@ public class ReportCollectorTest {
   }
 
   @Test
+  public void collectGlobalMutants_multiModule_rootFolderFromRelativePathInPom() throws IOException {
+
+    configuration.set(EXPERIMENTAL_FEATURE_ENABLED, true);
+
+    final Path parentRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path intermediate = Files.createDirectories(parentRoot.resolve("intermediate"));
+    final Path childModule1Root = Files.createDirectories(intermediate.resolve("child-module1"));
+    final Path childModule2Root = Files.createDirectories(intermediate.resolve("child-module2"));
+
+    createPom(parentRoot, "intermediate/child-module1", "intermediate/child-module2");
+    createPomWithRelativeParent(childModule1Root, "../");
+    createPomWithRelativeParent(childModule1Root, "../");
+
+    createMutationReportsFile(childModule1Root, DEFAULT_PIT_REPORTS_DIR, "ReportCollectorTest_mutations.xml");
+    createMutationReportsFile(childModule2Root, DEFAULT_PIT_REPORTS_DIR, "ReportCollectorTest_mutations.xml");
+
+    final TestSensorContext context = harness.changeBasePath(parentRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Collection<Mutant> mutants = collector.collectGlobalMutants(context);
+
+    assertEquals(12, mutants.size());
+  }
+
+  @Test
   public void collectGlobalMutants_multiModule_customReportDirectory() throws IOException {
+
     final String reportDirectory = "target/custom";
     configuration.set(REPORT_DIRECTORY_KEY, reportDirectory);
-    configuration.set(EXPERIMENTAL_FEATURE_ENABLED,true);
+    configuration.set(EXPERIMENTAL_FEATURE_ENABLED, true);
 
     final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
     final Path childModule1Root = Files.createDirectories(moduleRoot.resolve("child-module1"));
     final Path childModule2Root = Files.createDirectories(moduleRoot.resolve("child-module2"));
 
-    createPom(moduleRoot, "child-module1","child-module2");
+    createPom(moduleRoot, "child-module1", "child-module2");
     createPom(childModule1Root);
     createPom(childModule2Root);
 
@@ -449,6 +478,24 @@ public class ReportCollectorTest {
     assertEquals(0, collector.readMutantsFromReport(reportPath).count());
   }
 
+  private void createPomWithRelativeParent(final Path moduleRoot, String relParent) throws IOException {
+
+    StringBuilder b = new StringBuilder(128);
+    b.append("<project>");
+    b.append("<parent>");
+    b.append("<groupId>test</groupId>");
+    b.append("<artifactId>test</artifactId>");
+    if (relParent.isEmpty()) {
+      b.append("<relativePath />");
+    } else {
+      b.append("<relativePath>").append(relParent).append("</relativePath>");
+    }
+    b.append("</parent>");
+    b.append("</project>");
+
+    Files.write(moduleRoot.resolve("pom.xml"), b.toString().getBytes("UTF-8"));
+  }
+
   private void createPom(final Path moduleRoot, String... moduleNames) throws IOException {
 
     StringBuilder b = new StringBuilder(128);
@@ -482,6 +529,7 @@ public class ReportCollectorTest {
   }
 
   private void createSettings(Path moduleRoot, String... moduleNames) throws IOException {
+
     StringBuilder b = new StringBuilder(128);
     b.append("rootProject.name = \'test-root-project\'\n\n");
     if (moduleNames.length > 0) {
@@ -493,6 +541,7 @@ public class ReportCollectorTest {
   }
 
   private void createMalFormedSettings(Path moduleRoot, String... moduleNames) throws IOException {
+
     StringBuilder b = new StringBuilder(128);
     b.append("rootProject.name = \'test-root-project\'\n\n");
     if (moduleNames.length > 0) {
@@ -502,7 +551,6 @@ public class ReportCollectorTest {
     }
     Files.write(moduleRoot.resolve("settings.gradle"), b.toString().getBytes("UTF-8"));
   }
-
 
   private Path createMutationReportsFile(final Path moduleRoot, final String reportsDirectory, final String resourceName) throws IOException {
 
