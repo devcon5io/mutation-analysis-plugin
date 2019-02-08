@@ -47,10 +47,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sonar.api.batch.fs.TextRange;
+import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.sensor.internal.DefaultSensorDescriptor;
 import org.sonar.api.batch.sensor.issue.Issue;
 import org.sonar.api.batch.sensor.measure.Measure;
-import org.sonar.api.profiles.RulesProfile;
 
 //kills 68 mutants, 11 alive
 public class PitestSensorTest {
@@ -66,7 +66,8 @@ public class PitestSensorTest {
    }
    @Test
    public void describe() {
-      final PitestSensor sensor = new PitestSensor(harness.createConfiguration(), harness.createEmptyRulesProfile(), harness.createSensorContext().fileSystem());
+      final PitestSensor sensor = new PitestSensor(harness.createConfiguration(), harness.createEmptyActiveRules(),
+                                                   harness.createSensorContext().fileSystem());
 
       final DefaultSensorDescriptor desc = new DefaultSensorDescriptor();
 
@@ -96,7 +97,8 @@ public class PitestSensorTest {
    @Test
    public void testToString() throws Exception {
 
-      final PitestSensor sensor = new PitestSensor(harness.createConfiguration(), harness.createEmptyRulesProfile(), harness.createSensorContext().fileSystem());
+      final PitestSensor sensor = new PitestSensor(harness.createConfiguration(), harness.createEmptyActiveRules(), harness
+          .createSensorContext().fileSystem());
 
       assertEquals("PitestSensor", sensor.toString());
    }
@@ -107,7 +109,7 @@ public class PitestSensorTest {
       //arrange
       final TestSensorContext context = disableBothSensors(harness.createSensorContext());
       createReportFile("PitestSensorTest_KotlinJava_mutations.xml");
-      final RulesProfile profile = harness.createRulesProfile(
+      final ActiveRules profile = harness.createActiveRules(
           harness.createRule("java",RULE_SURVIVED_MUTANT),
           harness.createRule("kotlin",RULE_SURVIVED_MUTANT)
           );
@@ -129,7 +131,7 @@ public class PitestSensorTest {
       //arrange
       final TestSensorContext context = disableJavaSensor(harness.createSensorContext());
       createReportFile("PitestSensorTest_KotlinJava_mutations.xml");
-      final RulesProfile profile = harness.createRulesProfile(
+      final ActiveRules profile = harness.createActiveRules(
           harness.createRule("java","mutant.survived"),
           harness.createRule("kotlin","mutant.survived")
       );
@@ -159,7 +161,7 @@ public class PitestSensorTest {
       //arrange
       final TestSensorContext context = disableKotlingSensor(harness.createSensorContext());
       createReportFile("PitestSensorTest_KotlinJava_mutations.xml");
-      final RulesProfile profile = harness.createRulesProfile(
+      final ActiveRules profile = harness.createActiveRules(
           harness.createRule("java",RULE_SURVIVED_MUTANT),
           harness.createRule("kotlin",RULE_SURVIVED_MUTANT)
       );
@@ -187,7 +189,7 @@ public class PitestSensorTest {
    public void execute_noTestFile_noIssuesAndMeasuresCreated() throws Exception {
 
       createReportFile("PitestSensorTest_Java_mutations.xml");
-      final RulesProfile profile = harness.createRulesProfile(RULE_SURVIVED_MUTANT);
+      final ActiveRules profile = harness.createActiveRules(RULE_SURVIVED_MUTANT);
       final TestSensorContext context = harness.createSensorContext();
 
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
@@ -202,7 +204,7 @@ public class PitestSensorTest {
    @Test
    public void execute_noReport_noIssuesAndMeasuresCreated() throws Exception {
 
-      final RulesProfile profile = harness.createRulesProfile(RULE_SURVIVED_MUTANT);
+      final ActiveRules profile = harness.createActiveRules(RULE_SURVIVED_MUTANT);
       final TestSensorContext context = harness.createSensorContext();
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
 
@@ -222,7 +224,7 @@ public class PitestSensorTest {
       createReportFile("PitestSensorTest_Java_mutations.xml");
       final TestSensorContext context = harness.createSensorContext().scanFiles();
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
-      final RulesProfile profile = harness.createEmptyRulesProfile();
+      final ActiveRules profile = harness.createEmptyActiveRules();
 
       //sensor is configured by default
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
@@ -242,7 +244,7 @@ public class PitestSensorTest {
       final TestSensorContext context = harness.createSensorContext().scanFiles();
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
 
-      final RulesProfile profile = harness.createRulesProfile("mutant.NEGATE_CONDITIONALS");
+      final ActiveRules profile = harness.createActiveRules("mutant.NEGATE_CONDITIONALS");
 
       //sensor is configured by default
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
@@ -274,7 +276,7 @@ public class PitestSensorTest {
       final TestSensorContext context = harness.createSensorContext().scanFiles();
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
 
-      final RulesProfile profile = harness.createRulesProfile("mutant.uncovered");
+      final ActiveRules profile = harness.createActiveRules("mutant.uncovered");
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
 
       sensor.execute(context);
@@ -298,7 +300,7 @@ public class PitestSensorTest {
       createReportFile("PitestSensorTest_Java_mutations.xml");
       final TestSensorContext context = harness.createSensorContext().scanFiles();
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
-      final RulesProfile profile = harness.createRulesProfile("mutant.unknownStatus");
+      final ActiveRules profile = harness.createActiveRules("mutant.unknownStatus");
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
 
       sensor.execute(context);
@@ -324,7 +326,7 @@ public class PitestSensorTest {
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
       context.setConfiguration(EFFORT_FACTOR_MISSING_COVERAGE, 2.0);
 
-      final RulesProfile profile = harness.createRulesProfile(harness.createRule("mutant.coverage", PARAM_MUTANT_COVERAGE_THRESHOLD, "66.6"));
+      final ActiveRules profile = harness.createActiveRules(harness.createRule("mutant.coverage", PARAM_MUTANT_COVERAGE_THRESHOLD, "66.6"));
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
 
       sensor.execute(context);
@@ -348,7 +350,7 @@ public class PitestSensorTest {
       final TestSensorContext context = harness.createSensorContext().scanFiles();
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
       context.setConfiguration(EFFORT_FACTOR_MISSING_COVERAGE, 2.0);
-      final RulesProfile profile = harness.createRulesProfile(harness.createRule("mutant.coverage", PARAM_MUTANT_COVERAGE_THRESHOLD, "80.0"));
+      final ActiveRules profile = harness.createActiveRules(harness.createRule("mutant.coverage", PARAM_MUTANT_COVERAGE_THRESHOLD, "80.0"));
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
 
       sensor.execute(context);
@@ -371,7 +373,7 @@ public class PitestSensorTest {
       createReportFile("PitestSensorTest_Java_mutations.xml");
       final TestSensorContext context = harness.createSensorContext().scanFiles();
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
-      final RulesProfile profile = harness.createRulesProfile(harness.createRule("mutant.coverage", PARAM_MUTANT_COVERAGE_THRESHOLD, "40.0"));
+      final ActiveRules profile = harness.createActiveRules(harness.createRule("mutant.coverage", PARAM_MUTANT_COVERAGE_THRESHOLD, "40.0"));
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
 
       sensor.execute(context);
@@ -387,7 +389,7 @@ public class PitestSensorTest {
       final TestSensorContext context = harness.createSensorContext().scanFiles();
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/model/Mutant.java", md -> md.lines = 200);
       context.setConfiguration(EFFORT_FACTOR_MISSING_COVERAGE, 2.0);
-      final RulesProfile profile = harness.createRulesProfile(harness.createRule("mutant.coverage", PARAM_MUTANT_COVERAGE_THRESHOLD, "50.0"));
+      final ActiveRules profile = harness.createActiveRules(harness.createRule("mutant.coverage", PARAM_MUTANT_COVERAGE_THRESHOLD, "50.0"));
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
 
       sensor.execute(context);
@@ -406,7 +408,8 @@ public class PitestSensorTest {
       context.addTestFile("src/test/java/ch/devcon5/sonar/plugins/mutationanalysis/model/MutantTest.java");
       context.setConfiguration(EXPERIMENTAL_FEATURE_ENABLED, "true");
 
-      final PitestSensor sensor = new PitestSensor(context.getConfiguration(), harness.createEmptyRulesProfile(), context.fileSystem());
+      final PitestSensor sensor = new PitestSensor(context.getConfiguration(), harness.createEmptyActiveRules(), context
+          .fileSystem());
 
       sensor.execute(context);
 
@@ -427,7 +430,7 @@ public class PitestSensorTest {
       context.setConfiguration(EXPERIMENTAL_FEATURE_ENABLED, "false");
 
       //sensor is configured by default
-      final PitestSensor sensor = new PitestSensor(context.getConfiguration(), harness.createEmptyRulesProfile(), context.fileSystem());
+      final PitestSensor sensor = new PitestSensor(context.getConfiguration(), harness.createEmptyActiveRules(), context.fileSystem());
 
       sensor.execute(context);
 
@@ -445,7 +448,7 @@ public class PitestSensorTest {
       final TestSensorContext context = disableJavaSensor(harness.createSensorContext().scanFiles());
       context.addTestFile("src/main/java/ch/devcon5/sonar/plugins/mutationanalysis/KotlinExample.kt", md -> md.lines = 200);
 
-      final RulesProfile profile = harness.createRulesProfile("mutant.uncovered");
+      final ActiveRules profile = harness.createActiveRules("mutant.uncovered");
       final PitestSensor sensor = new PitestSensor(context.getConfiguration(), profile, context.fileSystem());
 
       sensor.execute(context);
