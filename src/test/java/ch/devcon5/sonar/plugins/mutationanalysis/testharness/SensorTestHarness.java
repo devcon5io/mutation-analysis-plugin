@@ -38,6 +38,7 @@ import org.junit.rules.TemporaryFolder;
 import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.rule.internal.ActiveRulesBuilder;
 import org.sonar.api.batch.rule.internal.DefaultActiveRules;
+import org.sonar.api.batch.rule.internal.NewActiveRule;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rules.ActiveRule;
@@ -134,7 +135,12 @@ public class SensorTestHarness {
       return RulesProfile.create("test.profile", language);
    }
 
-
+   /**
+    * @param ruleKeys
+    * @return
+    * @deprecated use createActiveRules
+    */
+   @Deprecated
    public RulesProfile createRulesProfile(String... ruleKeys) {
       return createRulesProfile(Arrays.stream(ruleKeys)
                                       .map(this::createRule)
@@ -144,7 +150,8 @@ public class SensorTestHarness {
 
       final ActiveRulesBuilder builder = new ActiveRulesBuilder();
       for(String ruleKey : ruleKeys){
-         builder.create(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY, ruleKey));
+         builder.create(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".kotlin", ruleKey)).activate();
+         builder.create(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".java", ruleKey)).activate();
       }
       return builder.build();
    }
@@ -152,11 +159,19 @@ public class SensorTestHarness {
    public ActiveRules createActiveRules(Rule... rules) {
       final ActiveRulesBuilder builder = new ActiveRulesBuilder();
       for(Rule rule : rules){
-         builder.create(RuleKey.of(rule.getRepositoryKey(), rule.getKey()));
+         final NewActiveRule activeRule = builder.create(RuleKey.of(rule.getRepositoryKey(), rule.getKey()));
+         rule.getParams().forEach(param -> activeRule.params().put(param.getKey(), param.getDefaultValue()));
+         activeRule.activate();
       }
       return builder.build();
    }
 
+   /**
+    * @deprecated use createActiveRules
+    * @param rules
+    * @return
+    */
+   @Deprecated
    public RulesProfile createRulesProfile(Rule... rules) {
 
       final RulesProfile profile = createEmptyRulesProfile();

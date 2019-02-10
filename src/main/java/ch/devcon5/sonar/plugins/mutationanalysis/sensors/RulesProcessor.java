@@ -74,7 +74,7 @@ public class RulesProcessor {
 
       if (activeRules.isEmpty()) {
          // ignore violations from report, if rule not activated in Sonar
-         LOG.warn("/!\\ Pitest rule needs to be activated in the \"{}\" profile.", rulesProfile);
+         LOG.warn("/!\\ At least one Mutation Analysis rule needs to be activated the current profile.");
       }
 
       metrics.stream()
@@ -132,7 +132,7 @@ public class RulesProcessor {
     */
    private void applyThresholdRule(final ResourceMutationMetrics resourceMetrics, final ActiveRule rule, final SensorContext context) {
 
-      if (!MutationAnalysisRulesDefinition.RULE_MUTANT_COVERAGE.equals(rule.ruleKey())) {
+      if (!MutationAnalysisRulesDefinition.RULE_MUTANT_COVERAGE.equals(rule.ruleKey().rule())) {
          return;
       }
       final double actualCoverage = resourceMetrics.getMutationCoverage();

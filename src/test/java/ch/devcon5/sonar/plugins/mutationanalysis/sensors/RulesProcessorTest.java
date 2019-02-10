@@ -112,7 +112,7 @@ public class RulesProcessorTest {
       assertTrue(events.stream()
                        .filter(e -> e.getLevel() == Level.WARN)
                        .map(e -> e.getMessage().getFormattedMessage())
-                       .anyMatch("/!\\ Pitest rule needs to be activated in the \"test.profile\" profile."::equals));
+                       .anyMatch("/!\\ At least one Mutation Analysis rule needs to be activated the current profile."::equals));
 
    }
 
