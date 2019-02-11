@@ -363,6 +363,26 @@ public class RulesProcessorTest {
       assertTrue(appender.getEvents().isEmpty());
    }
 
+  @Test
+  public void processRules_coverageThresholdRuleInactive_defaultEffortFactor_coverageThresholdMissed_noIssueCreated() {
+
+    //arrange
+    final TestSensorContext context = harness.createSensorContext();
+    final ActiveRules profile = harness.createActiveRules("some.rule");
+    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
+      md.mutants.survived = 2;
+      md.mutants.killed = 8;
+    }));
+
+    //act
+    final RulesProcessor processor = new RulesProcessor(configuration, profile);
+    processor.processRules(metrics, context, "java");
+
+    //assert
+    assertTrue(context.getStorage().getIssues().isEmpty());
+    assertTrue(appender.getEvents().isEmpty());
+  }
+
    @Test
    public void processRules_coverageThresholdRuleActive_defaultEffortFactor_coverageThresholdHit_noIssueCreated() {
 
@@ -383,6 +403,26 @@ public class RulesProcessorTest {
       assertTrue(context.getStorage().getIssues().isEmpty());
       assertTrue(appender.getEvents().isEmpty());
    }
+
+  @Test
+  public void processRules_coverageThresholdRuleActive_defaultThreshold_noIssueCreated() {
+
+    //arrange
+    final TestSensorContext context = harness.createSensorContext();
+    final ActiveRules profile = harness.createActiveRules(harness.createRule(RULE_MUTANT_COVERAGE));
+    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
+      md.mutants.survived = 2;
+      md.mutants.killed = 8;
+    }));
+
+    //act
+    final RulesProcessor processor = new RulesProcessor(configuration, profile);
+    processor.processRules(metrics, context, "java");
+
+    //assert
+    assertTrue(context.getStorage().getIssues().isEmpty());
+    assertTrue(appender.getEvents().isEmpty());
+  }
 
    @Test
    public void processRules_coverageThresholdRuleActive_gapIsSamllerThan05_RoundedUp_issueCreated() {
