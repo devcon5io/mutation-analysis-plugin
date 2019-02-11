@@ -20,23 +20,24 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
 import org.slf4j.Logger;
+import org.sonar.api.batch.rule.ActiveRule;
+import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssueLocation;
 import org.sonar.api.batch.sensor.issue.internal.DefaultIssueLocation;
 import org.sonar.api.config.Configuration;
-import org.sonar.api.profiles.RulesProfile;
-import org.sonar.api.rules.ActiveRule;
 
 /**
  *
@@ -53,9 +54,9 @@ public class RulesProcessor {
    /**
     * the rules profile containing the currently active rule.
     */
-   private final RulesProfile rulesProfile;
+   private final ActiveRules rulesProfile;
 
-   public RulesProcessor(final Configuration configuration, final RulesProfile rulesProfile) {
+   public RulesProcessor(final Configuration configuration, final ActiveRules rulesProfile) {
       this.settings = configuration;
       this.rulesProfile = rulesProfile;
 
@@ -70,11 +71,11 @@ public class RulesProcessor {
     *         the current sensor context
     */
    public void processRules(final Collection<ResourceMutationMetrics> metrics, final SensorContext context, String language) {
-      final List<ActiveRule> activeRules = this.rulesProfile.getActiveRulesByRepository(MutationAnalysisRulesDefinition.REPOSITORY_KEY + "." + language);
+      final Collection<ActiveRule> activeRules = this.rulesProfile.findByRepository(MutationAnalysisRulesDefinition.REPOSITORY_KEY + "." + language);
 
       if (activeRules.isEmpty()) {
          // ignore violations from report, if rule not activated in Sonar
-         LOG.warn("/!\\ Pitest rule needs to be activated in the \"{}\" profile.", rulesProfile.getName());
+         LOG.warn("/!\\ At least one Mutation Analysis rule needs to be activated the current profile.");
       }
 
       metrics.stream()
@@ -132,11 +133,13 @@ public class RulesProcessor {
     */
    private void applyThresholdRule(final ResourceMutationMetrics resourceMetrics, final ActiveRule rule, final SensorContext context) {
 
-      if (!MutationAnalysisRulesDefinition.RULE_MUTANT_COVERAGE.equals(rule.getRuleKey())) {
-         return;
-      }
+      //we can skip the check whether the current rule is the coverage_threshold rule
+      //because if it's not, then it won't have the coverage threshold parameter, defaulting to 0
+      //an issue is only created if the actual coverage is less than the threshold, which is not possible with 0
+
       final double actualCoverage = resourceMetrics.getMutationCoverage();
-      final double threshold = Double.parseDouble(rule.getParameter(MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD));
+      final double threshold = Double.parseDouble(Optional.ofNullable(rule.param(PARAM_MUTANT_COVERAGE_THRESHOLD))
+                                                          .orElse("0.0"));
 
       if (resourceMetrics.getMutationCoverage() < threshold) {
 
@@ -144,7 +147,7 @@ public class RulesProcessor {
          final double additionalRequiredMutants = Math.ceil(minimumKilledMutants - resourceMetrics.getMutationsKilled());
 
          context.newIssue()
-                .forRule(rule.getRule().ruleKey())
+                .forRule(rule.ruleKey())
                 .gap(settings.getDouble(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE).orElse(1.0) * additionalRequiredMutants)
                 .at(newLocation().on(resourceMetrics.getResource()).message(generateThresholdViolationMessage(actualCoverage, threshold, additionalRequiredMutants)))
                 .save();
@@ -190,11 +193,13 @@ public class RulesProcessor {
    private void applyMutantRule(final ResourceMutationMetrics resourceMetrics, final ActiveRule rule, final SensorContext context) {
 
       for (final Mutant mutant : resourceMetrics.getMutants()) {
-         if (violatesSurvivedMutantRule(rule, mutant) || violatesUncoveredMutantRule(rule, mutant) || violatesUnknownMutantStatusRule(rule, mutant) || violatesMutatorRule(rule,
-                                                                                                                                                                           mutant)) {
+         if (violatesSurvivedMutantRule(rule, mutant)
+             || violatesUncoveredMutantRule(rule, mutant)
+             || violatesUnknownMutantStatusRule(rule, mutant)
+             || violatesMutatorRule(rule, mutant)) {
 
             context.newIssue()
-                   .forRule(rule.getRule().ruleKey())
+                   .forRule(rule.ruleKey())
                    .gap(settings.getDouble(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT).orElse(1.0))
                    .at(newLocation().on(resourceMetrics.getResource())
                                     .at(resourceMetrics.getResource().selectLine(mutant.getLineNumber()))
@@ -216,8 +221,9 @@ public class RulesProcessor {
     */
    private boolean violatesSurvivedMutantRule(final ActiveRule rule, final Mutant mutant) {
 
-      return MutationAnalysisRulesDefinition.RULE_SURVIVED_MUTANT.equals(rule.getRuleKey()) && (mutant.getState() == Mutant.State.SURVIVED
-              || mutant.getState() == Mutant.State.NO_COVERAGE);
+      return MutationAnalysisRulesDefinition.RULE_SURVIVED_MUTANT.equals(rule.ruleKey().rule())
+          && (mutant.getState() == Mutant.State.SURVIVED
+          || mutant.getState() == Mutant.State.NO_COVERAGE);
    }
 
    /**
@@ -232,7 +238,8 @@ public class RulesProcessor {
     */
    private boolean violatesUncoveredMutantRule(final ActiveRule rule, final Mutant mutant) {
 
-      return MutationAnalysisRulesDefinition.RULE_UNCOVERED_MUTANT.equals(rule.getRuleKey()) && mutant.getState() == Mutant.State.NO_COVERAGE;
+      return MutationAnalysisRulesDefinition.RULE_UNCOVERED_MUTANT.equals(rule.ruleKey().rule())
+          && mutant.getState() == Mutant.State.NO_COVERAGE;
    }
 
    /**
@@ -247,7 +254,8 @@ public class RulesProcessor {
     */
    private boolean violatesUnknownMutantStatusRule(final ActiveRule rule, final Mutant mutant) {
 
-      return MutationAnalysisRulesDefinition.RULE_UNKNOWN_MUTANT_STATUS.equals(rule.getRuleKey()) && mutant.getState() == Mutant.State.UNKNOWN;
+      return MutationAnalysisRulesDefinition.RULE_UNKNOWN_MUTANT_STATUS.equals(rule.ruleKey().rule())
+          && mutant.getState() == Mutant.State.UNKNOWN;
    }
 
    /**
@@ -262,7 +270,10 @@ public class RulesProcessor {
     */
    private boolean violatesMutatorRule(final ActiveRule rule, final Mutant mutant) {
 
-      return rule.getRuleKey().equals(MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX + mutant.getMutationOperator().getId()) && mutant.getState().isAlive();
+      return rule.ruleKey()
+                 .rule()
+                 .equals(MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX + mutant.getMutationOperator().getId())
+          && mutant.getState().isAlive();
    }
 
    /**

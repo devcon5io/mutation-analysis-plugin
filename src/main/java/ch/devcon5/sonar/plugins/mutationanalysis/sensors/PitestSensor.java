@@ -36,11 +36,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.fs.FileSystem;
 import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.sensor.Sensor;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.config.Configuration;
-import org.sonar.api.profiles.RulesProfile;
 
 /**
  * Sonar sensor for pitest mutation coverage analysis.
@@ -73,7 +73,8 @@ public class PitestSensor implements Sensor {
    * @param fileSystem
    *     the FileSystem reference to access the project resources
    */
-  public PitestSensor(final Configuration configuration, final RulesProfile rulesProfile, final FileSystem fileSystem) {
+  public PitestSensor(final Configuration configuration, final ActiveRules rulesProfile, final FileSystem
+      fileSystem) {
 
     this.resourceResolver = new ResourceResolver(fileSystem);
     this.settings = configuration;
