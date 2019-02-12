@@ -275,14 +275,12 @@ public class TestSensorContext implements SensorContext {
     try {
       ResourceMutationMetrics rmm = new ResourceMutationMetrics(addTestFile(filename, metadata));
 
-      String desc = metadata.mutants.description;
-
-      addMutants(rmm, Mutant.State.UNKNOWN, metadata.mutants.unknown, metadata.test.name, desc);
-      addMutants(rmm, Mutant.State.NO_COVERAGE, metadata.mutants.noCoverage, metadata.test.name, desc);
-      addMutants(rmm, Mutant.State.SURVIVED, metadata.mutants.survived, metadata.test.name, desc);
-      addMutants(rmm, Mutant.State.TIMED_OUT, metadata.mutants.timedOut, metadata.test.name, desc);
-      addMutants(rmm, Mutant.State.MEMORY_ERROR, metadata.mutants.memoryError, metadata.test.name, desc);
-      addMutants(rmm, Mutant.State.KILLED, metadata.mutants.killed, metadata.test.name, desc);
+      addMutants(rmm, Mutant.State.UNKNOWN, metadata.mutants.unknown, metadata);
+      addMutants(rmm, Mutant.State.NO_COVERAGE, metadata.mutants.noCoverage, metadata);
+      addMutants(rmm, Mutant.State.SURVIVED, metadata.mutants.survived, metadata);
+      addMutants(rmm, Mutant.State.TIMED_OUT, metadata.mutants.timedOut, metadata);
+      addMutants(rmm, Mutant.State.MEMORY_ERROR, metadata.mutants.memoryError, metadata);
+      addMutants(rmm, Mutant.State.KILLED, metadata.mutants.killed, metadata);
 
       return rmm;
     } catch (IOException e) {
@@ -390,16 +388,18 @@ public class TestSensorContext implements SensorContext {
   }
 
 
-  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count, String testname, String desc) {
+  private void addMutants(final ResourceMutationMetrics rmm, final Mutant.State state, final int count,
+                          TestFileMetadata metadata) {
+
 
     String filename = rmm.getResource().filename();
 
     for (int i = 0; i < count; i++) {
-      rmm.addMutant(newMutant(filename, state, count + i, testname, desc));
+      rmm.addMutant(newMutant(filename, state, count + i, metadata));
     }
   }
 
-  private Mutant newMutant(String file, Mutant.State state, final int line, String testName, String description) {
+  private Mutant newMutant(String file, Mutant.State state, final int line, TestFileMetadata metadata) {
 
     return Mutant.builder()
                  .mutantStatus(state)
@@ -409,9 +409,10 @@ public class TestSensorContext implements SensorContext {
                  .withMethodParameters("desc")
                  .inLine(line)
                  .atIndex(0)
+                 .numberOfTestsRun(metadata.mutants.numTestRun)
                  .usingMutator(getMutationOperatorForLine(line))
-                 .killedBy(testName)
-                 .withDescription(description)
+                 .killedBy(metadata.test.name)
+                 .withDescription(metadata.mutants.description)
                  .build();
 
   }
@@ -441,6 +442,7 @@ public class TestSensorContext implements SensorContext {
       public int timedOut = 0;
       public int killed = 0;
       public String description;
+      public int numTestRun;
     }
 
     public static class TestMetadata implements Serializable {
