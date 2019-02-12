@@ -47,6 +47,7 @@ public class Mutant {
 
    private final int lineNumber;
    private final int index;
+   private final int numberOfTestsRun;
    private final State state;
    private final MutationOperator mutationOperator;
    private final String sourceFile;
@@ -79,6 +80,7 @@ public class Mutant {
       this.mutationOperator = builder.mutationOperator;
       this.mutatorSuffix = builder.mutatorSuffix;
       this.index = builder.index;
+      this.numberOfTestsRun = builder.numberOfTestsRun;
       this.killingTest = builder.state.isDetected() ? builder.killingTest : "";
       this.description = builder.description;
       this.toString = "Mutant [sourceFile="
@@ -95,6 +97,8 @@ public class Mutant {
               + builder.state
               + ", mutationOperator="
               + builder.mutationOperator.getName()
+              + ", numberOfTestsRun="
+              + builder.numberOfTestsRun
               + ", killingTest="
               + this.killingTest
               + (this.description == null ? "" : ", description=" + this.description)
@@ -110,6 +114,7 @@ public class Mutant {
                                         this.mutatorSuffix.hashCode(),
                                         this.sourceFile.hashCode(),
                                         this.killingTest.hashCode(),
+                                        this.numberOfTestsRun,
                                         this.description == null ? 0 : this.description.hashCode());
 
       this.testDescriptor = new TestDescriptor(this.killingTest);
@@ -221,6 +226,16 @@ public class Mutant {
    }
 
    /**
+    *
+    * @return the number of tests that had to be executed to kill the mutant. The number is
+    * usually >= 1.
+    */
+   public int getNumberOfTestsRun() {
+
+      return numberOfTestsRun;
+   }
+
+   /**
     * Newer versions of Pit produce a description containing more details about what has been mutated.
     *
     * @return the description if the mutant contained any or an empty optional
@@ -277,6 +292,9 @@ public class Mutant {
          return false;
       }
       if (lineNumber != other.lineNumber) {
+         return false;
+      }
+      if (numberOfTestsRun != other.numberOfTestsRun) {
          return false;
       }
       if (!methodDescription.equals(other.methodDescription)) {
@@ -436,6 +454,7 @@ public class Mutant {
       private MutationOperator mutationOperator;
       private String mutatorSuffix;
       private int index;
+      private int numberOfTestsRun;
       private String killingTest;
       private String description;
 
@@ -591,6 +610,19 @@ public class Mutant {
       public Builder killedBy(final String killingTest) {
 
          this.killingTest = killingTest;
+         return this;
+      }
+
+      /**
+       *
+       * @param numberOfTestsRun
+       *  the number of tests that had to be executed before the mutant was killed. Pitest only executes tests that
+       *  execute code actually cover a specific mutant to reduce the overall execution time.
+       * @return
+       *  this builder
+       */
+      public Builder numberOfTestsRun(final int numberOfTestsRun){
+         this.numberOfTestsRun = numberOfTestsRun;
          return this;
       }
 

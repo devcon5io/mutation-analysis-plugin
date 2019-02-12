@@ -66,6 +66,7 @@ public class PitestReportParser {
    private static final Logger LOG = LoggerFactory.getLogger(PitestReportParser.class);
 
    private static final String ATTR_STATUS = "status";
+   private static final String ATTR_NUMBER_OF_TESTS_RUN = "numberOfTestsRun";
 
    private static final String ELEMENT_KILLING_TEST = "killingTest";
 
@@ -195,7 +196,9 @@ public class PitestReportParser {
     */
    private Mutant parseMutant(final XMLStreamReader reader) throws XMLStreamException {
 
-      final Mutant.Builder builder = Mutant.builder().mutantStatus(getMutantStatus(reader));
+      final Mutant.Builder builder = Mutant.builder()
+                                           .mutantStatus(getMutantStatus(reader))
+                                           .numberOfTestsRun(getNumberOfTestsRun(reader));
 
       while (true) {
          int event = reader.next();
@@ -265,5 +268,22 @@ public class PitestReportParser {
    private String getMutantStatus(final XMLStreamReader reader) {
 
       return reader.getAttributeValue(NAMESPACE_URI, ATTR_STATUS);
+   }
+
+   /**
+    * Reads the status of {@link Mutant} from the XMLStream.
+    *
+    * @param reader
+    *         the {@link XMLStreamReader} whose cursor is at the start element position of a &lt;mutation&gt; element
+    *
+    * @return the mutant status as a string
+    */
+   private int getNumberOfTestsRun(final XMLStreamReader reader) {
+
+      final String numberOfTestsRun = reader.getAttributeValue(NAMESPACE_URI, ATTR_NUMBER_OF_TESTS_RUN);
+      if(numberOfTestsRun != null){
+         return Integer.parseInt(numberOfTestsRun);
+      }
+      return 0;
    }
 }
