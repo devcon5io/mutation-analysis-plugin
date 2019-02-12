@@ -261,6 +261,7 @@ public class MutantTest {
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator(expected.getMutationOperator())
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
 
@@ -280,6 +281,7 @@ public class MutantTest {
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator(expected.getMutationOperator())
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
     assertNotEquals(expected, other);
@@ -298,6 +300,7 @@ public class MutantTest {
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator(expected.getMutationOperator())
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
 
@@ -317,6 +320,7 @@ public class MutantTest {
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator(expected.getMutationOperator())
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
     assertNotEquals(expected, other);
@@ -335,6 +339,7 @@ public class MutantTest {
                                .withMethodParameters("()")
                                .usingMutator(expected.getMutationOperator())
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
 
@@ -354,6 +359,7 @@ public class MutantTest {
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator(expected.getMutationOperator())
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
 
@@ -373,6 +379,7 @@ public class MutantTest {
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator(MutationOperators.find("ARGUMENT_PROPAGATION"))
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
 
@@ -393,6 +400,7 @@ public class MutantTest {
                                .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator_EQUAL_IF")
                                .withDescription(expected.getDescription().get())
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
 
@@ -404,7 +412,6 @@ public class MutantTest {
 
     final Mutant expected = newSurvivedMutantWithSuffix();
     final Mutant other = Mutant.builder()
-                               .numberOfTestsRun(256)
                                .mutantStatus(expected.getState())
                                .inSourceFile(expected.getSourceFile())
                                .inClass(expected.getMutatedClass())
@@ -414,6 +421,7 @@ public class MutantTest {
                                .usingMutator(expected.getMutationOperator())
                                .withDescription(expected.getDescription().get())
                                .atIndex(expected.getIndex())
+                               .numberOfTestsRun(256)
                                .killedBy(expected.getKillingTest())
                                .build();
 
@@ -433,6 +441,7 @@ public class MutantTest {
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator(expected.getMutationOperator())
                                .atIndex(127)
+                               .numberOfTestsRun(expected.getNumberOfTestsRun())
                                .killedBy(expected.getKillingTest())
                                .build();
 
@@ -452,6 +461,7 @@ public class MutantTest {
                               .withMethodParameters(expected.getMethodDescription())
                               .usingMutator(expected.getMutationOperator())
                               .atIndex(expected.getIndex())
+                              .numberOfTestsRun(expected.getNumberOfTestsRun())
                               .killedBy("otherTest")
                               .build();
 
@@ -471,6 +481,7 @@ public class MutantTest {
                               .withMethodParameters(expected.getMethodDescription())
                               .usingMutator(expected.getMutationOperator())
                               .atIndex(expected.getIndex())
+                              .numberOfTestsRun(expected.getNumberOfTestsRun())
                               .killedBy(expected.getKillingTest())
                               .withDescription("other Description")
                               .build();
