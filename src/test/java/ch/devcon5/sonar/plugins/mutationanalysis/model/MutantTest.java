@@ -53,7 +53,7 @@ public class MutantTest {
                  .inLine(17)
                  .usingMutator(MutationOperators.find("INVERT_NEGS"))
                  .atIndex(5)
-                 .numberOfTestsRun(123)
+                 .numberOfTestsRun(256)
                  .killedBy("com.foo.bar.SomeClassKillingTest")
                  .build();
   }
@@ -69,7 +69,7 @@ public class MutantTest {
                  .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator_EQUAL_ELSE")
                  .atIndex(10)
                  .killedBy("com.foo.bar.SomeClassKillingTest")
-                 .numberOfTestsRun(123)
+                 .numberOfTestsRun(42)
                  .withDescription("removed conditional - replaced equality check with false")
                  .build();
   }
@@ -152,7 +152,7 @@ public class MutantTest {
   @Test
   public void testGetNumberOfTestsRun() throws Exception {
 
-    assertEquals(123, newDetectedMutant().getNumberOfTestsRun());
+    assertEquals(256, newDetectedMutant().getNumberOfTestsRun());
   }
 
 
@@ -203,7 +203,7 @@ public class MutantTest {
                      + "lineNumber=17, "
                      + "state=KILLED, "
                      + "mutationOperator=Invert Negs Mutator, "
-                     + "numberOfTestsRun=123, "
+                     + "numberOfTestsRun=256, "
                      + "killingTest=com.foo.bar.SomeClassKillingTest]",
                  newDetectedMutant().toString());
 
@@ -217,7 +217,7 @@ public class MutantTest {
                      + "lineNumber=8, "
                      + "state=SURVIVED, "
                      + "mutationOperator=Remove Conditional Mutator, "
-                     + "numberOfTestsRun=123, "
+                     + "numberOfTestsRun=42, "
                      + "killingTest=, "
                      + "description=removed conditional - replaced equality check with false]",
                  newSurvivedMutantWithSuffix().toString());
@@ -410,7 +410,7 @@ public class MutantTest {
   @Test
   public void testEquals_differentNumberOfTestsRun_false() throws Exception {
 
-    final Mutant expected = newSurvivedMutantWithSuffix();
+    final Mutant expected = newDetectedMutant();
     final Mutant other = Mutant.builder()
                                .mutantStatus(expected.getState())
                                .inSourceFile(expected.getSourceFile())
@@ -419,9 +419,8 @@ public class MutantTest {
                                .inLine(expected.getLineNumber())
                                .withMethodParameters(expected.getMethodDescription())
                                .usingMutator(expected.getMutationOperator())
-                               .withDescription(expected.getDescription().get())
                                .atIndex(expected.getIndex())
-                               .numberOfTestsRun(256)
+                               .numberOfTestsRun(-1)
                                .killedBy(expected.getKillingTest())
                                .build();
 
