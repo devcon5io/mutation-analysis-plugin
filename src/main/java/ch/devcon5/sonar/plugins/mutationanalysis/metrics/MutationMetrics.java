@@ -168,6 +168,13 @@ public final class MutationMetrics {
         .setDescription("Kills per Test")
         .create();
 
+    public static final String TEST_TOTAL_EXECUTED_KEY = "dc5_mutationAnalysis_mutations_tests_executed";
+    public static final Metric<Serializable> TEST_TOTAL_EXECUTED=new Metric.Builder(TEST_TOTAL_EXECUTED_KEY, "Test: Executions", Metric.ValueType.INT)
+        .setDirection(DIRECTION_BETTER)
+        .setDomain(MUTATION_ANALYSIS_DOMAIN)
+        .setDescription("Number of Tests executed")
+        .create();
+
     public static final String TEST_KILL_RATIO_KEY = "dc5_mutationAnalysis_mutations_testkill_ratio";
     public static final Metric<Serializable> TEST_KILL_RATIO=new Metric.Builder(TEST_KILL_RATIO_KEY, "Test: Kill Ratio", Metric.ValueType.PERCENT)
         .setDirection(DIRECTION_WORST)
@@ -208,6 +215,7 @@ public final class MutationMetrics {
         MUTATIONS_MEMORY_ERROR,
         MUTATIONS_SURVIVED,
         TEST_KILLS,
+        TEST_TOTAL_EXECUTED,
         UTILITY_GLOBAL_MUTATIONS,
         UTILITY_GLOBAL_ALIVE
     ));

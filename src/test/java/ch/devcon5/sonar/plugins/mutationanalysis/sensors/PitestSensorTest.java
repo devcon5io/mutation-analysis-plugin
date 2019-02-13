@@ -55,6 +55,7 @@ import org.sonar.api.batch.sensor.measure.Measure;
 //kills 68 mutants, 11 alive
 public class PitestSensorTest {
 
+   public static final int EXPECTED_QUANTITATIVE_METRICS = 12;
    @Rule
    public TemporaryFolder folder = new TemporaryFolder();
 
@@ -232,7 +233,7 @@ public class PitestSensorTest {
       sensor.execute(context);
 
       assertTrue(context.getStorage().getIssues().isEmpty());
-      assertEquals(11, context.getStorage().getMeasures().size());
+      assertEquals(12, context.getStorage().getMeasures().size());
    }
 
 
@@ -266,7 +267,7 @@ public class PitestSensorTest {
          assertTextrangeOnLine(i.primaryLocation().textRange(), 175, 79);
          assertEquals("Alive Mutant: A conditional expression has been negated without being detected by a test. (WITH_SUFFIX)", i.primaryLocation().message());
       });
-      assertEquals(11, context.getStorage().getMeasures().size());
+      assertEquals(12, context.getStorage().getMeasures().size());
    }
 
    @Test
@@ -290,7 +291,7 @@ public class PitestSensorTest {
          assertTextrangeOnLine(i.primaryLocation().textRange(), 175, 79);
          assertEquals("Alive Mutant: A conditional expression has been negated without being detected by a test. (WITH_SUFFIX)", i.primaryLocation().message());
       });
-      assertEquals(11, context.getStorage().getMeasures().size());
+      assertEquals(12, context.getStorage().getMeasures().size());
 
    }
 
@@ -314,7 +315,7 @@ public class PitestSensorTest {
          assertTextrangeOnLine(i.primaryLocation().textRange(), 175, 79);
          assertEquals("Alive Mutant: A return value has been replaced by a method argument without being detected by a test.", i.primaryLocation().message());
       });
-      assertEquals(11, context.getStorage().getMeasures().size());
+      assertEquals(EXPECTED_QUANTITATIVE_METRICS, context.getStorage().getMeasures().size());
 
    }
 
@@ -414,7 +415,7 @@ public class PitestSensorTest {
       sensor.execute(context);
 
       final List<Measure> measures = context.getStorage().getMeasures();
-      assertEquals(13, measures.size());
+      assertEquals(EXPECTED_QUANTITATIVE_METRICS +2, measures.size());
       assertEquals(3, assertContains(measures, m -> assertEquals(TEST_KILLS_KEY, m.metric().key())).value());
       assertEquals(6, assertContains(measures, m -> assertEquals(UTILITY_GLOBAL_MUTATIONS_KEY, m.metric().key())).value());
    }
@@ -435,7 +436,7 @@ public class PitestSensorTest {
       sensor.execute(context);
 
       final List<Measure> measures = context.getStorage().getMeasures();
-      assertEquals(11, measures.size());
+      assertEquals(12, measures.size());
       assertNotContains(measures, m -> assertEquals(TEST_KILLS_KEY, m.metric().key()));
       assertNotContains(measures, m -> assertEquals(UTILITY_GLOBAL_MUTATIONS_KEY, m.metric().key()));
    }
@@ -462,7 +463,7 @@ public class PitestSensorTest {
          assertTextrangeOnLine(i.primaryLocation().textRange(), 28, 79);
          assertEquals("Alive Mutant: A conditional expression has been negated without being detected by a test. Mutation: negated conditional", i.primaryLocation().message());
       });
-      assertEquals(11, context.getStorage().getMeasures().size());
+      assertEquals(12, context.getStorage().getMeasures().size());
 
    }
 

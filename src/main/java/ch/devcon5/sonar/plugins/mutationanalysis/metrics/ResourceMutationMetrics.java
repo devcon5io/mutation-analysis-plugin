@@ -42,6 +42,7 @@ public class ResourceMutationMetrics {
   private int mutationsTimedOut;
   private int mutationsUnknown;
   private int mutationsDetected;
+  private int numTestsRun;
   private double mutationCoverage;
   private final InputFile resource;
 
@@ -69,6 +70,7 @@ public class ResourceMutationMetrics {
       mutationsDetected++;
     }
     mutationsTotal++;
+    numTestsRun += mutant.getNumberOfTestsRun();
     switch (mutant.getState()) {
       case KILLED:
         mutationsKilled++;
@@ -185,6 +187,16 @@ public class ResourceMutationMetrics {
   public double getMutationCoverage() {
 
     return mutationCoverage;
+  }
+
+  /**
+   * Returns the total number of tests executed to kill the mutants (or not)
+   * @return
+   *  a number >= 0
+   */
+  public int getNumTestsRun() {
+
+    return numTestsRun;
   }
 
   /**

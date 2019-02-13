@@ -74,6 +74,7 @@ public class PitestReportParserTest {
                                         .withMethodParameters("(Ljava/lang/Object;)Z")
                                         .inLine(162)
                                         .atIndex(5)
+                                        .numberOfTestsRun(0)
                                         .usingMutator(MutationOperators.find("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator"))
                                         .killedBy(
                                                 "ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_different_false(ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")
@@ -124,6 +125,31 @@ public class PitestReportParserTest {
                                     .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator")
                                     .killedBy("ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_same_true(ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")
                                     .withDescription("Substituted 1 with 0")
+                                    .build();
+
+      // act
+      final Collection<Mutant> mutants = subject.parseMutants(report);
+
+      // assert
+      assertEquals(expected, mutants.iterator().next());
+   }
+
+   @Test
+   public void parseReport_findMutants_withNumberOfTests() throws IOException, URISyntaxException {
+
+      // prepare
+      final Path report = Paths.get(getClass().getResource("PitestReportParserTest_mutationsWithNumTests.xml").toURI());
+      final Mutant expected = Mutant.builder()
+                                    .mutantStatus(Mutant.State.KILLED)
+                                    .inSourceFile("Mutant.java")
+                                    .inClass("ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant")
+                                    .inMethod("equals")
+                                    .withMethodParameters("(Ljava/lang/Object;)Z")
+                                    .inLine(162)
+                                    .atIndex(5)
+                                    .numberOfTestsRun(40)
+                                    .usingMutator("org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator")
+                                    .killedBy("ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest.testEquals_different_false(ch.devcon5.sonar.plugins.mutationanalysis.model.MutantTest)")
                                     .build();
 
       // act
