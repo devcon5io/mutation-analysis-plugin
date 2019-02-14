@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -131,58 +132,115 @@ public class ReportCollector {
 
     LOG.debug("Searching project root for {}", child);
 
-    final Path parentPath = getRelativeParentPathFromPom(child).orElseGet(child::getParent);
-
-    final List<Path> childModules = getModulePaths(parentPath);
-
-    if (childModules.stream().anyMatch(module -> isSamePath(child, module))) {
-      LOG.debug("Path {} is parent module of {}", parentPath, child);
-      return findProjectRoot(parentPath);
-    }
-
-    LOG.debug("Path {} is not a child of {}", child, parentPath);
-    return child;
+    return getRelativeParentPathFromPom(child).orElseGet(() -> getParentPathFromFilesystem(child).orElse(child));
   }
 
-  private Optional<Path> getRelativeParentPathFromPom(final Path child) {
+  private Function<Path, Optional<Path>> findRootInParents(final Path child) {
+    return parentPath -> {
+      if(isMultiModuleParent(parentPath, child)) {
+        LOG.debug("Path {} is parent module of {}", parentPath, child);
+        return Optional.of(findProjectRoot(parentPath));
+      } else {
+        return Optional.empty();
+      }
+    };
+  }
 
-    final Path childPomXml = child.resolve(POM_XML);
-    if (childPomXml.toFile().exists()) {
-      try (InputStream is = Files.newInputStream(childPomXml)) {
+  /**
+   * Checks if the specified parent is a multi-module reactor pom or settings.gradle that contains the child module in
+   * it's module definition
+   * @param parentPath
+   *  the path to the presumed multi-module parent pom or settings.gradle
+   * @param child
+   *  the child that should be contained in the multi-module reactor pom or settings.gradle
+   * @return
+   *  true if the the parentPath refers to a multi-module parent and the child is referenced in its
+   *  modules list
+   */
+  private boolean isMultiModuleParent(final Path parentPath, final Path child) {
+
+    return getModulePaths(parentPath).stream().anyMatch(module -> isSamePath(child, module));
+  }
+
+  /**
+   * Gets the parent for the child module from the folder structure of the filesystem. The parent path is checked
+   * if it's a parent module of the module defined by child
+   * @param child
+   *  the child module for which the parent should be found
+   * @return
+   *  the parent folder that is a multi-module module that defines the child-module in its module list
+   */
+  private Optional<Path> getParentPathFromFilesystem(final Path child) {
+    LOG.info("Could not determine project root of {} from parent", child);
+    return findRootInParents(child).apply(child.getParent());
+  }
+
+  /**
+   * Evaluates the relative path definition - if present - from the pom file of the child. If the element is present
+   * and the parent exists, it's checked, whether the parent is a reactor module that defines the child in its
+   * modules list.
+   * @param child
+   *  the path of the child module that should contain a pom file
+   * @return
+   *  the parent module that defines the child in its modules list.
+   *  if neithe the pom.xml nor the relativePath element are defined, or the parent does not define the child in its
+   *  modules list, an empty optional is returned
+   */
+  private Optional<Path> getRelativeParentPathFromPom(final Path child) {
+    return resolveExisting(child, POM_XML).flatMap(pomXml -> {
+      try (InputStream is = Files.newInputStream(pomXml)) {
         final InputSource in = new InputSource(is);
         return Optional.ofNullable((String) this.xpath.evaluate(XPATH_RELATIVE_PARENT_PATH, in, STRING))
                        .filter(relPath -> !relPath.isEmpty())
                        .map(child::resolve);
       } catch (IOException | XPathExpressionException e) {
-        LOG.debug("Could not parse pom {}", childPomXml, e);
+        LOG.debug("Could not parse pom {}", pomXml, e);
+        return Optional.empty();
       }
+    }).flatMap(findRootInParents(child));
+  }
+
+  /**
+   * Extracts all module definition from the current module. The module definitions can either be defined in a
+   * reactor pom.xml or a settings.gradle file. If both exists, both are evaluated.
+   * @param parentPath
+   *  the path of the multi-module root folder
+   * @return
+   *  a list of all child module paths
+   */
+  private List<Path> getModulePaths(final Path parentPath) {
+
+    final SortedSet<Path> pathSet = new TreeSet<>();
+
+    //checking both maven and gradle module and retaining unique modules
+    //for the case, when a project has both maven pom and gradle setting
+    //to get the union of both modules
+
+    resolveExisting(parentPath, POM_XML).map(this::getModulePathsForMaven).ifPresent(pathSet::addAll);
+    resolveExisting(parentPath, SETTINGS_GRADLE).map(this::getModulePathsForGradle).ifPresent(pathSet::addAll);
+
+    return new ArrayList<>(pathSet);
+  }
+
+  /**
+   * Resolves the relativePath relative to the root path and checks if the resolved path exists.
+   * @param root
+   *  the root path from which the relative path should be resolved
+   * @param relativePath
+   *  the path relative to the root
+   * @return
+   *  the the resolved path if it exists or an empty optional if it doesn't exist
+   */
+  private Optional<Path> resolveExisting(Path root, String relativePath){
+    final Path resolved = root.resolve(relativePath);
+    //TODO replace with Files.exists() on JDK > 1.8
+    if(resolved.toFile().exists()){
+      return Optional.of(resolved);
     }
     return Optional.empty();
   }
 
-  private List<Path> getModulePaths(final Path parentPath) {
-
-    final SortedSet<Path> pathSet = new TreeSet<>();
-    try {
-
-      //checking both maven and gradle module and retaining unique modules
-      //for the case, when a project has both maven pom and gradle setting
-      //to get the union of both modules
-
-      if (parentPath.resolve(POM_XML).toFile().exists()) {
-        pathSet.addAll(getModulePathsForMaven(parentPath.resolve(POM_XML)));
-      }
-      if (parentPath.resolve(SETTINGS_GRADLE).toFile().exists()) {
-        pathSet.addAll(getModulePathsForGradle(parentPath.resolve(SETTINGS_GRADLE)));
-      }
-      return new ArrayList<>(pathSet);
-    } catch (IOException | XPathExpressionException e) {
-      LOG.warn("Could not parse {}", parentPath.toAbsolutePath(), e);
-      return Collections.emptyList();
-    }
-  }
-
-  private List<Path> getModulePathsForMaven(Path configurationFilePath) throws IOException, XPathExpressionException {
+  private List<Path> getModulePathsForMaven(Path configurationFilePath) {
 
     final Path parent = configurationFilePath.getParent();
     final List<String> modulePaths = new ArrayList<>();
@@ -198,22 +256,27 @@ public class ReportCollector {
         modulePaths.add(modules.item(i).getTextContent());
       }
       return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
+    } catch (IOException | XPathExpressionException e) {
+      LOG.warn("Could not resolve module paths for pom {}",configurationFilePath, e);
+      return Collections.emptyList();
     }
   }
 
-  private List<Path> getModulePathsForGradle(Path configurationFilePath) throws IOException {
-
-    final Path parent = configurationFilePath.getParent();
-    final List<String> modulePaths = new ArrayList<>();
+  private List<Path> getModulePathsForGradle(Path configurationFilePath) {
     try (BufferedReader br = new BufferedReader(new FileReader(configurationFilePath.toFile()))) {
+      final Path parent = configurationFilePath.getParent();
+      final List<String> modulePaths = new ArrayList<>();
       String line;
       while ((line = br.readLine()) != null) {
         if (line.toUpperCase().startsWith("INCLUDE ")) {
           modulePaths.addAll(Arrays.asList(line.substring("INCLUDE ".length()).replace("'", "").split(",")));
         }
       }
+      return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
+    } catch (IOException e) {
+      LOG.warn("Could not resolve gradle module paths for {}", configurationFilePath, e);
+      return Collections.emptyList();
     }
-    return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
   }
 
   //package protected visibilty for testing exception handling

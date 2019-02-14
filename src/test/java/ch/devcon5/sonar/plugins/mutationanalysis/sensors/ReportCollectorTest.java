@@ -154,6 +154,26 @@ public class ReportCollectorTest {
   }
 
   @Test
+  public void findProjectRoot_multiModuleMavenProjectWithSiblingParent() throws IOException {
+
+    final Path moduleRoot = Files.createDirectories(folder.getRoot().toPath().resolve("root-module"));
+    final Path parentModuleRoot = Files.createDirectories(moduleRoot.resolve("parent-module"));
+    final Path childModuleRoot = Files.createDirectories(moduleRoot.resolve("child-module"));
+
+    createPom(moduleRoot, "child-module", "parent-module");
+    createPom(parentModuleRoot);
+    createPomWithRelativeParent(childModuleRoot, "../parent-module");
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path actualRoot = collector.findProjectRoot(childModuleRoot);
+    System.out.println(actualRoot);
+
+    assertEquals(moduleRoot, actualRoot);
+  }
+
+  @Test
   public void findProjectRoot_singleModuleGradleProject() throws IOException {
 
     final Path moduleRoot = folder.newFolder("test-module").toPath();
