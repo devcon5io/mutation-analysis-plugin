@@ -106,6 +106,19 @@ public class ReportCollectorTest {
   }
 
   @Test
+  public void findProjectRoot_singleNonMavenNonGradleProject() throws IOException {
+
+    final Path moduleRoot = folder.newFolder("test-module").toPath();
+
+    final TestSensorContext context = harness.changeBasePath(moduleRoot).createSensorContext();
+    final ReportCollector collector = new ReportCollector(configuration, context.fileSystem());
+
+    final Path root = collector.findProjectRoot(moduleRoot);
+
+    assertEquals(moduleRoot, root);
+  }
+
+  @Test
   public void findProjectRoot_singleModuleMavenProject() throws IOException {
 
     final Path moduleRoot = folder.newFolder("test-module").toPath();
