@@ -232,12 +232,9 @@ public class ReportCollector {
    *  the the resolved path if it exists or an empty optional if it doesn't exist
    */
   private Optional<Path> resolveExisting(Path root, String relativePath){
-    final Path resolved = root.resolve(relativePath);
-    //TODO replace with Files.exists() on JDK > 1.8
-    if(resolved.toFile().exists()){
-      return Optional.of(resolved);
-    }
-    return Optional.empty();
+    //we don't need to run an existing check on the file, as any access on it will also result in an optional
+    //and could therefore handle any cases where the file doesn't exist in its exception handling
+    return Optional.of(root.resolve(relativePath));
   }
 
   private List<Path> getModulePathsForMaven(Path configurationFilePath) {
@@ -257,8 +254,11 @@ public class ReportCollector {
       }
       return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
     } catch (IOException | XPathExpressionException e) {
-      LOG.warn("Could not resolve module paths for pom {}",configurationFilePath, e);
-      return Collections.emptyList();
+      LOG.debug("Could not resolve module paths for pom {}",configurationFilePath, e);
+      //we can safely return null as the method is used in a mapping of an optional, hence if the result of this
+      // method is null, the Optional becomes empty. So as long as this method is private and consumer are capable
+      // dealing with null, we could keep it that way. Otherwise Collections.emptySet() would be better
+      return null;
     }
   }
 
@@ -274,8 +274,11 @@ public class ReportCollector {
       }
       return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
     } catch (IOException e) {
-      LOG.warn("Could not resolve gradle module paths for {}", configurationFilePath, e);
-      return Collections.emptyList();
+      LOG.debug("Could not resolve gradle module paths for {}", configurationFilePath, e);
+      //we can safely return null as the method is used in a mapping of an optional, hence if the result of this
+      // method is null, the Optional becomes empty. So as long as this method is private and consumer are capable
+      // dealing with null, we could keep it that way. Otherwise Collections.emptySet() would be better
+      return null;
     }
   }
 
@@ -287,7 +290,7 @@ public class ReportCollector {
       result = Reports.readMutants(reportPath).stream();
     } catch (IOException e) {
       //this branch is really hard to reach through unit tests. And should only occur, if something is really wrong with the underlying filesystem
-      LOG.error("Could not read report from path {}", reportPath, e);
+      LOG.debug("Could not read report from path {}", reportPath, e);
       result = Stream.empty();
     }
     return result;
