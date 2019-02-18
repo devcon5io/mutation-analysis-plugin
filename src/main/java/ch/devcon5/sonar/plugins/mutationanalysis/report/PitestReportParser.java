@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
+import com.ctc.wstx.exc.WstxParsingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,10 +133,11 @@ public class PitestReportParser {
     */
    Collection<Mutant> readMutants(final InputStream stream) throws XMLStreamException {
       final XMLInputFactory inf = XMLInputFactory.newInstance();
+      inf.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
       final XMLStreamReader reader = inf.createXMLStreamReader(stream);
       try {
          return readMutants(reader);
-      } catch (IllegalArgumentException e){
+      } catch (IllegalArgumentException | WstxParsingException e){
          throw new XMLStreamException(e.getMessage(), reader.getLocation(),e);
       }
    }
