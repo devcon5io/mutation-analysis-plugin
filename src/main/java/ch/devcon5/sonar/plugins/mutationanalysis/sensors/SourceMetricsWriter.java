@@ -102,15 +102,12 @@ public class SourceMetricsWriter {
       context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_NO_COVERAGE).withValue(resourceMetrics.getMutationsNoCoverage()).save();
       context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_KILLED).withValue(resourceMetrics.getMutationsKilled()).save();
       context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_SURVIVED).withValue(resourceMetrics.getMutationsSurvived()).save();
-      context.newMeasure()
-             .on(resource)
-             .forMetric(MutationMetrics.MUTATIONS_ALIVE)
-             .withValue(resourceMetrics.getMutationsTotal() - resourceMetrics.getMutationsDetected())
-             .save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_ALIVE).withValue(resourceMetrics.getMutationsTotal() - resourceMetrics.getMutationsDetected()).save();
       context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_MEMORY_ERROR).withValue(resourceMetrics.getMutationsMemoryError()).save();
       context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_TIMED_OUT).withValue(resourceMetrics.getMutationsTimedOut()).save();
       context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_UNKNOWN).withValue(resourceMetrics.getMutationsUnknown()).save();
       context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_DETECTED).withValue(resourceMetrics.getMutationsDetected()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.TEST_TOTAL_EXECUTED).withValue(resourceMetrics.getNumTestsRun()).save();
     }
   }
 }

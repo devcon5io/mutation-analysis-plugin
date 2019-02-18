@@ -29,11 +29,18 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
 import org.junit.rules.TemporaryFolder;
+import org.sonar.api.batch.rule.ActiveRules;
+import org.sonar.api.batch.rule.internal.ActiveRulesBuilder;
+import org.sonar.api.batch.rule.internal.DefaultActiveRules;
+import org.sonar.api.batch.rule.internal.NewActiveRule;
 import org.sonar.api.profiles.RulesProfile;
+import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rules.ActiveRule;
 import org.sonar.api.rules.Rule;
 
@@ -120,16 +127,51 @@ public class SensorTestHarness {
       return new TestSensorContext(basePath, moduleName);
    }
 
+   public ActiveRules createEmptyActiveRules() {
+      return new DefaultActiveRules(Collections.emptyList());
+   }
+
    public RulesProfile createEmptyRulesProfile() {
       return RulesProfile.create("test.profile", language);
    }
 
+   /**
+    * @param ruleKeys
+    * @return
+    * @deprecated use createActiveRules
+    */
+   @Deprecated
    public RulesProfile createRulesProfile(String... ruleKeys) {
       return createRulesProfile(Arrays.stream(ruleKeys)
                                       .map(this::createRule)
                                       .toArray(Rule[]::new));
    }
+   public ActiveRules createActiveRules(String... ruleKeys) {
 
+      final ActiveRulesBuilder builder = new ActiveRulesBuilder();
+      for(String ruleKey : ruleKeys){
+         builder.create(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".kotlin", ruleKey)).activate();
+         builder.create(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".java", ruleKey)).activate();
+      }
+      return builder.build();
+   }
+
+   public ActiveRules createActiveRules(Rule... rules) {
+      final ActiveRulesBuilder builder = new ActiveRulesBuilder();
+      for(Rule rule : rules){
+         final NewActiveRule activeRule = builder.create(RuleKey.of(rule.getRepositoryKey(), rule.getKey()));
+         rule.getParams().forEach(param -> activeRule.params().put(param.getKey(), param.getDefaultValue()));
+         activeRule.activate();
+      }
+      return builder.build();
+   }
+
+   /**
+    * @deprecated use createActiveRules
+    * @param rules
+    * @return
+    */
+   @Deprecated
    public RulesProfile createRulesProfile(Rule... rules) {
 
       final RulesProfile profile = createEmptyRulesProfile();
@@ -147,7 +189,6 @@ public class SensorTestHarness {
    public Rule createRule(final String ruleKey) {
       return createRule(this.language, ruleKey);
    }
-
    public Rule createRule(String ruleKey, String key, String value) {
 
       final Rule r = Rule.create(REPOSITORY_KEY + "." + language, ruleKey);

@@ -22,11 +22,7 @@ package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE;
 import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT;
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.PARAM_MUTANT_COVERAGE_THRESHOLD;
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.RULE_MUTANT_COVERAGE;
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.RULE_SURVIVED_MUTANT;
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.RULE_UNCOVERED_MUTANT;
-import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.RULE_UNKNOWN_MUTANT_STATUS;
+import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -50,8 +46,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.sensor.issue.Issue;
-import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.rules.Rule;
 import org.sonar.api.server.rule.RulesDefinition;
 import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
@@ -97,7 +93,7 @@ public class RulesProcessorTest {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = RulesProfile.create("test.profile", "java");
+      final ActiveRules profile = harness.createEmptyActiveRules();
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.survived = 3;
@@ -116,7 +112,7 @@ public class RulesProcessorTest {
       assertTrue(events.stream()
                        .filter(e -> e.getLevel() == Level.WARN)
                        .map(e -> e.getMessage().getFormattedMessage())
-                       .anyMatch("/!\\ Pitest rule needs to be activated in the \"test.profile\" profile."::equals));
+                       .anyMatch("/!\\ At least one Mutation Analysis rule needs to be activated the current profile."::equals));
 
    }
 
@@ -125,7 +121,8 @@ public class RulesProcessorTest {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(RULE_SURVIVED_MUTANT);
+      final ActiveRules profile = harness.createActiveRules(RULE_SURVIVED_MUTANT);
+
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.survived = 3;
@@ -151,7 +148,7 @@ public class RulesProcessorTest {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(RULE_SURVIVED_MUTANT);
+      final ActiveRules profile = harness.createActiveRules(RULE_SURVIVED_MUTANT);
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.survived = 3;
@@ -178,7 +175,7 @@ public class RulesProcessorTest {
       //arrange
       configuration.set(EFFORT_FACTOR_SURVIVED_MUTANT, 10.0);
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(RULE_SURVIVED_MUTANT);
+      final ActiveRules profile = harness.createActiveRules(RULE_SURVIVED_MUTANT);
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.survived = 3;
@@ -203,7 +200,7 @@ public class RulesProcessorTest {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(RULE_UNCOVERED_MUTANT);
+      final ActiveRules profile = harness.createActiveRules(RULE_UNCOVERED_MUTANT);
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.noCoverage = 2;
@@ -228,7 +225,7 @@ public class RulesProcessorTest {
       //arrange
       configuration.set(EFFORT_FACTOR_SURVIVED_MUTANT, 10.0);
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(RULE_UNCOVERED_MUTANT);
+      final ActiveRules profile = harness.createActiveRules(RULE_UNCOVERED_MUTANT);
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.noCoverage = 2;
@@ -252,7 +249,7 @@ public class RulesProcessorTest {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(RULE_UNKNOWN_MUTANT_STATUS);
+      final ActiveRules profile = harness.createActiveRules(RULE_UNKNOWN_MUTANT_STATUS);
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.unknown = 2;
@@ -277,7 +274,7 @@ public class RulesProcessorTest {
       //arrange
       configuration.set(EFFORT_FACTOR_SURVIVED_MUTANT, 10.0);
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(RULE_UNKNOWN_MUTANT_STATUS);
+      final ActiveRules profile = harness.createActiveRules(RULE_UNKNOWN_MUTANT_STATUS);
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.unknown = 2;
@@ -301,7 +298,7 @@ public class RulesProcessorTest {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(createMutationOperatorRules());
+      final ActiveRules profile = harness.createActiveRules(createMutationOperatorRules());
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.lines = 100;
          md.mutants.survived = MUTATION_OPERATORS.length;
@@ -326,7 +323,8 @@ public class RulesProcessorTest {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(harness.createRule(RULE_MUTANT_COVERAGE, PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
+      final ActiveRules profile = harness.createActiveRules(harness.createRule(RULE_MUTANT_COVERAGE,
+                                                                      PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.mutants.survived = 3;
          md.mutants.killed = 9;
@@ -348,7 +346,8 @@ public class RulesProcessorTest {
       //arrange
       configuration.set(EFFORT_FACTOR_MISSING_COVERAGE, 6.0);
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(harness.createRule(RULE_MUTANT_COVERAGE, PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
+      final ActiveRules profile = harness.createActiveRules(harness.createRule(RULE_MUTANT_COVERAGE,
+                                                                      PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.mutants.survived = 3;
          md.mutants.killed = 9;
@@ -364,12 +363,33 @@ public class RulesProcessorTest {
       assertTrue(appender.getEvents().isEmpty());
    }
 
+  @Test
+  public void processRules_coverageThresholdRuleInactive_defaultEffortFactor_coverageThresholdMissed_noIssueCreated() {
+
+    //arrange
+    final TestSensorContext context = harness.createSensorContext();
+    final ActiveRules profile = harness.createActiveRules("some.rule");
+    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
+      md.mutants.survived = 2;
+      md.mutants.killed = 8;
+    }));
+
+    //act
+    final RulesProcessor processor = new RulesProcessor(configuration, profile);
+    processor.processRules(metrics, context, "java");
+
+    //assert
+    assertTrue(context.getStorage().getIssues().isEmpty());
+    assertTrue(appender.getEvents().isEmpty());
+  }
+
    @Test
    public void processRules_coverageThresholdRuleActive_defaultEffortFactor_coverageThresholdHit_noIssueCreated() {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(harness.createRule(RULE_MUTANT_COVERAGE, PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
+      final ActiveRules profile = harness.createActiveRules(harness.createRule(RULE_MUTANT_COVERAGE,
+                                                                      PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.mutants.survived = 2;
          md.mutants.killed = 8;
@@ -384,12 +404,33 @@ public class RulesProcessorTest {
       assertTrue(appender.getEvents().isEmpty());
    }
 
+  @Test
+  public void processRules_coverageThresholdRuleActive_defaultThreshold_noIssueCreated() {
+
+    //arrange
+    final TestSensorContext context = harness.createSensorContext();
+    final ActiveRules profile = harness.createActiveRules(harness.createRule(RULE_MUTANT_COVERAGE));
+    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
+      md.mutants.survived = 2;
+      md.mutants.killed = 8;
+    }));
+
+    //act
+    final RulesProcessor processor = new RulesProcessor(configuration, profile);
+    processor.processRules(metrics, context, "java");
+
+    //assert
+    assertTrue(context.getStorage().getIssues().isEmpty());
+    assertTrue(appender.getEvents().isEmpty());
+  }
+
    @Test
    public void processRules_coverageThresholdRuleActive_gapIsSamllerThan05_RoundedUp_issueCreated() {
 
       //arrange
       final TestSensorContext context = harness.createSensorContext();
-      final RulesProfile profile = harness.createRulesProfile(harness.createRule(RULE_MUTANT_COVERAGE, PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
+      final ActiveRules profile = harness.createActiveRules(harness.createRule(RULE_MUTANT_COVERAGE,
+                                                                      PARAM_MUTANT_COVERAGE_THRESHOLD, "80"));
       final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Test.java", md -> {
          md.mutants.survived = 2;
          md.mutants.killed = 7;

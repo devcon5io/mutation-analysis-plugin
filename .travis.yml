@@ -9,8 +9,13 @@ addons:
 
 jdk:
   - oraclejdk8
-script:
-  - mvn clean package sonar:sonar
+
+jobs:
+  include:
+    - if: type != pull_request
+      script: mvn clean package sonar:sonar
+    - if: type = pull_request
+      script: mvn clean package
 
 cache:
   directories:

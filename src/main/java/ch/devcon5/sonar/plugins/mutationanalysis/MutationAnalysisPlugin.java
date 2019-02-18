@@ -67,6 +67,11 @@ import org.sonar.api.config.Configuration;
                           name = "Output directory for the PIT reports",
                           description = "This property is needed when the reports are not located in the default directory (i.e. target/pit-reports)",
                           project = true),
+                @Property(key = MutationAnalysisPlugin.PROJECT_ROOT_FOLDER,
+                          name = "Output directory for the PIT reports",
+                          description = "This optional property may be used to explicitly define the root project of a multi-module project in case the "
+                              + "project root can not be determined by the plugin.",
+                          project = true),
                 @Property(key = MutationAnalysisPlugin.EFFORT_MUTANT_KILL,
                           defaultValue = MutationAnalysisPlugin.DEFAULT_EFFORT_TO_KILL_MUTANT,
                           name = "Effort: Kill a mutant",
@@ -105,6 +110,7 @@ public final class MutationAnalysisPlugin implements Plugin {
   public static final String EFFORT_FACTOR_MISSING_COVERAGE = "dc5.mutationAnalysis.effort.missingCoverage";
   public static final String EFFORT_FACTOR_SURVIVED_MUTANT = "dc5.mutationAnalysis.effort.survivedMutant";
   public static final String FORCE_MISSING_COVERAGE_TO_ZERO = "dc5.mutationAnalysis.missingCoverage.force2zero";
+  public static final String PROJECT_ROOT_FOLDER = "dc5.mutationAnalysis.project.root";
   public static final String REPORT_DIRECTORY_KEY = "dc5.mutationAnalysis.pitest.sensor.reports.directory";
   public static final String REPORT_DIRECTORY_DEF = "target/pit-reports";
   public static final String DEFAULT_EFFORT_TO_KILL_MUTANT = "5min";

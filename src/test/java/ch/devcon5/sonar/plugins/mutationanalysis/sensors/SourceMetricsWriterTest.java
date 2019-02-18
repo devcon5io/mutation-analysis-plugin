@@ -52,6 +52,7 @@ import org.sonar.api.batch.sensor.measure.Measure;
  */
 public class SourceMetricsWriterTest {
 
+  public static final int EXPECTED_QUANTITATIVE_METRICS = 12;
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
 
@@ -88,7 +89,7 @@ public class SourceMetricsWriterTest {
     smw.writeMetrics(metrics, context, globalMutants);
 
     final Map<String, Serializable> measures = getMeasuresByKey("test-module:Test.java", context);
-    assertEquals(11, measures.size());
+    assertEquals(EXPECTED_QUANTITATIVE_METRICS, measures.size());
 
     assertEquals(15, measures.get(MutationMetrics.MUTATIONS_TOTAL.key()));
     assertEquals(1, measures.get(MutationMetrics.MUTATIONS_NO_COVERAGE.key()));
@@ -119,7 +120,7 @@ public class SourceMetricsWriterTest {
     smw.writeMetrics(metrics, context, globalMutants);
 
     final Map<String, Serializable> measures = getMeasuresByKey("test-module:Test.java", context);
-    assertEquals(11, measures.size());
+    assertEquals(EXPECTED_QUANTITATIVE_METRICS, measures.size());
 
     assertEquals(15, measures.get(MutationMetrics.MUTATIONS_TOTAL.key()));
     assertEquals(1, measures.get(MutationMetrics.MUTATIONS_NO_COVERAGE.key()));
@@ -197,6 +198,7 @@ public class SourceMetricsWriterTest {
       md.mutants.memoryError = 3;
       md.mutants.timedOut = 4;
       md.mutants.killed = 5;
+      md.mutants.numTestRun = 2;
     }), context.newResourceMutationMetrics("Test2.java", md -> {
       md.lines = 100;
       md.mutants.unknown = 1;
@@ -205,13 +207,15 @@ public class SourceMetricsWriterTest {
       md.mutants.memoryError = 0;
       md.mutants.timedOut = 1;
       md.mutants.killed = 3;
+      md.mutants.numTestRun = 3;
     }));
 
     smw.writeMetrics(metrics, context, globalMutants);
 
     final Map<String, Serializable> values1 = getMeasuresByKey("test-module:Test1.java", context);
-    assertEquals(11, values1.size());
+    assertEquals(EXPECTED_QUANTITATIVE_METRICS, values1.size());
     assertEquals(15, values1.get(MutationMetrics.MUTATIONS_TOTAL.key()));
+    assertEquals(15*2, values1.get(MutationMetrics.TEST_TOTAL_EXECUTED.key()));
     assertEquals(1, values1.get(MutationMetrics.MUTATIONS_NO_COVERAGE.key()));
     assertEquals(5, values1.get(MutationMetrics.MUTATIONS_KILLED.key()));
     assertEquals(2, values1.get(MutationMetrics.MUTATIONS_SURVIVED.key()));
@@ -223,8 +227,9 @@ public class SourceMetricsWriterTest {
     assertEquals(24, values1.get(MutationMetrics.UTILITY_GLOBAL_MUTATIONS.key()));
     assertEquals(8, values1.get(MutationMetrics.UTILITY_GLOBAL_ALIVE.key()));
     final Map<String, Serializable> values2 = getMeasuresByKey("test-module:Test2.java", context);
-    assertEquals(11, values2.size());
+    assertEquals(EXPECTED_QUANTITATIVE_METRICS, values2.size());
     assertEquals(9, values2.get(MutationMetrics.MUTATIONS_TOTAL.key()));
+    assertEquals(9*3, values2.get(MutationMetrics.TEST_TOTAL_EXECUTED.key()));
     assertEquals(2, values2.get(MutationMetrics.MUTATIONS_NO_COVERAGE.key()));
     assertEquals(3, values2.get(MutationMetrics.MUTATIONS_KILLED.key()));
     assertEquals(2, values2.get(MutationMetrics.MUTATIONS_SURVIVED.key()));
