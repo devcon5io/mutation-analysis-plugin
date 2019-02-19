@@ -21,17 +21,22 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import javax.xml.stream.XMLStreamException;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -196,6 +201,31 @@ public class PitestReportParserTest {
       expect.expectMessage("ParseError at [row,col]:[23,5]\nMessage: sourceFile must be set");
 
       subject.readMutants(getClass().getResourceAsStream("PitestReportParserTest_broken.xml"));
+   }
+
+
+   @Test(expected = XMLStreamException.class)
+   public void readMutants_XXE_attack_entityNotReplaced() throws Exception {
+
+      //we prepare a secret file with content that should not be disclosed
+      //this file acts as a placeholder for any file with sensitive information such as /etc/passwd
+      final String expectedSecret = "MY_SECRET";
+      File secretFile = folder.newFile("secret");
+      Files.write(secretFile.toPath(), expectedSecret.getBytes("UTF-8"));
+
+      //we forge a pitest report that should be processed by the plugin parser
+      //the attack is not hypothetical, especially in managed sonarqube instances where forged
+      //pitest reports may reveal sensitve information in the sonarqube results
+      String template = IOUtils.toString(getClass().getResourceAsStream("PitestReportParserTest_XXE.xml"));
+      String xxeAttack = template.replace("$SECRET$", secretFile.toURI().toURL().toString());
+
+      Collection<Mutant> mutants = subject.readMutants(new ByteArrayInputStream(xxeAttack.getBytes("UTF-8")));
+
+      //this code should never be  executed as the the processing of the xml should
+      //already encounter an unresolvable entity (&xxe;), causing an exception
+      Mutant mutant = mutants.iterator().next();
+      String actualSecret = mutant.getMethodDescription();
+      assertNotEquals(expectedSecret, actualSecret);
    }
 
 }
