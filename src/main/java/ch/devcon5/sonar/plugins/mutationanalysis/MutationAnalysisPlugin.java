@@ -68,7 +68,7 @@ import org.sonar.api.config.Configuration;
                           description = "This property is needed when the reports are not located in the default directory (i.e. target/pit-reports)",
                           project = true),
                 @Property(key = MutationAnalysisPlugin.PROJECT_ROOT_FOLDER,
-                          name = "Output directory for the PIT reports",
+                          name = "Root folder of multi-module projects",
                           description = "This optional property may be used to explicitly define the root project of a multi-module project in case the "
                               + "project root can not be determined by the plugin.",
                           project = true),

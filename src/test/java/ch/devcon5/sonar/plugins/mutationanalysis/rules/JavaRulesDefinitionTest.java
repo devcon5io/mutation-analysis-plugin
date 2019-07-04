@@ -67,7 +67,7 @@ public class JavaRulesDefinitionTest {
 
   private void assertRules(final List<RulesDefinition.Rule> rules) {
 
-    assertEquals(27, rules.size());
+    assertEquals(50, rules.size());
 
     for (RulesDefinition.Rule rule : rules) {
       assertNotNull(rule.debtRemediationFunction());
@@ -80,11 +80,15 @@ public class JavaRulesDefinitionTest {
                           .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
                           .filter(rule -> RuleType.BUG.equals(rule.type()))
                           .count());
-     assertEquals(17, rules.stream()
+    assertEquals(24, rules.stream()
+                          .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
+                          .filter(rule -> RuleType.CODE_SMELL.equals(rule.type()))
+                          .count());
+     assertEquals(34, rules.stream()
                            .filter(rule -> rule.status() == RuleStatus.READY)
                            .filter(RulesDefinition.Rule::activatedByDefault)
                            .count());
-    assertEquals(6, rules.stream()
+    assertEquals(12, rules.stream()
                          .filter(rule -> rule.status() == RuleStatus.BETA)
                          .filter(rule -> !rule.activatedByDefault())
                          .count());
