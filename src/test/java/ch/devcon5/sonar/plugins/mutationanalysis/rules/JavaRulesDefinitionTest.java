@@ -20,14 +20,12 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 
 import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.util.List;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rules.RuleType;
@@ -57,7 +55,8 @@ public class JavaRulesDefinitionTest {
     subject.define(context);
 
     // assert
-    RulesDefinition.Repository repository = context.repository(MutationAnalysisRulesDefinition.REPOSITORY_KEY  + ".java");
+    RulesDefinition.Repository repository = context.repository(MutationAnalysisRulesDefinition.REPOSITORY_KEY
+                                                                   + ".java");
     assertNotNull(repository);
 
     assertEquals("java", repository.language());
@@ -70,32 +69,42 @@ public class JavaRulesDefinitionTest {
     assertEquals(50, rules.size());
 
     for (RulesDefinition.Rule rule : rules) {
+      System.out.println(rule);
       assertNotNull(rule.debtRemediationFunction());
       assertNotNull(rule.gapDescription());
       assertNotNull(rule.htmlDescription());
     }
 
+    assertTrue(rules.stream()
+                    .filter(r -> r.key().startsWith(MUTANT_RULES_PREFIX) && r.key().endsWith("CODE_SMELL"))
+                    .allMatch(r -> r.name().endsWith("(Code Smell)")));
+
     //all mutator rules
-    assertEquals(26, rules.stream()
-                          .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
-                          .filter(rule -> RuleType.BUG.equals(rule.type()))
-                          .count());
-    assertEquals(24, rules.stream()
-                          .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
-                          .filter(rule -> RuleType.CODE_SMELL.equals(rule.type()))
-                          .count());
-     assertEquals(34, rules.stream()
-                           .filter(rule -> rule.status() == RuleStatus.READY)
-                           .filter(RulesDefinition.Rule::activatedByDefault)
-                           .count());
-    assertEquals(12, rules.stream()
-                         .filter(rule -> rule.status() == RuleStatus.BETA)
-                         .filter(rule -> !rule.activatedByDefault())
-                         .count());
-    assertEquals(3, rules.stream()
-                         .filter(rule -> rule.status() == RuleStatus.DEPRECATED)
-                         .filter(rule -> !rule.activatedByDefault())
-                         .count());
+    assertEquals(26,
+                 rules.stream()
+                      .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
+                      .filter(rule -> RuleType.BUG.equals(rule.type()))
+                      .count());
+    assertEquals(24,
+                 rules.stream()
+                      .filter(rule -> rule.key().startsWith(MUTANT_RULES_PREFIX))
+                      .filter(rule -> RuleType.CODE_SMELL.equals(rule.type()))
+                      .count());
+    assertEquals(34,
+                 rules.stream()
+                      .filter(rule -> rule.status() == RuleStatus.READY)
+                      .filter(RulesDefinition.Rule::activatedByDefault)
+                      .count());
+    assertEquals(12,
+                 rules.stream()
+                      .filter(rule -> rule.status() == RuleStatus.BETA)
+                      .filter(rule -> !rule.activatedByDefault())
+                      .count());
+    assertEquals(3,
+                 rules.stream()
+                      .filter(rule -> rule.status() == RuleStatus.DEPRECATED)
+                      .filter(rule -> !rule.activatedByDefault())
+                      .count());
   }
 
 }
