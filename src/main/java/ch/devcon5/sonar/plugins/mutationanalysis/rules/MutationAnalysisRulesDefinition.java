@@ -132,7 +132,7 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
    */
   private void addMutatorRules(final NewRepository repository) {
 
-    for (final MutationOperator mutationOperator : MutationOperators.allMutagens()) {
+    for (final MutationOperator mutationOperator : MutationOperators.allMutationOperators()) {
       //create for each mutation operator two rules, one is a "bug" rule, the other is
       //a "code smell" rule. As there are project which prefer to treat them as bugs (or potential bugs)
       //and other projects might prefer to treat them as code smell. This way
@@ -150,7 +150,7 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
 
   private void createCodeSmellRule(final NewRepository repository, final MutationOperator mutationOperator) {
     final String id = MUTANT_RULES_PREFIX + mutationOperator.getId() + "_" + RuleType.CODE_SMELL;
-    final String name = mutationOperator.getName() + "(Code Smell)";
+    final String name = mutationOperator.getName() + " (Code Smell)";
     createRule(repository, mutationOperator, RuleType.CODE_SMELL, id, name);
   }
 
@@ -160,8 +160,8 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
                           final String id,
                           final String name) {
     final NewRule rule = repository.createRule(id)
-                                   .setName(name)
                                    .setType(type)
+                                   .setName(name)
                                    .setTags("pitest", "test", "test-quality", "mutator", "mutation-operator");
     mutationOperator.getMutagenDescriptionLocation().ifPresent(rule::setHtmlDescription);
 

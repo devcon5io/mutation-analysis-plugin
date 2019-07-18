@@ -20,12 +20,15 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 
 import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rules.RuleType;
@@ -55,8 +58,7 @@ public class JavaRulesDefinitionTest {
     subject.define(context);
 
     // assert
-    RulesDefinition.Repository repository = context.repository(MutationAnalysisRulesDefinition.REPOSITORY_KEY
-                                                                   + ".java");
+    RulesDefinition.Repository repository = context.repository(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".java");
     assertNotNull(repository);
 
     assertEquals("java", repository.language());
@@ -69,15 +71,19 @@ public class JavaRulesDefinitionTest {
     assertEquals(50, rules.size());
 
     for (RulesDefinition.Rule rule : rules) {
-      System.out.println(rule);
       assertNotNull(rule.debtRemediationFunction());
       assertNotNull(rule.gapDescription());
       assertNotNull(rule.htmlDescription());
     }
 
+    //@ denotes a toString'ed object reference
     assertTrue(rules.stream()
                     .filter(r -> r.key().startsWith(MUTANT_RULES_PREFIX) && r.key().endsWith("CODE_SMELL"))
-                    .allMatch(r -> r.name().endsWith("(Code Smell)")));
+                    .allMatch(r -> r.name().matches("[^@]+\\(Code Smell\\)")));
+
+    assertTrue(rules.stream()
+                    .filter(r -> r.key().startsWith(MUTANT_RULES_PREFIX) && !r.key().endsWith("CODE_SMELL"))
+                    .noneMatch(r -> r.name().matches("[^@]+\\(Code Smell\\)")));
 
     //all mutator rules
     assertEquals(26,

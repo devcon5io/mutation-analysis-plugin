@@ -93,7 +93,7 @@ public class TestSensorContext implements SensorContext {
 
   private static final Logger LOGGER = getLogger(TestSensorContext.class);
 
-  private static final List<MutationOperator> MUTATION_OPERATORS = Collections.unmodifiableList(new ArrayList<>(MutationOperators.allMutagens()));
+  private static final List<MutationOperator> MUTATION_OPERATORS = Collections.unmodifiableList(new ArrayList<>(MutationOperators.allMutationOperators()));
   private final DefaultFileSystem fs;
   private final InputModule inputModule;
   private MapSettings settings = new MapSettings();

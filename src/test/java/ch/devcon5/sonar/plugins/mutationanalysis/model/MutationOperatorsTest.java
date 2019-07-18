@@ -72,7 +72,7 @@ public class MutationOperatorsTest {
     public void testAllMutators() throws Exception {
 
         // act
-        final Collection<MutationOperator> mutationOperators = MutationOperators.allMutagens();
+        final Collection<MutationOperator> mutationOperators = MutationOperators.allMutationOperators();
 
         // assert
         assertNotNull(mutationOperators);
