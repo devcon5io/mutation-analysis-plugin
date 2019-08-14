@@ -77,13 +77,14 @@ public class JavaRulesDefinitionTest {
     }
 
     //@ denotes a toString'ed object reference
+    //"null " would be exactly 5 characters
     assertTrue(rules.stream()
                     .filter(r -> r.key().startsWith(MUTANT_RULES_PREFIX) && r.key().endsWith("CODE_SMELL"))
-                    .allMatch(r -> r.name().matches("[^@]+\\(Code Smell\\)")));
+                    .allMatch(r -> r.name().matches("[^@]{6,}\\(Code Smell\\)")));
 
     assertTrue(rules.stream()
                     .filter(r -> r.key().startsWith(MUTANT_RULES_PREFIX) && !r.key().endsWith("CODE_SMELL"))
-                    .noneMatch(r -> r.name().matches("[^@]+\\(Code Smell\\)")));
+                    .noneMatch(r -> r.name().matches("[^@]{6,}\\(Code Smell\\)")));
 
     //all mutator rules
     assertEquals(26,
