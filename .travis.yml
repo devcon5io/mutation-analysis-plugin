@@ -8,7 +8,7 @@ addons:
       secure: $SONAR_TOKEN
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 jobs:
   include:
