@@ -24,7 +24,7 @@
     <artifactId>mutation-analysis-plugin</artifactId>
     <groupId>ch.devcon5.sonar</groupId>
     <packaging>sonar-plugin</packaging>
-    <version>1.4</version>
+    <version>1.5</version>
 
     <name>${project.artifactId}</name>
     <description>Sonar Plugin for integrating and visualizing mutation analysis results</description>
@@ -71,6 +71,8 @@
         <slf4j.version>1.7.6</slf4j.version>
         <log4j.version>2.0-rc1</log4j.version>
         <mockito.version>2.21.0</mockito.version>
+        <jacoco.version>0.8.4</jacoco.version>
+        <pitest.version>1.4.9</pitest.version>
         <!-- license settings -->
         <license.owner>DevCon5 GmbH</license.owner>
         <license.title>Mutation Analysis Plugin</license.title>
@@ -158,7 +160,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.1</version>
+                <version>${jacoco.version}</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -257,7 +259,7 @@
                     <plugin>
                         <groupId>org.pitest</groupId>
                         <artifactId>pitest-maven</artifactId>
-                        <version>1.4.2</version>
+                        <version>${pitest.version}</version>
                         <configuration>
                             <targetClasses>
                                 <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>

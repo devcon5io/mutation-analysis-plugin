@@ -67,7 +67,7 @@ class KotlinRulesDefinitionTest {
 
     private fun assertRules(rules: List<RulesDefinition.Rule>) {
 
-        assertEquals(27, rules.size.toLong())
+        assertEquals(50, rules.size.toLong())
 
         for (rule in rules) {
             assertNotNull(rule.debtRemediationFunction())
@@ -78,7 +78,10 @@ class KotlinRulesDefinitionTest {
         assertEquals(26, rules.stream()
                 .filter { rule -> rule.key().startsWith(MUTANT_RULES_PREFIX) }
                 .filter { rule -> RuleType.BUG == rule.type() }.count())
-        assertEquals(6, rules.stream().filter { rule -> rule.status() == RuleStatus.BETA }.count())
+        assertEquals(24, rules.stream()
+                .filter { rule -> rule.key().startsWith(MUTANT_RULES_PREFIX) }
+                .filter { rule -> RuleType.CODE_SMELL == rule.type() }.count())
+        assertEquals(12, rules.stream().filter { rule -> rule.status() == RuleStatus.BETA }.count())
         assertEquals(3, rules.stream().filter { rule -> rule.status() == RuleStatus.DEPRECATED }.count())
     }
 

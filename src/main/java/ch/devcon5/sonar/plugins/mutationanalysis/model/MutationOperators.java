@@ -133,7 +133,7 @@ public final class MutationOperators {
      *
      * @return a collection of {@link MutationOperator}s
      */
-    public static Collection<MutationOperator> allMutagens() {
+    public static Collection<MutationOperator> allMutationOperators() {
 
         return Collections.unmodifiableCollection(INSTANCES.values());
     }

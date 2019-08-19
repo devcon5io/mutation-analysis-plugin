@@ -32,7 +32,7 @@ public abstract class MutationAnalysisProfileDefinition implements BuiltInQualit
    public void define(final Context context) {
       final NewBuiltInQualityProfile mutationAnalysis = context.createBuiltInQualityProfile("Mutation Analysis", getLanguageKey());
 
-      MutationOperators.allMutagens().forEach(m -> mutationAnalysis.activateRule(REPOSITORY_KEY + "." + getLanguageKey(), MUTANT_RULES_PREFIX + m.getId()));
+      MutationOperators.allMutationOperators().forEach(m -> mutationAnalysis.activateRule(REPOSITORY_KEY + "." + getLanguageKey(), MUTANT_RULES_PREFIX + m.getId()));
 
       mutationAnalysis.done();
    }

@@ -132,18 +132,45 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
    */
   private void addMutatorRules(final NewRepository repository) {
 
-    for (final MutationOperator mutationOperator : MutationOperators.allMutagens()) {
-      final NewRule rule = repository.createRule(MUTANT_RULES_PREFIX + mutationOperator.getId())
-                                     .setName(mutationOperator.getName())
-                                     .setType(RuleType.BUG)
-                                     .setTags("pitest", "test", "test-quality", "mutator", "mutation-operator");
-      mutationOperator.getMutagenDescriptionLocation().ifPresent(rule::setHtmlDescription);
-
-      if (mutationOperator.getId().startsWith("EXPERIMENTAL")) {
-        rule.setStatus(RuleStatus.BETA);
-      } else {
-        rule.setActivatedByDefault(true);
-      }
+    for (final MutationOperator mutationOperator : MutationOperators.allMutationOperators()) {
+      //create for each mutation operator two rules, one is a "bug" rule, the other is
+      //a "code smell" rule. As there are project which prefer to treat them as bugs (or potential bugs)
+      //and other projects might prefer to treat them as code smell. This way
+      //the projects can decide themselves how to set up their quality profile
+      createBugRule(repository, mutationOperator);
+      createCodeSmellRule(repository, mutationOperator);
     }
   }
+
+  private void createBugRule(final NewRepository repository, final MutationOperator mutationOperator) {
+    final String id = MUTANT_RULES_PREFIX + mutationOperator.getId();
+    final String name = mutationOperator.getName();
+    createRule(repository, mutationOperator, RuleType.BUG, id, name);
+  }
+
+  private void createCodeSmellRule(final NewRepository repository, final MutationOperator mutationOperator) {
+    final String id = MUTANT_RULES_PREFIX + mutationOperator.getId() + "_" + RuleType.CODE_SMELL;
+    final String name = mutationOperator.getName() + " (Code Smell)";
+    createRule(repository, mutationOperator, RuleType.CODE_SMELL, id, name);
+  }
+
+  private void createRule(final NewRepository repository,
+                          final MutationOperator mutationOperator,
+                          final RuleType type,
+                          final String id,
+                          final String name) {
+    final NewRule rule = repository.createRule(id)
+                                   .setType(type)
+                                   .setName(name)
+                                   .setTags("pitest", "test", "test-quality", "mutator", "mutation-operator");
+    mutationOperator.getMutagenDescriptionLocation().ifPresent(rule::setHtmlDescription);
+
+    if (mutationOperator.getId().startsWith("EXPERIMENTAL")) {
+      rule.setStatus(RuleStatus.BETA);
+    } else {
+      rule.setActivatedByDefault(true);
+    }
+
+  }
+
 }

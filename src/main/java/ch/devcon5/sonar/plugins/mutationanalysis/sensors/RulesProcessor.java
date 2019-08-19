@@ -272,7 +272,7 @@ public class RulesProcessor {
 
       return rule.ruleKey()
                  .rule()
-                 .equals(MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX + mutant.getMutationOperator().getId())
+                 .startsWith(MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX + mutant.getMutationOperator().getId())
           && mutant.getState().isAlive();
    }
 

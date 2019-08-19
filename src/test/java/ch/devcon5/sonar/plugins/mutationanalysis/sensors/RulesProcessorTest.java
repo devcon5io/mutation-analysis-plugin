@@ -57,7 +57,7 @@ import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
  */
 public class RulesProcessorTest {
 
-   private static final MutationOperator[] MUTATION_OPERATORS = MutationOperators.allMutagens().toArray(new MutationOperator[0]);
+   private static final MutationOperator[] MUTATION_OPERATORS = MutationOperators.allMutationOperators().toArray(new MutationOperator[0]);
 
    @org.junit.Rule
    public TemporaryFolder folder = new TemporaryFolder();
