@@ -110,9 +110,10 @@ public class RulesProcessorTest {
 
       final List<LogEvent> events = appender.getEvents();
       assertTrue(events.stream()
-                       .filter(e -> e.getLevel() == Level.WARN)
-                       .map(e -> e.getMessage().getFormattedMessage())
-                       .anyMatch("/!\\ At least one Mutation Analysis rule needs to be activated the current profile."::equals));
+          .filter(e -> e.getLevel() == Level.WARN)
+          .map(e -> e.getMessage().getFormattedMessage())
+          .anyMatch(
+              "/!\\ At least one Mutation Analysis rule needs to be activated for the current profile and language: java."::equals));
 
    }
 
