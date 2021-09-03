@@ -20,6 +20,7 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.model;
 
+import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -39,8 +40,9 @@ public class MutationOperatorsTest {
         final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
         assertNotNull(mutationOperator);
         assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-        assertEquals("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
-                     mutationOperator.getClassName());
+        assertEquals(
+            singleton("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator"),
+            mutationOperator.getClassNames());
         assertNotNull(mutationOperator.getViolationDescription());
     }
 
@@ -51,8 +53,9 @@ public class MutationOperatorsTest {
                 .find("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator");
         assertNotNull(mutationOperator);
         assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-        assertEquals("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
-                     mutationOperator.getClassName());
+        assertEquals(
+            singleton("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator"),
+            mutationOperator.getClassNames());
         assertNotNull(mutationOperator.getViolationDescription());
     }
 
@@ -63,8 +66,9 @@ public class MutationOperatorsTest {
                 .find("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator_WITH_SUFFIX");
         assertNotNull(mutationOperator);
         assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-        assertEquals("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
-                     mutationOperator.getClassName());
+        assertEquals(
+            singleton("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator"),
+            mutationOperator.getClassNames());
         assertNotNull(mutationOperator.getViolationDescription());
     }
 

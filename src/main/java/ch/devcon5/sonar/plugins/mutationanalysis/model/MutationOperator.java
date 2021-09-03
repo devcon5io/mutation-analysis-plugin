@@ -24,7 +24,12 @@ import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +51,11 @@ public final class MutationOperator {
     private final URL mutagenDescLoc;
     private final String violationDesc;
     private final String name;
-    private final String className;
+    private final Set<String> classNames;
 
     MutationOperator(final String id,
                      final String name,
-                     final String className,
+                     final Collection<String> classNames,
                      final String violationDesc,
                      final URL mutagenDescriptionLocation) {
 
@@ -59,7 +64,7 @@ public final class MutationOperator {
         requireNonNull(violationDesc, "violation description must not be null");
         this.id = id;
         this.name = name;
-        this.className = className;
+        this.classNames = new HashSet<>(requireNonNull(classNames, "classNames must not be null"));
         this.violationDesc = violationDesc;
         this.mutagenDescLoc = mutagenDescriptionLocation;
     }
@@ -111,13 +116,12 @@ public final class MutationOperator {
     }
 
     /**
-     * The fully qualified classname of the {@link MutationOperator} class.
+     * The fully qualified classnames of the {@link MutationOperator} class.
      *
-     * @return the classname
+     * @return the classnames
      */
-    public String getClassName() {
-
-        return className;
+    public Set<String> getClassNames() {
+        return Collections.unmodifiableSet(classNames);
     }
 
     /**

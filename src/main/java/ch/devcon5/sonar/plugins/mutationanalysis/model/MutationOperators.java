@@ -31,7 +31,9 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -41,7 +43,7 @@ import org.xml.sax.InputSource;
  *
  */
 public final class MutationOperators {
-    
+
     private MutationOperators(){}
 
     /**
@@ -53,7 +55,7 @@ public final class MutationOperators {
      */
     public static final MutationOperator UNKNOWN = new MutationOperator("UNKNOWN",
                                                                         "Unknown mutagen",
-                                                                        "unknown.mutation.operator",
+                                                                        Collections.singleton("unknown.mutation.operator"),
                                                                         "An unknown mutagen has been applied",
                                                                         null);
     /**
@@ -97,13 +99,20 @@ public final class MutationOperators {
 
         final XPath xp = XPATH_FACTORY.get().newXPath();
         final String id = xp.evaluate("@id", mutagenNode);
-        final String className = xp.evaluate("@class", mutagenNode);
+
+        final Set<String> classNames = new HashSet<>();
+        final NodeList classNodes = (NodeList) xp.evaluate("classes/class", mutagenNode, NODESET);
+        for (int i = 0, len = classNodes.getLength(); i < len; i++) {
+            final Node classNode = classNodes.item(i);
+            classNames.add(classNode.getTextContent());
+        }
+
         final String name = xp.evaluate("name", mutagenNode);
         final String violationDescription = xp.evaluate("violationDescription", mutagenNode).trim();
         final URL mutagenDescLoc = MutationOperator.class.getResource(xp.evaluate("operatorDescription/@classpath",
                                                                                   mutagenNode));
 
-        return new MutationOperator(id, name, className, violationDescription, mutagenDescLoc);
+        return new MutationOperator(id, name, classNames, violationDescription, mutagenDescLoc);
     }
 
     /**
@@ -120,7 +129,7 @@ public final class MutationOperators {
         MutationOperator result = UNKNOWN;
         for (final MutationOperator mutationOperator : INSTANCES.values()) {
             if (mutagenKey.equals(mutationOperator.getId())
-                    || mutagenKey.startsWith(mutationOperator.getClassName())) {
+                    || mutationOperator.getClassNames().stream().anyMatch(mutagenKey::startsWith)) {
                 result = mutationOperator;
                 break;
             }
