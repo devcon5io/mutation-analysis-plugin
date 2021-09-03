@@ -28,6 +28,7 @@
         <operatorDescription classpath="ARGUMENT_PROPAGATION.html"/>
         <classes>
             <class>org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator</class>
         </classes>
     </operator>
     <operator id="BOOLEAN_FALSE_RETURN">
@@ -38,6 +39,7 @@
         <operatorDescription classpath="BOOLEAN_FALSE_RETURN.html"/>
         <classes>
             <class>org.pitest.mutationtest.engine.gregor.mutators.BooleanFalseReturnValsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.BooleanFalseReturnValsMutator</class>
         </classes>
     </operator>
     <operator id="BOOLEAN_TRUE_RETURN">
@@ -48,6 +50,7 @@
         <operatorDescription classpath="BOOLEAN_TRUE_RETURN.html"/>
         <classes>
             <class>org.pitest.mutationtest.engine.gregor.mutators.BooleanTrueReturnValsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.BooleanTrueReturnValsMutator</class>
         </classes>
     </operator>
     <operator id="CONDITIONALS_BOUNDARY">
@@ -78,6 +81,7 @@
         <operatorDescription classpath="EMPTY_RETURN_VALUES.html"/>
         <classes>
             <class>org.pitest.mutationtest.engine.gregor.mutators.EmptyObjectReturnValsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.EmptyObjectReturnValsMutator</class>
         </classes>
     </operator>
     <operator id="INCREMENTS">
@@ -148,6 +152,7 @@
         <operatorDescription classpath="NULL_RETURN_VALUES.html"/>
         <classes>
             <class>org.pitest.mutationtest.engine.gregor.mutators.NullReturnValsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.NullReturnValsMutator</class>
         </classes>
     </operator>
     <operator id="PRIMITIVE_RETURN_VALS">
@@ -158,6 +163,7 @@
         <operatorDescription classpath="PRIMITIVE_RETURN_VALS.html"/>
         <classes>
             <class>org.pitest.mutationtest.engine.gregor.mutators.PrimitiveReturnsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.PrimitiveReturnsMutator</class>
         </classes>
     </operator>
     <operator id="REMOVE_CONDITIONALS">

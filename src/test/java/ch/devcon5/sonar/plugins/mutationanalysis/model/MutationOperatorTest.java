@@ -25,6 +25,8 @@ import static java.util.Collections.singleton;
 import static org.junit.Assert.*;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -131,7 +133,12 @@ public class MutationOperatorTest {
       final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
       final Set<String> classNames = mutationOperator.getClassNames();
       assertEquals(
-          singleton("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator"),
+          new HashSet<>(
+              Arrays.asList(
+                  "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
+                  "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator"
+              )
+          ),
           classNames);
    }
 
