@@ -44,23 +44,19 @@ import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperator;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
 import org.slf4j.Logger;
+import org.sonar.api.SonarEdition;
 import org.sonar.api.SonarQubeSide;
 import org.sonar.api.SonarRuntime;
 import org.sonar.api.batch.bootstrap.ProjectDefinition;
 import org.sonar.api.batch.fs.FileSystem;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.InputModule;
-import org.sonar.api.batch.fs.internal.DefaultFileSystem;
-import org.sonar.api.batch.fs.internal.DefaultIndexedFile;
-import org.sonar.api.batch.fs.internal.DefaultInputFile;
-import org.sonar.api.batch.fs.internal.DefaultInputModule;
-import org.sonar.api.batch.fs.internal.Metadata;
-import org.sonar.api.batch.fs.internal.SensorStrategy;
-import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
+import org.sonar.api.batch.fs.internal.*;
 import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.rule.internal.DefaultActiveRules;
 import org.sonar.api.batch.rule.internal.NewActiveRule;
 import org.sonar.api.batch.sensor.SensorContext;
+import org.sonar.api.batch.sensor.code.NewSignificantCode;
 import org.sonar.api.batch.sensor.coverage.NewCoverage;
 import org.sonar.api.batch.sensor.coverage.internal.DefaultCoverage;
 import org.sonar.api.batch.sensor.cpd.NewCpdTokens;
@@ -71,18 +67,23 @@ import org.sonar.api.batch.sensor.error.internal.DefaultAnalysisError;
 import org.sonar.api.batch.sensor.highlighting.NewHighlighting;
 import org.sonar.api.batch.sensor.highlighting.internal.DefaultHighlighting;
 import org.sonar.api.batch.sensor.internal.SensorStorage;
+import org.sonar.api.batch.sensor.issue.ExternalIssue;
 import org.sonar.api.batch.sensor.issue.Issue;
+import org.sonar.api.batch.sensor.issue.NewExternalIssue;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.batch.sensor.issue.internal.DefaultIssue;
 import org.sonar.api.batch.sensor.measure.Measure;
 import org.sonar.api.batch.sensor.measure.NewMeasure;
 import org.sonar.api.batch.sensor.measure.internal.DefaultMeasure;
+import org.sonar.api.batch.sensor.rule.AdHocRule;
+import org.sonar.api.batch.sensor.rule.NewAdHocRule;
 import org.sonar.api.batch.sensor.symbol.NewSymbolTable;
 import org.sonar.api.batch.sensor.symbol.internal.DefaultSymbolTable;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.config.Settings;
 import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.internal.SonarRuntimeImpl;
+import org.sonar.api.scanner.fs.InputProject;
 import org.sonar.api.utils.PathUtils;
 import org.sonar.api.utils.Version;
 
@@ -95,10 +96,11 @@ public class TestSensorContext implements SensorContext {
 
   private static final List<MutationOperator> MUTATION_OPERATORS = Collections.unmodifiableList(new ArrayList<>(MutationOperators.allMutationOperators()));
   private final DefaultFileSystem fs;
+  private DefaultInputProject inputProject;
   private final InputModule inputModule;
   private MapSettings settings = new MapSettings();
   private Configuration configuration = new TestConfiguration();
-  private SonarRuntime runtime = SonarRuntimeImpl.forSonarQube(Version.create(7, 3), SonarQubeSide.SCANNER);
+  private SonarRuntime runtime = SonarRuntimeImpl.forSonarQube(Version.create(7, 3), SonarQubeSide.SCANNER, SonarEdition.COMMUNITY);
   private Version version = Version.create(6, 5);
   private TestSensorStorage storage = new TestSensorStorage();
   private ActiveRules activeRules = new DefaultActiveRules(Collections.emptyList());
@@ -106,8 +108,8 @@ public class TestSensorContext implements SensorContext {
   TestSensorContext(final Path basePath, String moduleName) {
 
     this.fs = new DefaultFileSystem(basePath).setWorkDir(basePath);
-
     final ProjectDefinition pd = ProjectDefinition.create().setName(moduleName).setKey(moduleName).setBaseDir(basePath.toFile()).setWorkDir(basePath.toFile());
+    this.inputProject = new DefaultInputProject(pd);
     this.inputModule = new DefaultInputModule(pd);
   }
 
@@ -147,6 +149,11 @@ public class TestSensorContext implements SensorContext {
   }
 
   @Override
+  public InputProject project() {
+    return inputProject;
+  }
+
+  @Override
   public Version getSonarQubeVersion() {
 
     return version;
@@ -173,7 +180,17 @@ public class TestSensorContext implements SensorContext {
   @Override
   public NewIssue newIssue() {
 
-    return new DefaultIssue(this.storage);
+    return new DefaultIssue(this.inputProject, this.storage);
+  }
+
+  @Override
+  public NewExternalIssue newExternalIssue() {
+    return null;
+  }
+
+  @Override
+  public NewAdHocRule newAdHocRule() {
+    return null;
   }
 
   @Override
@@ -197,13 +214,18 @@ public class TestSensorContext implements SensorContext {
   @Override
   public NewCpdTokens newCpdTokens() {
 
-    return new DefaultCpdTokens(configuration, this.storage);
+    return new DefaultCpdTokens(this.storage);
   }
 
   @Override
   public NewAnalysisError newAnalysisError() {
 
     return new DefaultAnalysisError();
+  }
+
+  @Override
+  public NewSignificantCode newSignificantCode() {
+    return null;
   }
 
   @Override
@@ -429,7 +451,9 @@ public class TestSensorContext implements SensorContext {
 
     public Metadata toMetadata() {
 
-      return new Metadata(lines, nonBlankLines, hash, IntStream.range(0, lines).map(i -> i * 80).toArray(), lastValidOffset);
+      int[] originalLineEndOffsets = IntStream.range(0, lines).map(i -> ((i+1)*80)-1).toArray();
+      int[] originalLineStartOffsets = IntStream.range(0, lines).map(i -> i * 80).toArray();
+      return new Metadata(lines, nonBlankLines, hash, originalLineStartOffsets, originalLineEndOffsets, lastValidOffset);
     }
 
     public static class MutantMetadata implements Serializable {
@@ -456,6 +480,8 @@ public class TestSensorContext implements SensorContext {
 
     private List<Measure> measures = new ArrayList<>();
     private List<Issue> issues = new ArrayList<>();
+    private List<ExternalIssue> extIssues = new ArrayList<>();
+    private List<AdHocRule> adHocRules = new ArrayList<>();
     private List<DefaultHighlighting> highlightings = new ArrayList<>();
     private List<DefaultCoverage> coverages = new ArrayList<>();
     private List<DefaultCpdTokens> cpdTokens = new ArrayList<>();
@@ -476,27 +502,33 @@ public class TestSensorContext implements SensorContext {
     }
 
     @Override
-    public void store(final DefaultHighlighting highlighting) {
-
-      highlightings.add(highlighting);
+    public void store(ExternalIssue issue) {
+      extIssues.add(issue);
     }
 
     @Override
-    public void store(final DefaultCoverage defaultCoverage) {
-
-      coverages.add(defaultCoverage);
+    public void store(AdHocRule adHocRule) {
+      adHocRules.add(adHocRule);
     }
 
     @Override
-    public void store(final DefaultCpdTokens defaultCpdTokens) {
-
-      cpdTokens.add(defaultCpdTokens);
+    public void store(NewHighlighting highlighting) {
+      highlightings.add((DefaultHighlighting) highlighting);
     }
 
     @Override
-    public void store(final DefaultSymbolTable symbolTable) {
+    public void store(NewCoverage newCoverage) {
+      coverages.add((DefaultCoverage) newCoverage);
+    }
 
-      symbolTables.add(symbolTable);
+    @Override
+    public void store(NewCpdTokens cpdToken) {
+      cpdTokens.add((DefaultCpdTokens) cpdToken);
+    }
+
+    @Override
+    public void store(NewSymbolTable symbolTable) {
+      symbolTables.add((DefaultSymbolTable) symbolTable);
     }
 
     @Override
@@ -509,6 +541,11 @@ public class TestSensorContext implements SensorContext {
     public void storeProperty(final String key, final String value) {
 
       properties.put(key, value);
+    }
+
+    @Override
+    public void store(NewSignificantCode significantCode) {
+
     }
 
     public List<Measure> getMeasures() {

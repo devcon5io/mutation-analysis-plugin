@@ -39,6 +39,7 @@ import ch.devcon5.sonar.plugins.mutationanalysis.sensors.PitestSensor;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
 import org.junit.Test;
 import org.sonar.api.Plugin;
+import org.sonar.api.SonarEdition;
 import org.sonar.api.SonarQubeSide;
 import org.sonar.api.SonarRuntime;
 import org.sonar.api.internal.SonarRuntimeImpl;
@@ -47,7 +48,7 @@ import org.sonar.api.utils.Version;
 public class MutationAnalysisPluginTest {
 
 
-   private SonarRuntime sonarRuntime = SonarRuntimeImpl.forSonarQube(Version.create(7, 3), SonarQubeSide.SCANNER);
+   private SonarRuntime sonarRuntime = SonarRuntimeImpl.forSonarQube(Version.create(7, 3), SonarQubeSide.SCANNER, SonarEdition.COMMUNITY);
 
 
    @Test
