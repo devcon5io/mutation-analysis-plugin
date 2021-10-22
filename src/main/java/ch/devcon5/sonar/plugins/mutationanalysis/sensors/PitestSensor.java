@@ -130,7 +130,7 @@ public class PitestSensor implements Sensor {
   public void execute(final SensorContext context) {
 
     if (isEnabled()) {
-      LOG.info("Pitest Sensor {} running on {} in {}", getLanguageKeys(), context.module(), context.fileSystem().baseDir());
+      LOG.info("Pitest Sensor {} running on {} in {}", getLanguageKeys(), context.project(), context.fileSystem().baseDir());
     } else {
       LOG.info("Pitest Sensor {} disabled", getLanguageKeys());
       return;

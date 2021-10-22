@@ -204,7 +204,7 @@ public final class MutationMetrics {
         .setHidden(true)
         .create();
 
-    private static final List<Metric> QUANTITATIVE_METRICS = Collections.unmodifiableList(Arrays.asList(
+    private static final List<Metric<Serializable>> QUANTITATIVE_METRICS = Collections.unmodifiableList(Arrays.asList(
         MUTATIONS_TOTAL,
         MUTATIONS_NO_COVERAGE,
         MUTATIONS_DETECTED,
@@ -220,7 +220,7 @@ public final class MutationMetrics {
         UTILITY_GLOBAL_ALIVE
     ));
 
-    private static final List<Metric> QUALITATIVE_METRICS = Collections.unmodifiableList(Arrays.asList(
+    private static final List<Metric<Serializable>> QUALITATIVE_METRICS = Collections.unmodifiableList(Arrays.asList(
         MUTATIONS_DATA,
         MUTATIONS_TOTAL_PERCENT,
         MUTATIONS_COVERAGE,
@@ -229,10 +229,10 @@ public final class MutationMetrics {
         TEST_KILL_RATIO
     ));
 
-    private static final List<Metric> SENSOR_METRICS;
+    private static final List<Metric<Serializable>> SENSOR_METRICS;
 
     static {
-        final List<Metric> metrics  = new ArrayList<>(QUALITATIVE_METRICS.size() + QUANTITATIVE_METRICS.size());
+        final List<Metric<Serializable>> metrics  = new ArrayList<>(QUALITATIVE_METRICS.size() + QUANTITATIVE_METRICS.size());
         metrics.addAll(QUALITATIVE_METRICS);
         metrics.addAll(QUANTITATIVE_METRICS);
         SENSOR_METRICS = Collections.unmodifiableList(metrics);
@@ -243,7 +243,7 @@ public final class MutationMetrics {
      *
      * @return The pitest quantitative metrics list.
      */
-    public static List<Metric> getQuantitativeMetrics() {
+    public static List<Metric<Serializable>> getQuantitativeMetrics() {
 
         return QUANTITATIVE_METRICS;
     }
@@ -253,7 +253,7 @@ public final class MutationMetrics {
      *
      * @return The pitest sensor metrics list.
      */
-    public static List<Metric> getSensorMetrics() {
+    public static List<Metric<Serializable>> getSensorMetrics() {
 
        return SENSOR_METRICS;
     }

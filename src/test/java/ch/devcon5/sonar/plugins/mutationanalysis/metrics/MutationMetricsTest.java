@@ -20,12 +20,12 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.*;
 import org.sonar.api.measures.Metric;
 
 public class MutationMetricsTest {
@@ -50,7 +50,7 @@ public class MutationMetricsTest {
     @Test
     public void testGetQuantitativeMetrics() throws Exception {
 
-        final List<Metric> metrics = MutationMetrics.getQuantitativeMetrics();
+        final List<Metric<Serializable>> metrics = MutationMetrics.getQuantitativeMetrics();
         assertNotNull(metrics);
         assertFalse(metrics.isEmpty());
     }
@@ -58,7 +58,7 @@ public class MutationMetricsTest {
     @Test
     public void testGetSensorMetrics() throws Exception {
 
-        final List<Metric> metrics = MutationMetrics.getSensorMetrics();
+        final List<Metric<Serializable>> metrics = MutationMetrics.getSensorMetrics();
         assertNotNull(metrics);
         assertFalse(metrics.isEmpty());
     }

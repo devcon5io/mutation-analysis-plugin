@@ -34,6 +34,8 @@ import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.
 import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.Serializable;
+
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import ch.devcon5.sonar.plugins.mutationanalysis.Streams;
 import org.slf4j.Logger;
@@ -47,7 +49,7 @@ public class TotalMutationsComputer implements MeasureComputer {
 
   private static final Logger LOG = getLogger(TotalMutationsComputer.class);
 
-  private Configuration config;
+  private final Configuration config;
 
   public TotalMutationsComputer(final Configuration config) {
 
@@ -104,7 +106,7 @@ public class TotalMutationsComputer implements MeasureComputer {
     return comp.getType() == Component.Type.FILE && comp.getFileAttributes().isUnitTest();
   }
 
-  private void computePercentage(final MeasureComputerContext context, final Metric globalMetric, final Metric localMetric, final Metric resultMetric) {
+  private void computePercentage(final MeasureComputerContext context, final Metric<Serializable> globalMetric, final Metric<Serializable> localMetric, final Metric<Serializable> resultMetric) {
 
     final double mutationsGlobal = getMutationsGlobal(context, globalMetric);
     final double mutationsLocal = getMutationsLocal(context, localMetric);
@@ -118,7 +120,7 @@ public class TotalMutationsComputer implements MeasureComputer {
     }
   }
 
-  private double getMutationsGlobal(final MeasureComputerContext context, Metric metric) {
+  private double getMutationsGlobal(final MeasureComputerContext context, Metric<Serializable> metric) {
 
     final double mutationsGlobal;
     final Measure globalMutationsMeasure = context.getMeasure(metric.key());
@@ -136,15 +138,13 @@ public class TotalMutationsComputer implements MeasureComputer {
     return mutationsGlobal;
   }
 
-  private double getMutationsLocal(final MeasureComputerContext context, Metric metric) {
+  private double getMutationsLocal(final MeasureComputerContext context, Metric<Serializable> metric) {
 
     final double mutationsLocal;
     final Measure localMutationsMeasure = context.getMeasure(metric.key());
 
     if (localMutationsMeasure == null) {
-      mutationsLocal = (double) Streams.parallelStream(context.getChildrenMeasures(metric.key()))
-                                             .mapToInt(Measure::getIntValue)
-                                             .sum();
+      mutationsLocal = Streams.parallelStream(context.getChildrenMeasures(metric.key())).mapToInt(Measure::getIntValue).sum();
       LOG.info("Component {} children have {} mutations ", context.getComponent(), mutationsLocal);
 
     } else {

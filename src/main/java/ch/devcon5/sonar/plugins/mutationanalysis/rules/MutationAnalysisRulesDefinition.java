@@ -92,7 +92,7 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
    * @param xmlLoader
    *     an XML loader to load the rules definitions from the rules def.
    */
-  public MutationAnalysisRulesDefinition(final Configuration settings, final RulesDefinitionXmlLoader xmlLoader) {
+  protected MutationAnalysisRulesDefinition(final Configuration settings, final RulesDefinitionXmlLoader xmlLoader) {
 
     this.xmlLoader = xmlLoader;
     this.settings = settings;

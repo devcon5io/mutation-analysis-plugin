@@ -24,6 +24,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -133,7 +134,7 @@ public final class MutationOperator {
 
         return getMutagenDescriptionLocation().map(u -> {
             try {
-                return IOUtils.toString(u);
+                return IOUtils.toString(u, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 LOG.warn("Cannot read mutagen description for mutagen {}", id, e);
                 return "No description";

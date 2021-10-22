@@ -503,15 +503,16 @@ public class BuilderTest {
 
    @Test
    public void test_null_killingTest_notDetected() throws Exception {
-      Mutant.builder()
-            .mutantStatus(Mutant.State.NO_COVERAGE)
-            .inSourceFile("aFile.java")
-            .inClass("AClass")
-            .inMethod("aMethod")
-            .withMethodParameters("desc")
-            .inLine(1)
-            .atIndex(0)
-            .usingMutator(MutationOperators.UNKNOWN)
-            .build();
+      final Mutant mutant = Mutant.builder()
+                                 .mutantStatus(Mutant.State.NO_COVERAGE)
+                                 .inSourceFile("aFile.java")
+                                 .inClass("AClass")
+                                 .inMethod("aMethod")
+                                 .withMethodParameters("desc")
+                                 .inLine(1)
+                                 .atIndex(0)
+                                 .usingMutator(MutationOperators.UNKNOWN)
+                                 .build();
+      assertFalse(mutant.isDetected());
    }
 }

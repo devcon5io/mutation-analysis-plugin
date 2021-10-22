@@ -46,9 +46,6 @@ public class RulesProcessor {
 
    private static final Logger LOG = getLogger(RulesProcessor.class);
 
-   private static final ThreadLocal<DecimalFormat> NO_DECIMAL_PLACE = ThreadLocal.withInitial(() -> new DecimalFormat("#"));
-   private static final ThreadLocal<DecimalFormat> ONE_DECIMAL_PLACE = ThreadLocal.withInitial(() -> new DecimalFormat("#.0"));
-
    private final Configuration settings;
 
    /**
@@ -164,8 +161,8 @@ public class RulesProcessor {
       // Secondly, despite best practices the StringBuilder is not initialized with an initial size hint as the value of
       // size hint is also an un-killable mutant as it only affects the resizing of the backing array but has no impact to the outcome
       //
-      final DecimalFormat noDecimalPlace = NO_DECIMAL_PLACE.get();
-      final DecimalFormat oneDecimalPlace = ONE_DECIMAL_PLACE.get();
+      final DecimalFormat noDecimalPlace = new DecimalFormat("#");
+      final DecimalFormat oneDecimalPlace = new DecimalFormat("#.0");
       return new StringBuilder().append(noDecimalPlace.format(additionalRequiredMutants))
                                 .append(" more mutants need to be killed to get the mutation coverage from ")
                                 .append(oneDecimalPlace.format(actualCoverage))

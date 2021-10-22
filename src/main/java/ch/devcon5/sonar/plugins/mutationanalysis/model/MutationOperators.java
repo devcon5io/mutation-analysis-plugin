@@ -44,12 +44,11 @@ import org.xml.sax.InputSource;
  */
 public final class MutationOperators {
 
+
     private MutationOperators(){}
 
-    /**
-     * XPath used for finding mutagens and their attributes in the mutagen-def.xml file
-     */
-    private static final ThreadLocal<XPathFactory> XPATH_FACTORY = ThreadLocal.withInitial(XPathFactory::newInstance);
+
+
     /**
      * Default MutationOperator definition for an unknown {@link MutationOperator}
      */
@@ -70,11 +69,12 @@ public final class MutationOperators {
     static {
         try (InputStream stream = MUTAGEN_DEF.openStream()) {
             final Map<String, MutationOperator> mutagens = new HashMap<>();
-            final XPath xp = XPATH_FACTORY.get().newXPath();
+            final XPathFactory xPathFactory = XPathFactory.newInstance();
+            final XPath xp = xPathFactory.newXPath();
             final NodeList mutagenNodes = (NodeList) xp.evaluate("//operator", new InputSource(stream), NODESET);
             for (int i = 0, len = mutagenNodes.getLength(); i < len; i++) {
                 final Node mutagenNode = mutagenNodes.item(i);
-                final MutationOperator mutationOperator = toMutagen(mutagenNode);
+                final MutationOperator mutationOperator = toMutagen(xPathFactory, mutagenNode);
                 mutagens.put(mutationOperator.getId(), mutationOperator);
             }
             INSTANCES = Collections.unmodifiableMap(mutagens);
@@ -88,16 +88,18 @@ public final class MutationOperators {
     /**
      * Converts a MutationOperator from the given {@link Node}
      *
+     *
+     * @param xPathFactory
      * @param mutagenNode
-     *         the node to convert to {@link MutationOperator}
+     *         the node to convert to {@link ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperator}
      *
      * @return a {@link MutationOperator} for the {@link Node}
      *
      * @throws XPathExpressionException
      */
-    private static MutationOperator toMutagen(final Node mutagenNode) throws XPathExpressionException {
+    private static MutationOperator toMutagen(final XPathFactory xPathFactory, final Node mutagenNode) throws XPathExpressionException {
 
-        final XPath xp = XPATH_FACTORY.get().newXPath();
+        final XPath xp = xPathFactory.newXPath();
         final String id = xp.evaluate("@id", mutagenNode);
 
         final Set<String> classNames = new HashSet<>();
