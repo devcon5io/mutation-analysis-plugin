@@ -575,8 +575,11 @@ public class Mutant {
             LOGGER.warn("Found unknown mutation operator: {}", mutagenName);
             mutatorSuffix = "";
          } else if (mutationOperator.getClassNames().stream().anyMatch(mutagenName::startsWith)) {
-            final String mutatorClassName = mutationOperator.getClassNames().stream().filter(mutagenName::startsWith).findAny().get();
-            mutatorSuffix = mutagenName.substring(mutatorClassName.length());
+            mutationOperator.getClassNames()
+                            .stream()
+                            .filter(mutagenName::startsWith)
+                            .findAny()
+                            .ifPresent(mutatorClassName -> mutatorSuffix = mutagenName.substring(mutatorClassName.length()));
          } else {
             mutatorSuffix = "";
          }
