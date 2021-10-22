@@ -20,10 +20,15 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.model;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static org.junit.Assert.*;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -33,32 +38,39 @@ public class MutationOperatorTest {
    @Test(expected = NullPointerException.class)
    public void testMutator_nullId_exception() throws Exception {
 
-      new MutationOperator(null, "", "", "", new URL("file:///"));
+      new MutationOperator(null, "", emptySet(), "", new URL("file:///"));
 
    }
 
    @Test(expected = NullPointerException.class)
    public void testMutator_nullName_exception() throws Exception {
 
-      new MutationOperator("", null, "", "", new URL("file:///"));
+      new MutationOperator("", null, emptySet(), "", new URL("file:///"));
+
+   }
+
+   @Test(expected = NullPointerException.class)
+   public void testMutator_nullClassNames_exception() throws Exception {
+
+      new MutationOperator("", "", null, "", new URL("file:///"));
 
    }
 
    @Test(expected = NullPointerException.class)
    public void testMutator_nullViolationDescription_exception() throws Exception {
 
-      new MutationOperator("", "", "", null, new URL("file:///"));
+      new MutationOperator("", "", emptySet(), null, new URL("file:///"));
 
    }
 
    @Test
    public void testMutator_nullArguments() throws Exception {
 
-      final MutationOperator mutationOperator = new MutationOperator("id", "name", null, "violationDescription", null);
+      final MutationOperator mutationOperator = new MutationOperator("id", "name", emptySet(), "violationDescription", null);
       assertEquals("id", mutationOperator.getId());
       assertEquals("name", mutationOperator.getName());
       assertEquals("violationDescription", mutationOperator.getViolationDescription());
-      assertNull(mutationOperator.getClassName());
+      assertEquals(emptySet(), mutationOperator.getClassNames());
       assertNotNull(mutationOperator.getMutagenDescriptionLocation());
       assertFalse(mutationOperator.getMutagenDescriptionLocation().isPresent());
       assertNotNull(mutationOperator.getMutagenDescriptionLocation());
@@ -94,7 +106,7 @@ public class MutationOperatorTest {
    @Test
    public void testGetMutatorDescription_exceptionOccured_noDescription() throws Exception {
 
-      final MutationOperator mutationOperator = new MutationOperator("test", "aName", "aClass", "aViolationDescription", new URL("file://localhost:1"));
+      final MutationOperator mutationOperator = new MutationOperator("test", "aName", singleton("aClass"), "aViolationDescription", new URL("file://localhost:1"));
       final String desc = mutationOperator.getMutagenDescription();
       assertEquals("No description", desc);
    }
@@ -116,19 +128,26 @@ public class MutationOperatorTest {
    }
 
    @Test
-   public void testGetClassName() throws Exception {
+   public void testGetClassNames() throws Exception {
 
       final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-      final String className = mutationOperator.getClassName();
-      assertEquals("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator", className);
+      final Set<String> classNames = mutationOperator.getClassNames();
+      assertEquals(
+          new HashSet<>(
+              Arrays.asList(
+                  "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
+                  "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator"
+              )
+          ),
+          classNames);
    }
 
    @Test
-   public void testGetClassName_fromCustomOperator() throws Exception {
+   public void testGetClassNames_fromCustomOperator() throws Exception {
 
-      final MutationOperator mutationOperator = new MutationOperator("test", "aName", "aClass", "aViolationDescription", new URL("file://localhost:1"));
-      final String className = mutationOperator.getClassName();
-      assertEquals("aClass", className);
+      final MutationOperator mutationOperator = new MutationOperator("test", "aName", singleton("aClass"), "aViolationDescription", new URL("file://localhost:1"));
+      final Set<String> classNames = mutationOperator.getClassNames();
+      assertEquals(singleton("aClass"), classNames);
    }
 
    @Test
@@ -164,7 +183,7 @@ public class MutationOperatorTest {
    public void testEquals_equalsId_true() throws Exception {
 
       final MutationOperator argumentPropagation = MutationOperators.find("ARGUMENT_PROPAGATION");
-      final MutationOperator other = new MutationOperator("ARGUMENT_PROPAGATION", "someName", "someClass", "someDescription", new URL("file:///"));
+      final MutationOperator other = new MutationOperator("ARGUMENT_PROPAGATION", "someName", singleton("someClass"), "someDescription", new URL("file:///"));
       assertEquals(argumentPropagation, other);
    }
 
