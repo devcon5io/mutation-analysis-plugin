@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
+import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TemporaryFolder;
 import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.rule.internal.ActiveRulesBuilder;
@@ -149,19 +150,27 @@ public class SensorTestHarness {
    public ActiveRules createActiveRules(String... ruleKeys) {
 
       final ActiveRulesBuilder builder = new ActiveRulesBuilder();
+
       for(String ruleKey : ruleKeys){
-         builder.create(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".kotlin", ruleKey)).activate();
-         builder.create(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".java", ruleKey)).activate();
+
+         builder.addRule(newActiveRule().setRuleKey(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".kotlin", ruleKey)).build());
+         builder.addRule(newActiveRule().setRuleKey(RuleKey.of(MutationAnalysisRulesDefinition.REPOSITORY_KEY + ".java", ruleKey)).build());
       }
       return builder.build();
    }
 
+   @NotNull
+   private NewActiveRule.Builder newActiveRule() {
+      return new NewActiveRule.Builder();
+   }
+
    public ActiveRules createActiveRules(Rule... rules) {
+
       final ActiveRulesBuilder builder = new ActiveRulesBuilder();
       for(Rule rule : rules){
-         final NewActiveRule activeRule = builder.create(RuleKey.of(rule.getRepositoryKey(), rule.getKey()));
-         rule.getParams().forEach(param -> activeRule.params().put(param.getKey(), param.getDefaultValue()));
-         activeRule.activate();
+         final NewActiveRule.Builder activeRule = newActiveRule().setRuleKey(RuleKey.of(rule.getRepositoryKey(), rule.getKey()));
+         rule.getParams().forEach(param -> activeRule.setParam(param.getKey(), param.getDefaultValue()));
+         builder.addRule(activeRule.build());
       }
       return builder.build();
    }

@@ -35,8 +35,8 @@ import org.slf4j.Logger;
 import org.sonar.api.batch.rule.ActiveRule;
 import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.sensor.SensorContext;
+import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.batch.sensor.issue.NewIssueLocation;
-import org.sonar.api.batch.sensor.issue.internal.DefaultIssueLocation;
 import org.sonar.api.config.Configuration;
 
 /**
@@ -86,7 +86,7 @@ public class RulesProcessor {
    }
 
    /**
-    * Applies the active rules on resource metrics for the {@link org.sonar.api.issue.Issuable} resource.
+    * Applies the active rules on resource metrics.
     *
     * @param resourceMetrics
     *         the mutants for found for the issuable
@@ -106,7 +106,7 @@ public class RulesProcessor {
     * Applies the active rule on the issuable if any of the resource metrics for the issuable violates the rule
     *
     * @param resourceMetrics
-    *         the metrics for the {@link org.sonar.api.resources.Resource} behind the {@link org.sonar.api.issue.Issuable}
+    *         the metrics for the Resource
     * @param rule
     *         the active rule to apply
     * @param context
@@ -148,11 +148,10 @@ public class RulesProcessor {
          final double minimumKilledMutants = resourceMetrics.getMutationsTotal() * threshold / 100.0;
          final double additionalRequiredMutants = Math.ceil(minimumKilledMutants - resourceMetrics.getMutationsKilled());
 
-         context.newIssue()
-                .forRule(rule.ruleKey())
-                .gap(settings.getDouble(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE).orElse(1.0) * additionalRequiredMutants)
-                .at(newLocation().on(resourceMetrics.getResource()).message(generateThresholdViolationMessage(actualCoverage, threshold, additionalRequiredMutants)))
-                .save();
+         NewIssue newIssue = context.newIssue().forRule(rule.ruleKey());
+         newIssue.gap(settings.getDouble(MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE).orElse(1.0) * additionalRequiredMutants)
+                 .at(newIssue.newLocation().on(resourceMetrics.getResource()).message(generateThresholdViolationMessage(actualCoverage, threshold, additionalRequiredMutants)))
+                 .save();
       }
    }
 
@@ -200,13 +199,15 @@ public class RulesProcessor {
              || violatesUnknownMutantStatusRule(rule, mutant)
              || violatesMutatorRule(rule, mutant)) {
 
-            context.newIssue()
-                   .forRule(rule.ruleKey())
-                   .gap(settings.getDouble(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT).orElse(1.0))
-                   .at(newLocation().on(resourceMetrics.getResource())
-                                    .at(resourceMetrics.getResource().selectLine(mutant.getLineNumber()))
-                                    .message(getViolationDescription(mutant)))
-                   .save();
+            NewIssue newIssue = context.newIssue().forRule(rule.ruleKey());
+
+            NewIssueLocation newLocation = newIssue.newLocation().on(resourceMetrics.getResource())
+                    .at(resourceMetrics.getResource().selectLine(mutant.getLineNumber()))
+                    .message(getViolationDescription(mutant));
+
+            newIssue.gap(settings.getDouble(MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT).orElse(1.0))
+                    .at(newLocation)
+                    .save();
          }
       }
    }
@@ -298,8 +299,4 @@ public class RulesProcessor {
       return message.toString();
    }
 
-   private static NewIssueLocation newLocation() {
-
-      return new DefaultIssueLocation();
-   }
 }
