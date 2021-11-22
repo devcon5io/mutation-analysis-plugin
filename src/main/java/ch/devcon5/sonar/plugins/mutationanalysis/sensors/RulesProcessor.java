@@ -72,7 +72,9 @@ public class RulesProcessor {
 
       if (activeRules.isEmpty()) {
          // ignore violations from report, if rule not activated in Sonar
-         LOG.warn("/!\\ At least one Mutation Analysis rule needs to be activated the current profile.");
+         LOG.warn(
+             "/!\\ At least one Mutation Analysis rule needs to be activated for the current profile and language: {}.",
+             language);
       }
 
       metrics.stream()
