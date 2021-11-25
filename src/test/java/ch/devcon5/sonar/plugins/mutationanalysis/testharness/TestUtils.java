@@ -175,7 +175,8 @@ public class TestUtils {
             } catch (AssertionError e) {
                 return false;
             }
-        }).findFirst().orElseThrow(() -> new AssertionError("No element found matching assertions"));
+        }).findFirst()
+          .orElseThrow(() -> new AssertionError("No element found matching assertions, elements: " + container));
 
     }
 

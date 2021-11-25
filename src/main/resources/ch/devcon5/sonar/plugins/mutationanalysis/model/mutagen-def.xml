@@ -20,194 +20,240 @@
   -->
 
 <operators>
-    <operator
-            id="ARGUMENT_PROPAGATION"
-            class="org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator">
+    <operator id="ARGUMENT_PROPAGATION">
         <name>Argument Propagation Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A return value has been replaced by a method argument without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="ARGUMENT_PROPAGATION.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator</class>
+        </classes>
     </operator>
-    <operator
-            id="BOOLEAN_FALSE_RETURN"
-            class="org.pitest.mutationtest.engine.gregor.mutators.BooleanFalseReturnValsMutator">
+    <operator id="BOOLEAN_FALSE_RETURN">
         <name>Boolean False Return Vals Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A primitive or boxed boolean has been replaced with false without being detected by a test]]>
         </violationDescription>
         <operatorDescription classpath="BOOLEAN_FALSE_RETURN.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.BooleanFalseReturnValsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.BooleanFalseReturnValsMutator</class>
+        </classes>
     </operator>
-    <operator
-            id="BOOLEAN_TRUE_RETURN"
-            class="org.pitest.mutationtest.engine.gregor.mutators.BooleanTrueReturnValsMutator">
+    <operator id="BOOLEAN_TRUE_RETURN">
         <name>Boolean True Return Vals Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A primitive or boxed boolean has been replaced with true without being detected by a test]]>
         </violationDescription>
         <operatorDescription classpath="BOOLEAN_TRUE_RETURN.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.BooleanTrueReturnValsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.BooleanTrueReturnValsMutator</class>
+        </classes>
     </operator>
-    <operator
-            id="CONDITIONALS_BOUNDARY"
-            class="org.pitest.mutationtest.engine.gregor.mutators.ConditionalsBoundaryMutator">
+    <operator id="CONDITIONALS_BOUNDARY">
         <name>Conditionals Boundary Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A relational operator has been replaced by a boundary counterpart without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="CONDITIONALS_BOUNDARY.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.ConditionalsBoundaryMutator</class>
+        </classes>
     </operator>
-    <operator id="CONSTRUCTOR_CALLS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.ConstructorCallMutator">
+    <operator id="CONSTRUCTOR_CALLS">
         <name>Constructor Call Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A constructor call has been removed without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="CONSTRUCTOR_CALLS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.ConstructorCallMutator</class>
+        </classes>
     </operator>
-    <operator
-            id="EMPTY_RETURN_VALUES"
-            class="org.pitest.mutationtest.engine.gregor.mutators.EmptyObjectReturnValsMutator">
+    <operator id="EMPTY_RETURN_VALUES">
         <name>Empty Object Return Vals Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: An object return value has been replaced with it's empty counterpart without being detected by a test]]>
         </violationDescription>
         <operatorDescription classpath="EMPTY_RETURN_VALUES.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.EmptyObjectReturnValsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.EmptyObjectReturnValsMutator</class>
+        </classes>
     </operator>
-    <operator id="INCREMENTS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.IncrementsMutator">
+    <operator id="INCREMENTS">
         <name>Increments Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A local variable increment/decrement has been replaced without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="INCREMENTS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.IncrementsMutator</class>
+        </classes>
     </operator>
-    <operator id="INLINE_CONSTS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator">
+    <operator id="INLINE_CONSTS">
         <name>Inline Constant Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: An inline constant has been changed without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="INLINE_CONSTS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.InlineConstantMutator</class>
+        </classes>
     </operator>
-    <operator id="INVERT_NEGS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.InvertNegsMutator">
+    <operator id="INVERT_NEGS">
         <name>Invert Negs Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A number has been replaced by its opposite without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="INVERT_NEGS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.InvertNegsMutator</class>
+        </classes>
     </operator>
-    <operator id="MATH"
-             class="org.pitest.mutationtest.engine.gregor.mutators.MathMutator">
+    <operator id="MATH">
         <name>Math Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A binary arithmetic operation has been replaced by another one without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="MATH.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.MathMutator</class>
+        </classes>
     </operator>
-    <operator id="NEGATE_CONDITIONALS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator">
+    <operator id="NEGATE_CONDITIONALS">
         <name>Negate Conditionals Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A conditional expression has been negated without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="NEGATE_CONDITIONALS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.NegateConditionalsMutator</class>
+        </classes>
     </operator>
-    <operator id="NON_VOID_METHOD_CALLS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.NonVoidMethodCallMutator">
+    <operator id="NON_VOID_METHOD_CALLS">
         <name>Non Void Method Call Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A method call has been removed without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="NON_VOID_METHOD_CALLS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.NonVoidMethodCallMutator</class>
+        </classes>
     </operator>
-    <operator id="NULL_RETURN_VALUES"
-            class="org.pitest.mutationtest.engine.gregor.mutators.NullReturnValsMutator">
+    <operator id="NULL_RETURN_VALUES">
         <name>Null Return Vals Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A non-primitive return value has been replaced with null without being detected by a test]]>
         </violationDescription>
         <operatorDescription classpath="NULL_RETURN_VALUES.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.NullReturnValsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.NullReturnValsMutator</class>
+        </classes>
     </operator>
-    <operator id="PRIMITIVE_RETURN_VALS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.PrimitiveReturnsMutator">
+    <operator id="PRIMITIVE_RETURN_VALS">
         <name>Primitive Returns Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A primitive number return value has been replaced with 0 without being detected by a test]]>
         </violationDescription>
         <operatorDescription classpath="PRIMITIVE_RETURN_VALS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.PrimitiveReturnsMutator</class>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.returns.PrimitiveReturnsMutator</class>
+        </classes>
     </operator>
-    <operator id="REMOVE_CONDITIONALS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator">
+    <operator id="REMOVE_CONDITIONALS">
         <name>Remove Conditional Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A condition has been removed without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="REMOVE_CONDITIONALS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.RemoveConditionalMutator</class>
+        </classes>
     </operator>
-    <operator id="RETURN_VALS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.ReturnValsMutator">
+    <operator id="RETURN_VALS">
         <name>Return Vals Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: The return value of a method call has been replaced without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="RETURN_VALS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.ReturnValsMutator</class>
+        </classes>
     </operator>
-    <operator id="VOID_METHOD_CALLS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.VoidMethodCallMutator">
+    <operator id="VOID_METHOD_CALLS">
         <name>Void Method Call Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A method call has been removed without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="VOID_METHOD_CALLS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.VoidMethodCallMutator</class>
+        </classes>
     </operator>
-    <operator id="EXPERIMENTAL_MEMBER_VARIABLE"
-             class="org.pitest.mutationtest.engine.gregor.mutators.experimental.MemberVariableMutator">
+    <operator id="EXPERIMENTAL_MEMBER_VARIABLE">
         <name>Member Variable Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A member variable assignment has been replaced without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="EXPERIMENTAL_MEMBER_VARIABLE.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.experimental.MemberVariableMutator</class>
+        </classes>
     </operator>
-    <operator
-            id="EXPERIMENTAL_NAKED_RECEIVER"
-            class="org.pitest.mutationtest.engine.gregor.mutators.experimental.NakedReceiverMutator">
+    <operator id="EXPERIMENTAL_NAKED_RECEIVER">
         <name>Naked Receiver Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A non-void method call has been removed and replaced with it's receiver without being detected by a test]]>
         </violationDescription>
         <operatorDescription classpath="EXPERIMENTAL_NAKED_RECEIVER.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.experimental.NakedReceiverMutator</class>
+        </classes>
     </operator>
-    <operator id="EXPERIMENTAL_REMOVE_INCREMENTS"
-             class="org.pitest.mutationtest.engine.gregor.mutators.experimental.RemoveIncrementsMutator">
+    <operator id="EXPERIMENTAL_REMOVE_INCREMENTS">
         <name>Remove Increments Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: An increment operation has been removed without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="EXPERIMENTAL_REMOVE_INCREMENTS.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.experimental.RemoveIncrementsMutator</class>
+        </classes>
     </operator>
-    <operator id="EXPERIMENTAL_REMOVE_SWITCH"
-             class="org.pitest.mutationtest.engine.gregor.mutators.experimental.RemoveSwitchMutator">
+    <operator id="EXPERIMENTAL_REMOVE_SWITCH">
         <name>Remove Switch Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A switch statement has been replaced with the default label without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="EXPERIMENTAL_REMOVE_SWITCH.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.experimental.RemoveSwitchMutator</class>
+        </classes>
     </operator>
-    <operator id="EXPERIMENTAL_RETURN_VALUES"
-             class="org.pitest.mutationtest.engine.gregor.mutators.experimental.ReturnValuesMutator">
+    <operator id="EXPERIMENTAL_RETURN_VALUES">
         <name>Return Values Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A return value has been replaced without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="EXPERIMENTAL_RETURN_VALUES.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.experimental.ReturnValuesMutator</class>
+        </classes>
     </operator>
-    <operator id="EXPERIMENTAL_SWITCH"
-             class="org.pitest.mutationtest.engine.gregor.mutators.experimental.SwitchMutator">
+    <operator id="EXPERIMENTAL_SWITCH">
         <name>Switch Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: The default label has been replaced without being detected by a test.]]>
         </violationDescription>
         <operatorDescription classpath="EXPERIMENTAL_SWITCH.html"/>
+        <classes>
+            <class>org.pitest.mutationtest.engine.gregor.mutators.experimental.SwitchMutator</class>
+        </classes>
     </operator>
 </operators>

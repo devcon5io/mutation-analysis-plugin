@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -198,25 +199,25 @@ public class PitestReportParserTest {
    public void readMutants_brokenXml_exceptionWithDetails() throws Exception {
 
       expect.expect(XMLStreamException.class);
-      expect.expectMessage("ParseError at [row,col]:[23,5]\nMessage: sourceFile must be set");
+      expect.expectMessage("ParseError at [row,col]:[22,16]\nMessage: sourceFile must be set");
 
       subject.readMutants(getClass().getResourceAsStream("PitestReportParserTest_broken.xml"));
    }
 
 
-   @Test(expected = XMLStreamException.class)
+   @Test
    public void readMutants_XXE_attack_entityNotReplaced() throws Exception {
 
       //we prepare a secret file with content that should not be disclosed
       //this file acts as a placeholder for any file with sensitive information such as /etc/passwd
       final String expectedSecret = "MY_SECRET";
       File secretFile = folder.newFile("secret");
-      Files.write(secretFile.toPath(), expectedSecret.getBytes("UTF-8"));
+      Files.write(secretFile.toPath(), expectedSecret.getBytes(StandardCharsets.UTF_8));
 
       //we forge a pitest report that should be processed by the plugin parser
       //the attack is not hypothetical, especially in managed sonarqube instances where forged
       //pitest reports may reveal sensitve information in the sonarqube results
-      String template = IOUtils.toString(getClass().getResourceAsStream("PitestReportParserTest_XXE.xml"));
+      String template = IOUtils.toString(getClass().getResourceAsStream("PitestReportParserTest_XXE.xml"),StandardCharsets.UTF_8);
       String xxeAttack = template.replace("$SECRET$", secretFile.toURI().toURL().toString());
 
       Collection<Mutant> mutants = subject.readMutants(new ByteArrayInputStream(xxeAttack.getBytes("UTF-8")));

@@ -42,7 +42,7 @@ public class LogRecordingAppender extends AbstractAppender implements AutoClosea
 
    @Override
    public void append(final LogEvent logEvent) {
-      events.add(logEvent);
+      events.add(logEvent.toImmutable());
    }
 
    public List<LogEvent> getEvents() {
