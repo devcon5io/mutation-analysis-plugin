@@ -38,13 +38,13 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SystemLocale;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.sonar.api.batch.fs.TextRange;
 import org.sonar.api.batch.rule.ActiveRules;
@@ -60,6 +60,9 @@ public class PitestSensorTest {
    public TemporaryFolder folder = new TemporaryFolder();
 
    private SensorTestHarness harness;
+
+   @ClassRule
+   public static SystemLocale systemLocale = SystemLocale.overrideDefault(Locale.ENGLISH);
 
    @Before
    public void setUp() throws Exception {
