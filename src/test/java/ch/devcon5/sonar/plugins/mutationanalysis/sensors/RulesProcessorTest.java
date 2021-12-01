@@ -30,20 +30,19 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperator;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.JavaRulesDefinition;
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition;
-import ch.devcon5.sonar.plugins.mutationanalysis.testharness.LogRecordingAppender;
-import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
-import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration;
-import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sonar.api.batch.rule.ActiveRules;
@@ -68,6 +67,10 @@ public class RulesProcessorTest {
 
    private SensorTestHarness harness;
    private LogRecordingAppender appender;
+
+
+   @ClassRule
+   public static SystemLocale systemLocale = SystemLocale.overrideDefault(Locale.ENGLISH);
 
    @Before
    public void setUp() throws Exception {
