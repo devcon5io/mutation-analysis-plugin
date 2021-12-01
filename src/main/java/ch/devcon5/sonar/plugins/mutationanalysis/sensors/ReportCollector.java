@@ -255,10 +255,7 @@ public class ReportCollector {
       return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
     } catch (IOException | XPathExpressionException e) {
       LOG.debug("Could not resolve module paths for pom {}",configurationFilePath, e);
-      //we can safely return null as the method is used in a mapping of an optional, hence if the result of this
-      // method is null, the Optional becomes empty. So as long as this method is private and consumer are capable
-      // dealing with null, we could keep it that way. Otherwise Collections.emptySet() would be better
-      return null;
+      return Collections.emptyList();
     }
   }
 
@@ -275,10 +272,7 @@ public class ReportCollector {
       return modulePaths.stream().map(parent::resolve).collect(Collectors.toList());
     } catch (IOException e) {
       LOG.debug("Could not resolve gradle module paths for {}", configurationFilePath, e);
-      //we can safely return null as the method is used in a mapping of an optional, hence if the result of this
-      // method is null, the Optional becomes empty. So as long as this method is private and consumer are capable
-      // dealing with null, we could keep it that way. Otherwise Collections.emptySet() would be better
-      return null;
+      return Collections.emptyList();
     }
   }
 
