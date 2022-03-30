@@ -13,7 +13,7 @@ jdk:
 jobs:
   include:
     - if: type != pull_request
-      script: mvn clean package sonar:sonar
+      script: mvn clean package sonar:sonar -Dsonar.projectKey=ch.devcon5.sonar:mutation-analysis-plugin
     - if: type = pull_request
       script: mvn clean package
 
