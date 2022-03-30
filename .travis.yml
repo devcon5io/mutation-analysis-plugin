@@ -4,18 +4,14 @@ install: true
 addons:
   sonarcloud:
     organization: devcon5
-    token:
-      secure: $SONAR_TOKEN
+    token: $SONAR_TOKEN
 
 jdk:
-  - openjdk8
+  - openjdk11
 
-jobs:
-  include:
-    - if: type != pull_request
-      script: mvn clean package sonar:sonar
-    - if: type = pull_request
-      script: mvn clean package
+script:
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package org.jacoco:jacoco-maven-plugin:report
+  - if [ type != pull_request ]; then mvn sonar:sonar; fi
 
 cache:
   directories:
