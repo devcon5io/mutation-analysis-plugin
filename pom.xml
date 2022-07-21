@@ -24,7 +24,7 @@
     <artifactId>mutation-analysis-plugin</artifactId>
     <groupId>ch.devcon5.sonar</groupId>
     <packaging>sonar-plugin</packaging>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.7</version>
 
     <name>${project.artifactId}</name>
     <description>Sonar Plugin for integrating and visualizing mutation analysis results</description>
@@ -79,6 +79,7 @@
         <license.title>Mutation Analysis Plugin</license.title>
         <license.years>2015-2021</license.years>
         <license.mailto>info@devcon5.ch</license.mailto>
+        <sonarQubeMinVersion>7.9.5</sonarQubeMinVersion>
     </properties>
 
     <dependencies>
@@ -166,6 +167,7 @@
                     <pluginKey>mutationanalysis</pluginKey>
                     <pluginClass>ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin</pluginClass>
                     <pluginName>Mutation Analysis</pluginName>
+                    <sonarQubeMinVersion>${sonarQubeMinVersion}</sonarQubeMinVersion>
                 </configuration>
             </plugin>
 
