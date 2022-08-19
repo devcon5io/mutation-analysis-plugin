@@ -34,6 +34,7 @@ public class MutationMetricsTest {
     public void testMetricConstants() throws Exception {
 
         assertNotNull(MutationMetrics.MUTATIONS_COVERAGE);
+        assertNotNull(MutationMetrics.MUTATIONS_TEST_STRENGTH);
         assertNotNull(MutationMetrics.MUTATIONS_DATA);
         assertNotNull(MutationMetrics.MUTATIONS_DETECTED);
         assertNotNull(MutationMetrics.MUTATIONS_KILLED);

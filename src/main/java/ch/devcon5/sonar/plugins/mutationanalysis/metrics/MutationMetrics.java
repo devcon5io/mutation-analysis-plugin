@@ -118,6 +118,17 @@ public final class MutationMetrics {
         .setDecimalScale(1)
         .create();
 
+    public static final String MUTATIONS_TEST_STRENGTH_KEY = "dc5_mutationAnalysis_mutations_test_strength";
+    public static final Metric<Serializable> MUTATIONS_TEST_STRENGTH = new Metric.Builder(MUTATIONS_TEST_STRENGTH_KEY, "Test Strength", Metric.ValueType.PERCENT)
+            .setDirection(DIRECTION_BETTER)
+            .setDomain(MUTATION_ANALYSIS_DOMAIN)
+            .setQualitative(true)
+            .setDescription("Test strength percentage")
+            .setBestValue(100.)
+            .setWorstValue(0.)
+            .setDecimalScale(1)
+            .create();
+
     public static final String MUTATIONS_DENSITY_KEY = "dc5_mutationAnalysis_mutations_density";
     public static final Metric<Serializable> MUTATIONS_DENSITY=new Metric.Builder(MUTATIONS_DENSITY_KEY, "Mutation: Density", Metric.ValueType.PERCENT)
         .setDirection(DIRECTION_WORST)
@@ -224,6 +235,7 @@ public final class MutationMetrics {
         MUTATIONS_DATA,
         MUTATIONS_TOTAL_PERCENT,
         MUTATIONS_COVERAGE,
+        MUTATIONS_TEST_STRENGTH,
         MUTATIONS_DENSITY,
         MUTATIONS_ALIVE_PERCENT,
         TEST_KILL_RATIO

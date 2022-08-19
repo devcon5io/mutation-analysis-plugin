@@ -46,8 +46,8 @@ public class MutationScoreComputer implements MeasureComputer {
     public MeasureComputerDefinition define(final MeasureComputerDefinitionContext defContext) {
 
         return defContext.newDefinitionBuilder()
-                         .setInputMetrics(MutationMetrics.MUTATIONS_DETECTED.key(), MutationMetrics.MUTATIONS_TOTAL.key())
-                         .setOutputMetrics(MutationMetrics.MUTATIONS_COVERAGE.key())
+                         .setInputMetrics(MutationMetrics.MUTATIONS_DETECTED.key(), MutationMetrics.MUTATIONS_TOTAL.key(), MutationMetrics.MUTATIONS_SURVIVED.key())
+                         .setOutputMetrics(MutationMetrics.MUTATIONS_COVERAGE.key(), MutationMetrics.MUTATIONS_TEST_STRENGTH.key())
                          .build();
     }
 
@@ -69,12 +69,30 @@ public class MutationScoreComputer implements MeasureComputer {
                 final Double coverage = 100.0 * coveredElements / elements;
                 LOG.info("Computed Mutation Coverage of {}% for {}", coverage, context.getComponent());
                 context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), coverage);
+
+                final Measure aliveMutantsMeasure = context.getMeasure(MutationMetrics.MUTATIONS_SURVIVED.key());
+                int aliveMutants = aliveMutantsMeasure != null ? aliveMutantsMeasure.getIntValue() : 0;
+
+                final Measure killedMutantsMeasure = context.getMeasure(MutationMetrics.MUTATIONS_DETECTED.key());
+                int killedMutants;
+                double testStrength = 0;
+                if (killedMutantsMeasure != null) {
+                    killedMutants = killedMutantsMeasure.getIntValue();
+                    int allMutantsQuantity = aliveMutants + killedMutants;
+                    if (allMutantsQuantity != 0) {
+                        testStrength = 100.0 * killedMutants / allMutantsQuantity;
+                    }
+                }
+                LOG.info("Computed Test Strength of {}% for {}", testStrength, context.getComponent());
+                context.addMeasure(MutationMetrics.MUTATIONS_TEST_STRENGTH.key(), testStrength);
             } else {
                 //modules with no mutants (0 total) are always 100% covered (0 of 0 is 100%, right?)
                 context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), 100.0);
+                context.addMeasure(MutationMetrics.MUTATIONS_TEST_STRENGTH.key(), 100.0);
             }
         } else if(config.getBoolean(FORCE_MISSING_COVERAGE_TO_ZERO).orElse(Boolean.FALSE)){
             context.addMeasure(MutationMetrics.MUTATIONS_COVERAGE.key(), 0.0);
+            context.addMeasure(MutationMetrics.MUTATIONS_TEST_STRENGTH.key(), 0.0);
         }
     }
 }

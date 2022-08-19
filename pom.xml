@@ -79,6 +79,7 @@
         <license.title>Mutation Analysis Plugin</license.title>
         <license.years>2015-2022</license.years>
         <license.mailto>info@devcon5.ch</license.mailto>
+        <sonarQubeMinVersion>7.9.5</sonarQubeMinVersion>
     </properties>
 
     <dependencies>
@@ -166,6 +167,7 @@
                     <pluginKey>mutationanalysis</pluginKey>
                     <pluginClass>ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin</pluginClass>
                     <pluginName>Mutation Analysis</pluginName>
+                    <sonarQubeMinVersion>${sonarQubeMinVersion}</sonarQubeMinVersion>
                 </configuration>
             </plugin>
 
