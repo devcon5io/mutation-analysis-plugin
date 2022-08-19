@@ -20,15 +20,6 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_COVERAGE_KEY;
-import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_DETECTED_KEY;
-import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
 import org.junit.Before;
@@ -36,6 +27,17 @@ import org.junit.Test;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.ce.measure.test.TestMeasureComputerContext;
 import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
+
+import java.util.Arrays;
+import java.util.HashSet;
+
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_COVERAGE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_DETECTED_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_SURVIVED_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TEST_STRENGTH_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_KEY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class MutationScoreComputerTest {
 
@@ -58,8 +60,8 @@ public class MutationScoreComputerTest {
 
     final MeasureComputer.MeasureComputerDefinition def = computer.define(context);
 
-    assertTrue(def.getInputMetrics().containsAll(Arrays.asList(MUTATIONS_DETECTED_KEY, MUTATIONS_TOTAL_KEY)));
-    assertTrue(def.getOutputMetrics().containsAll(Arrays.asList(MUTATIONS_COVERAGE_KEY)));
+    assertEquals(def.getInputMetrics(), new HashSet<>(Arrays.asList(MUTATIONS_DETECTED_KEY, MUTATIONS_TOTAL_KEY, MUTATIONS_SURVIVED_KEY)));
+    assertEquals(def.getOutputMetrics(), new HashSet<>(Arrays.asList(MUTATIONS_COVERAGE_KEY, MUTATIONS_TEST_STRENGTH_KEY)));
   }
 
   @Test
@@ -121,6 +123,21 @@ public class MutationScoreComputerTest {
   }
 
   @Test
+  public void compute_1of5MutationsKilled_to_20percentTestStrength() {
+
+    final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
+
+    measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 5);
+    measureContext.addInputMeasure(MUTATIONS_SURVIVED_KEY, 4);
+    measureContext.addInputMeasure(MUTATIONS_DETECTED_KEY, 1);
+
+    computer.compute(measureContext);
+
+    assertEquals(20.0, measureContext.getMeasure(MUTATIONS_TEST_STRENGTH_KEY).getDoubleValue(), 0.05);
+
+  }
+
+  @Test
   public void compute_NoCoveredElements_0percentCoverage() {
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
@@ -130,6 +147,7 @@ public class MutationScoreComputerTest {
     computer.compute(measureContext);
 
     assertEquals(0.0, measureContext.getMeasure(MUTATIONS_COVERAGE_KEY).getDoubleValue(), 0.05);
+    assertEquals(0.0, measureContext.getMeasure(MUTATIONS_TEST_STRENGTH_KEY).getDoubleValue(), 0.05);
 
   }
 
