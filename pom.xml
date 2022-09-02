@@ -24,7 +24,7 @@
     <artifactId>mutation-analysis-plugin</artifactId>
     <groupId>ch.devcon5.sonar</groupId>
     <packaging>sonar-plugin</packaging>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.7</version>
 
     <name>${project.artifactId}</name>
     <description>Sonar Plugin for integrating and visualizing mutation analysis results</description>
