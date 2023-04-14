@@ -19,122 +19,127 @@
   -->
 
 <div id="INLINE_CONSTS">
-    <h2>Inline Constant Mutator (INLINE_CONSTS)</h2>
+  <h2>Inline Constant Mutator (INLINE_CONSTS)</h2>
 
-    <p>An inline constant is a fixed value - a literal - that is assigned to a non-final variable. The inline
-        constant operator alters the value that is assigned to the variable.
-        </p>
-    <p>Example:</p>
+  <p>
+  This operator mutates inline constants assigned to variables. An inline constant is a fixed value - a literal -
+  that is assigned to a non-final variable.
+  </p>
+  <br>
+  <p>For Example:</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public void aMethod() {
-  long l = 16L;
-  // some coding that uses l
+    long l = 16L;
+    // some coding that uses l
 }
-</pre>
+    </pre>
 
-    <p>The actual mutation depends on the type of the inline constant. Because the ways Java statements get converted
-        to byte code may vary, the rule for mutating inline constant are complex.
-        </p>
+  <p>
+  The actual mutation depends on the type of the inline constant. Because the way Java statements get converted
+  to byte code may vary, the rule for mutating inline constant are complex.
+  </p>
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Type</th>
-            <th>Mutation</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><code>boolean</code></td>
-            <td>
-                <code>true</code> gets replaced with <code>false</code> and
-                <code>false</code> gets replaced with <code>true</code>
-            </td>
-        </tr>
-        <tr>
-            <td><code>integer</code> <code>byte</code> <code>short</code></td>
-            <td>
-                <ul>
-                    <li><code>1</code> gets replaced with <code>0</code></li>
-                    <li><code>-1</code> gets replaced with <code>1</code></li>
-                    <li><code>5</code> gets replaced with <code>-1</code></li>
-                    <li>all other values are incremented by 1</li>
-                </ul>
-            </td>
-        </tr>
-        <tr>
-            <td><code>long</code></td>
-            <td>
-                <ul>
-                    <li><code>1</code> gets replaced with <code>0</code> </li>
-                    <li>all other values are incremented by 1</li>
-                </ul>
-            </td>
-        </tr>
-        <tr>
-            <td><code>float</code></td>
-            <td>
-                <ul>
-                    <li><code>1.0</code> gets replaced with <code>0.0</code> </li>
-                    <li><code>2.0</code> gets replaced with <code>0.0</code> </li>
-                    <li>any other value gets replaced with <code>1.0</code> </li>
-                </ul>
-            </td>
-        </tr>
-        <tr>
-            <td><code>double</code></td>
-            <td>
-                <li><code>1.0</code> gets replaced with <code>0.0</code> </li>
-                <li>any other value gets replaced with <code>1.0</code> </li>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Type</th>
+      <th>Mutation</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td><code>boolean</code></td>
+      <td>
+        <code>true</code> is replaced with <code>false</code> and
+        <code>false</code> is replaced with <code>true</code>
+      </td>
+    </tr>
+    <tr>
+      <td><code>integer</code> <code>byte</code> <code>short</code></td>
+      <td>
+        <ul>
+          <li><code>1</code> is replaced with <code>0</code></li>
+          <li><code>-1</code> is replaced with <code>1</code></li>
+          <li><code>5</code> is replaced with <code>-1</code></li>
+          <li>all other values are incremented by 1</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td><code>long</code></td>
+      <td>
+        <ul>
+          <li><code>1</code> is replaced with <code>0</code></li>
+          <li>all other values are incremented by 1</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td><code>float</code></td>
+      <td>
+        <ul>
+          <li><code>1.0</code> is replaced with <code>0.0</code></li>
+          <li><code>2.0</code> is replaced with <code>0.0</code></li>
+          <li>any other value is replaced with <code>1.0</code></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td>
+        <ul>
+          <li><code>1.0</code> is replaced with <code>0.0</code></li>
+          <li>any other value is replaced with <code>1.0</code></li>
+        </ul>
+      </td>
+    </tr>
+    </tbody>
+  </table>
 
-    <p>For example</p>
+  <p>For example</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public int aMethod() {
   int i = 16;
   return i;
 }
-</pre>
+    </pre>
 
-    <p>will be changed to</p>
+  <p>will be changed to</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public int aMethod() {
   int i = 17;
   return i;
 }
-</pre>
+    </pre>
 
-    <p>The compiler may optimize expressions with final variables - regardless of being local or member variables.
-        In those cases the mutation is not able to mutate any variable.
-    </p>
-    <p>Example</p>
+  <p>
+  The compiler may optimize expressions with final variables - regardless of being local or member variables.
+  In those cases the mutation is not able to mutate any variable.
+  </p>
+  <p>Example</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public class Example {
   private static final int CONSTANT = 4;
-  
+
   public String aMethod() {
     final int i = 16;
     return "" + CONSTANT + ":" + i;
   }
 }
-</pre>
+    </pre>
 
-    <p>might get optimized to</p>
+  <p>might get optimized to</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public class Example {
   public String aMethod() {
     return "4:16";
   }
 }
-</pre>
-
-    <p>see <a href="http://pitest.org/quickstart/mutators#INLINE_CONSTS">Pitest Mutators</a></p>
+    </pre>
+  <p>see <a href="http://pitest.org/quickstart/mutators#INLINE_CONSTS">Pitest Mutators</a></p>
 </div>

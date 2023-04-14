@@ -20,46 +20,42 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StateTest {
+class StateTest {
 
-    @Test
-    public void testIsAlive_enumValues() throws Exception {
+  @Test
+  void testIsAlive_enumValues() {
+    assertTrue(Mutant.State.NO_COVERAGE.isAlive());
+    assertTrue(Mutant.State.UNKNOWN.isAlive());
+    assertTrue(Mutant.State.SURVIVED.isAlive());
+    assertFalse(Mutant.State.MEMORY_ERROR.isAlive());
+    assertFalse(Mutant.State.TIMED_OUT.isAlive());
+    assertFalse(Mutant.State.KILLED.isAlive());
+  }
 
-        assertTrue(Mutant.State.NO_COVERAGE.isAlive());
-        assertTrue(Mutant.State.UNKNOWN.isAlive());
-        assertTrue(Mutant.State.SURVIVED.isAlive());
-        assertFalse(Mutant.State.MEMORY_ERROR.isAlive());
-        assertFalse(Mutant.State.TIMED_OUT.isAlive());
-        assertFalse(Mutant.State.KILLED.isAlive());
-    }
+  @Test
+  void testParse_enumValues() {
+    assertEquals(Mutant.State.NO_COVERAGE, Mutant.State.parse("NO_COVERAGE"));
+    assertEquals(Mutant.State.KILLED, Mutant.State.parse("KILLED"));
+    assertEquals(Mutant.State.SURVIVED, Mutant.State.parse("SURVIVED"));
+    assertEquals(Mutant.State.MEMORY_ERROR, Mutant.State.parse("MEMORY_ERROR"));
+    assertEquals(Mutant.State.TIMED_OUT, Mutant.State.parse("TIMED_OUT"));
+    assertEquals(Mutant.State.UNKNOWN, Mutant.State.parse("UNKNOWN"));
+  }
 
-    @Test
-    public void testParse_enumValues() throws Exception {
+  @Test
+  void testParse_null_unknown() {
+    assertEquals(Mutant.State.UNKNOWN, Mutant.State.parse(null));
+  }
 
-        assertEquals(Mutant.State.NO_COVERAGE, Mutant.State.parse("NO_COVERAGE"));
-        assertEquals(Mutant.State.KILLED, Mutant.State.parse("KILLED"));
-        assertEquals(Mutant.State.SURVIVED, Mutant.State.parse("SURVIVED"));
-        assertEquals(Mutant.State.MEMORY_ERROR, Mutant.State.parse("MEMORY_ERROR"));
-        assertEquals(Mutant.State.TIMED_OUT, Mutant.State.parse("TIMED_OUT"));
-        assertEquals(Mutant.State.UNKNOWN, Mutant.State.parse("UNKNOWN"));
-    }
-
-    @Test
-    public void testParse_null_unknown() throws Exception {
-
-        assertEquals(Mutant.State.UNKNOWN, Mutant.State.parse(null));
-    }
-
-    @Test
-    public void testParse_unknown_unknown() throws Exception {
-
-        assertEquals(Mutant.State.UNKNOWN, Mutant.State.parse("xxx"));
-    }
+  @Test
+  void testParse_unknown_unknown() {
+    assertEquals(Mutant.State.UNKNOWN, Mutant.State.parse("xxx"));
+  }
 
 }

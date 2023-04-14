@@ -21,26 +21,25 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 
 import static ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.REPOSITORY_KEY;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition;
 import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition.BuiltInQualityProfile;
 
-public class JavaProfileDefinitionTest {
+class JavaProfileDefinitionTest {
 
-   private BuiltInQualityProfilesDefinition.Context context = new BuiltInQualityProfilesDefinition.Context();
+  private final BuiltInQualityProfilesDefinition.Context context = new BuiltInQualityProfilesDefinition.Context();
 
-   @Test
-   public void define_java() {
+  @Test
+  void define_java() {
+    MutationAnalysisProfileDefinition def = new JavaProfileDefinition();
 
-      MutationAnalysisProfileDefinition def = new JavaProfileDefinition();
+    def.define(context);
 
-      def.define(context);
+    BuiltInQualityProfile javaProfile = context.profile("java", "Mutation Analysis");
 
-      BuiltInQualityProfile javaProfile = context.profile("java", "Mutation Analysis");
-
-      assertEquals(23, javaProfile.rules().stream().filter(r -> (REPOSITORY_KEY + ".java").equals(r.repoKey())).count());
-   }
+    assertEquals(23, javaProfile.rules().stream().filter(r -> (REPOSITORY_KEY + ".java").equals(r.repoKey())).count());
+  }
 
 }

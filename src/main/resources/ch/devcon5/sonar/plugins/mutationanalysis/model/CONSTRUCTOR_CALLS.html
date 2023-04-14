@@ -19,37 +19,43 @@
   -->
 
 <div id="CONSTRUCTOR_CALLS">
-    <h2>Constructor Call Mutator (CONSTRUCTOR_CALLS)</h2>
+  <h2>Constructor Call Mutator (CONSTRUCTOR_CALLS)</h2>
 
-    <p>This operator targets at constructors where it replaces the call to the constructor with a <code>null</code> value
-        assignment. This should induce <code>NullPointerException</code>.
-        Example:</p>
+  <p>
+  This operator targets constructors, where it replaces the call to the constructor with a <code>null</code> value
+  assignment. This should induce <code>NullPointerException</code>.
+  </p>
+  <br>
+  <p>For Example:</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public Object aMethod() {
   Example x = new Example();
   return x;
 }
-</pre>
+    </pre>
 
-    <p>will be mutated to</p>
+  <p>will be mutated to</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public Example aMethod() {
   Example x = null;
   return x;
 }
-</pre>
+    </pre>
 
-    <p>This mutation is very likely to cause <strong><code>NullPointerException</code>s</strong> even in test suites
-        that do not explicitly test for <code>null</code> value. Nevertheless, even if the test contain no assertion at
-        all, if the test runs this code, it is likely to kill this mutation.</p>
+  <p>
+  This mutation is very likely to cause <strong><code>NullPointerException</code>s</strong> even in test suites
+  that do not explicitly test for <code>null</code> values. Nevertheless, even if the test contains no assertions
+  at all, if the test runs this code, it is likely to kill this mutation.
+  </p>
 
-    <p>Every other method invocation is not affected by this operator. See <a
-            href="http://pitest.org/quickstart/mutators#VOID_METHOD_CALL">Void Method Call Mutator</a>, which mutates
-        void methods, and
-        <a href="http://pitest.org/quickstart/mutators#NON_VOID_METHOD_CALL">Non Void Method Call Mutator</a>
-        mutating non-void methods.</p>
-
-    <p>see <a href="http://pitest.org/quickstart/mutators#CONSTRUCTOR_CALLS">Pitest Mutators</a></p>
+  <p>
+  Every other method invocation is not affected by this operator. See <a
+  href="http://pitest.org/quickstart/mutators#VOID_METHOD_CALL">Void Method Call Mutator</a>, which mutates
+  void methods, and
+  <a href="http://pitest.org/quickstart/mutators#NON_VOID_METHOD_CALL">Non Void Method Call Mutator</a>
+  mutating non-void methods.
+  </p>
+  <p>see <a href="http://pitest.org/quickstart/mutators#CONSTRUCTOR_CALLS">Pitest Mutators</a></p>
 </div>

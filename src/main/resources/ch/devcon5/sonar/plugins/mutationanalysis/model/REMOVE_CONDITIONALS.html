@@ -19,30 +19,32 @@
   -->
 
 <div id="REMOVE_CONDITIONALS">
-    <h2>Remove Conditionals Mutator (REMOVE_CONDITIONALS)</h2>
+  <h2>Remove Conditionals Mutator (REMOVE_CONDITIONALS)</h2>
 
-    <p>This operator will replace all conditional expressions so that that they always evaluate to true, so that the
-        path guarded by the condition will always be executed.
-    </p>
+  <p>
+  This operator will replace all conditional expressions so that they always evaluate to true, so the path guarded
+  by the condition will always be executed.
+  </p>
+  <br>
+  <p>For Example</p>
 
-    <p>Example</p>
-
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 if (a != b) {
   // some code
 }
-</pre>
+    </pre>
 
-    <p>will be mutated to</p>
+  <p>will be mutated to</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 if (true) {
   // some code
 }
-</pre>
+    </pre>
 
-    <p>This operator is not enabled by default. Nevertheless it is recommended to enable this operator to get full
-        coverage on conditional expressions</p>
-
-    <p>see <a href="http://pitest.org/quickstart/mutators#REMOVE_CONDITIONALS">Pitest Mutators</a></p>
+  <p>
+  This operator is not enabled by default. Nevertheless, it is recommended to enable this operator to get full
+  coverage on conditional expressions
+  </p>
+  <p>see <a href="http://pitest.org/quickstart/mutators#REMOVE_CONDITIONALS">Pitest Mutators</a></p>
 </div>

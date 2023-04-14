@@ -22,11 +22,10 @@ package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.Collection;
-
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
@@ -42,51 +41,41 @@ public class SourceMetricsWriter {
   /**
    * Saves the information of the mutants the sensors context.
    *
-   * @param metrics
-   *     the mutant information parsed from the PIT report
-   * @param context
-   *     the current {@link org.sonar.api.batch.sensor.SensorContext}
-   * @param globalMutants
+   * @param metrics the mutant information parsed from the PIT report
+   * @param context the current {@link org.sonar.api.batch.sensor.SensorContext}
+   * @param globalMutants the global collection of mutants
    */
   public void writeMetrics(final Collection<ResourceMutationMetrics> metrics, final SensorContext context, final Collection<Mutant> globalMutants) {
-
     final int total = globalMutants.isEmpty() ? sumTotal(metrics) : globalMutants.size();
     final int alive = total - (globalMutants.isEmpty()
-                               ? metrics.stream().mapToInt(rmm -> countDetected(rmm.getMutants())).sum()
-                               : countDetected(globalMutants));
-
+        ? metrics.stream().mapToInt(rmm -> countDetected(rmm.getMutants())).sum()
+        : countDetected(globalMutants));
     for (final ResourceMutationMetrics resourceMetrics : metrics) {
       saveResourceMetrics(resourceMetrics, context);
-
-      context.newMeasure().forMetric(MutationMetrics.UTILITY_GLOBAL_MUTATIONS).on(resourceMetrics.getResource()).withValue(total).save();
-      context.newMeasure().forMetric(MutationMetrics.UTILITY_GLOBAL_ALIVE).on(resourceMetrics.getResource()).withValue(alive).save();
+      context.newMeasure().forMetric(MutationMetrics.UTILITY_GLOBAL_MUTATIONS).on(resourceMetrics.getResource())
+          .withValue(total).save();
+      context.newMeasure().forMetric(MutationMetrics.UTILITY_GLOBAL_ALIVE).on(resourceMetrics.getResource())
+          .withValue(alive).save();
     }
   }
 
   private int countDetected(final Collection<Mutant> c) {
-
     return (int) c.stream().filter(Mutant::isDetected).count();
   }
 
   private int sumTotal(final Collection<ResourceMutationMetrics> metrics) {
-
     return (int) metrics.stream().mapToLong(ResourceMutationMetrics::getMutationsTotal).sum();
   }
 
   /**
    * Saves the {@link Mutant} metrics for the given resource in the SonarContext
    *
-   * @param resourceMetrics
-   *     the actual metrics for the resource to persist
-   * @param context
-   *     the context to register the metrics
+   * @param resourceMetrics the actual metrics for the resource to persist
+   * @param context the context to register the metrics
    */
   private void saveResourceMetrics(final ResourceMutationMetrics resourceMetrics, final SensorContext context) {
-
     final InputFile resource = resourceMetrics.getResource();
-
     LOG.debug("Saving resource metrics for {}", resource);
-
     if (resourceMetrics.getMutationsKilled() > 0) {
       final NewCoverage newCov = context.newCoverage().onFile(resource);
       for (Mutant m : resourceMetrics.getMutants()) {
@@ -97,17 +86,27 @@ public class SourceMetricsWriter {
       newCov.save();
     }
     if (resource.type() == InputFile.Type.MAIN) {
-
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_TOTAL).withValue(resourceMetrics.getMutationsTotal()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_NO_COVERAGE).withValue(resourceMetrics.getMutationsNoCoverage()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_KILLED).withValue(resourceMetrics.getMutationsKilled()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_SURVIVED).withValue(resourceMetrics.getMutationsSurvived()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_ALIVE).withValue(resourceMetrics.getMutationsTotal() - resourceMetrics.getMutationsDetected()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_MEMORY_ERROR).withValue(resourceMetrics.getMutationsMemoryError()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_TIMED_OUT).withValue(resourceMetrics.getMutationsTimedOut()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_UNKNOWN).withValue(resourceMetrics.getMutationsUnknown()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_DETECTED).withValue(resourceMetrics.getMutationsDetected()).save();
-      context.newMeasure().on(resource).forMetric(MutationMetrics.TEST_TOTAL_EXECUTED).withValue(resourceMetrics.getNumTestsRun()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_TOTAL)
+          .withValue(resourceMetrics.getMutationsTotal()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_NO_COVERAGE)
+          .withValue(resourceMetrics.getMutationsNoCoverage()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_KILLED)
+          .withValue(resourceMetrics.getMutationsKilled()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_SURVIVED)
+          .withValue(resourceMetrics.getMutationsSurvived()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_ALIVE)
+          .withValue(resourceMetrics.getMutationsTotal() - resourceMetrics.getMutationsDetected()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_MEMORY_ERROR)
+          .withValue(resourceMetrics.getMutationsMemoryError()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_TIMED_OUT)
+          .withValue(resourceMetrics.getMutationsTimedOut()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_UNKNOWN)
+          .withValue(resourceMetrics.getMutationsUnknown()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.MUTATIONS_DETECTED)
+          .withValue(resourceMetrics.getMutationsDetected()).save();
+      context.newMeasure().on(resource).forMetric(MutationMetrics.TEST_TOTAL_EXECUTED)
+          .withValue(resourceMetrics.getNumTestsRun()).save();
     }
   }
+
 }

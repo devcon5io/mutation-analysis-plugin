@@ -38,41 +38,47 @@ public class QuantitativeMeasureComputer implements MeasureComputer {
 
   @Override
   public MeasureComputerDefinition define(final MeasureComputerDefinitionContext defContext) {
-
-      return defContext.newDefinitionBuilder().setOutputMetrics(MutationMetrics.getQuantitativeMetrics()
-                                                                               .stream()
-                                                                               .map(Metric::getKey)
-                                                                               .toArray(String[]::new)).build();
+    return defContext.newDefinitionBuilder()
+        .setOutputMetrics(MutationMetrics.getQuantitativeMetrics()
+            .stream()
+            .map(Metric::getKey)
+            .toArray(String[]::new))
+        .build();
   }
 
   @Override
   public void compute(final MeasureComputerContext context) {
-
     LOG.info("Computing quantitative mutation metrics for {}", context.getComponent());
     MutationMetrics.getQuantitativeMetrics()
-                   .stream()
-                   .filter(m -> !m.isHidden()) //exclude hidden metrics, see below
-                   .map(Metric::getKey)
-                   .filter(metricKey -> context.getMeasure(metricKey) == null)
-                   .forEach(metricKey -> {
-                     int sum = Streams.parallelStream(context.getChildrenMeasures(metricKey)).map(Measure::getIntValue).reduce(0, (s, i) -> s + i);
-                     if (sum > 0) {
-                       LOG.info("Computed {} {} for {}", sum, metricKey, context.getComponent());
-                       context.addMeasure(metricKey, sum);
-                     }
-                   });
-    //hidden utility metric are globally constant for all components
+        .stream()
+        .filter(m -> !m.isHidden()) //exclude hidden metrics, see below
+        .map(Metric::getKey)
+        .filter(metricKey -> context.getMeasure(metricKey) == null)
+        .forEach(metricKey -> {
+          int sum = Streams.parallelStream(context.getChildrenMeasures(metricKey))
+              .map(Measure::getIntValue)
+              .reduce(0, Integer::sum);
+          if (sum > 0) {
+            LOG.info("Computed {} {} for {}", sum, metricKey, context.getComponent());
+            context.addMeasure(metricKey, sum);
+          }
+        });
+
+    // hidden utility metric are globally constant for all components
     MutationMetrics.getQuantitativeMetrics()
-                   .stream()
-                   .filter(Metric::isHidden)
-                   .map(Metric::getKey)
-                   .filter(metricKey -> context.getMeasure(metricKey) == null)
-                   .forEach(metricKey -> {
-                     int first = Streams.parallelStream(context.getChildrenMeasures(metricKey)).map(Measure::getIntValue).findFirst().orElse(0);
-                     if (first > 0) {
-                       LOG.info("Computed {} {} for {}", first, metricKey, context.getComponent());
-                       context.addMeasure(metricKey, first);
-                     }
-                   });
+        .stream()
+        .filter(Metric::isHidden)
+        .map(Metric::getKey)
+        .filter(metricKey -> context.getMeasure(metricKey) == null)
+        .forEach(metricKey -> {
+          int first = Streams.parallelStream(context.getChildrenMeasures(metricKey))
+              .map(Measure::getIntValue)
+              .findFirst().orElse(0);
+          if (first > 0) {
+            LOG.info("Computed {} {} for {}", first, metricKey, context.getComponent());
+            context.addMeasure(metricKey, first);
+          }
+        });
   }
+
 }

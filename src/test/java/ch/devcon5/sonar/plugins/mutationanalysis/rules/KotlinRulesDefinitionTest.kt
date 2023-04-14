@@ -22,15 +22,15 @@ package ch.devcon5.sonar.plugins.mutationanalysis.rules
 
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.MUTANT_RULES_PREFIX
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestConfiguration
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.sonar.api.config.Configuration
 import org.sonar.api.rule.RuleStatus
 import org.sonar.api.rules.RuleType
 import org.sonar.api.server.rule.RulesDefinition
 import org.sonar.api.server.rule.RulesDefinitionXmlLoader
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import org.junit.Before as BeforeTest
-import org.junit.Test as test
+import org.junit.jupiter.api.BeforeEach as BeforeTest
+import org.junit.jupiter.api.Test as test
 
 
 class KotlinRulesDefinitionTest {
@@ -43,14 +43,12 @@ class KotlinRulesDefinitionTest {
     @BeforeTest
     @Throws(Exception::class)
     fun setUp() {
-
         subject = KotlinRulesDefinition(configuration, RulesDefinitionXmlLoader())
     }
 
     @test
     @Throws(Exception::class)
     fun testDefine() {
-
         // prepare
         val context = RulesDefinition.Context()
 
@@ -66,9 +64,7 @@ class KotlinRulesDefinitionTest {
     }
 
     private fun assertRules(rules: List<RulesDefinition.Rule>) {
-
         assertEquals(50, rules.size.toLong())
-
         for (rule in rules) {
             assertNotNull(rule.debtRemediationFunction())
             assertNotNull(rule.gapDescription())
