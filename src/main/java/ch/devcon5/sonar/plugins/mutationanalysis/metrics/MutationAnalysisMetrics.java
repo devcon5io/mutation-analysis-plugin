@@ -22,7 +22,6 @@ package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
 import java.util.Collections;
 import java.util.List;
-
 import org.sonar.api.measures.Metric;
 import org.sonar.api.measures.Metrics;
 
@@ -31,9 +30,9 @@ import org.sonar.api.measures.Metrics;
  */
 public class MutationAnalysisMetrics implements Metrics {
 
-    @Override
-    public List<Metric> getMetrics() {
+  @Override
+  public List<Metric> getMetrics() {
+    return Collections.unmodifiableList(MutationMetrics.getSensorMetrics());
+  }
 
-        return Collections.unmodifiableList(MutationMetrics.getSensorMetrics());
-    }
 }

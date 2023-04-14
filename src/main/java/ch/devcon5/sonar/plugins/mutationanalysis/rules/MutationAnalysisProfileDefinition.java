@@ -28,15 +28,14 @@ import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition;
 
 public abstract class MutationAnalysisProfileDefinition implements BuiltInQualityProfilesDefinition {
 
-   @Override
-   public void define(final Context context) {
-      final NewBuiltInQualityProfile mutationAnalysis = context.createBuiltInQualityProfile("Mutation Analysis", getLanguageKey());
+  @Override
+  public void define(final Context context) {
+    final NewBuiltInQualityProfile mutationAnalysis = context.createBuiltInQualityProfile("Mutation Analysis", getLanguageKey());
+    MutationOperators.allMutationOperators().forEach(
+        m -> mutationAnalysis.activateRule(REPOSITORY_KEY + "." + getLanguageKey(), MUTANT_RULES_PREFIX + m.getId()));
+    mutationAnalysis.done();
+  }
 
-      MutationOperators.allMutationOperators().forEach(m -> mutationAnalysis.activateRule(REPOSITORY_KEY + "." + getLanguageKey(), MUTANT_RULES_PREFIX + m.getId()));
-
-      mutationAnalysis.done();
-   }
-
-   protected abstract String getLanguageKey();
+  protected abstract String getLanguageKey();
 
 }

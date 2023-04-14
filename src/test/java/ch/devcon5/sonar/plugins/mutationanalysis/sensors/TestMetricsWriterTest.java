@@ -20,10 +20,16 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics;
+import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
+import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
+import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,37 +37,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics;
-import ch.devcon5.sonar.plugins.mutationanalysis.metrics.ResourceMutationMetrics;
-import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
-import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
-import ch.devcon5.sonar.plugins.mutationanalysis.testharness.TestSensorContext;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.sonar.api.batch.sensor.measure.Measure;
 
 /**
- *
+ * Test Metrics Writer Tests
  */
-public class TestMetricsWriterTest {
+class TestMetricsWriterTest {
 
-  @Rule
-  public TemporaryFolder folder = new TemporaryFolder();
+  @TempDir
+  public Path folder;
 
   private SensorTestHarness harness;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     this.harness = SensorTestHarness.builder().withTempFolder(folder).build();
   }
 
   @Test
-  public void writeMetrics_noMutants_noMetrics_noMeasure() {
-
+  void writeMetrics_noMutants_noMetrics_noMeasure() {
     //arrange
     final Collection<ResourceMutationMetrics> metrics = Collections.emptyList();
     final TestSensorContext context = harness.createSensorContext();
@@ -76,8 +74,7 @@ public class TestMetricsWriterTest {
   }
 
   @Test
-  public void writeMetrics_oneMutant_withKillingTest_measureCreated() throws Exception {
-
+  void writeMetrics_oneMutant_withKillingTest_measureCreated() throws Exception {
     //arrange
     final TestSensorContext context = harness.createSensorContext();
     context.addTestFile("CustomTest.java");
@@ -96,8 +93,7 @@ public class TestMetricsWriterTest {
   }
 
   @Test
-  public void writeMetrics_oneMutant_withGlobalMutants_measureCreated() throws Exception {
-
+  void writeMetrics_oneMutant_withGlobalMutants_measureCreated() throws Exception {
     //arrange
     final TestSensorContext context = harness.createSensorContext();
     context.addTestFile("CustomTest.java");
@@ -117,8 +113,7 @@ public class TestMetricsWriterTest {
   }
 
   @Test
-  public void writeMetrics_oneMutant_killingTestEmpty_noMeasureCreated() throws Exception {
-
+  void writeMetrics_oneMutant_killingTestEmpty_noMeasureCreated() throws Exception {
     //arrange
     final TestSensorContext context = harness.createSensorContext();
     context.addTestFile("CustomTest.java");
@@ -136,8 +131,7 @@ public class TestMetricsWriterTest {
 
   @NotNull
   private List<ResourceMutationMetrics> generateMutantMetrics(final TestSensorContext context, String testname) {
-
-    return Arrays.asList(context.newResourceMutationMetrics("Product.java", md -> {
+    return Collections.singletonList(context.newResourceMutationMetrics("Product.java", md -> {
       md.lines = 100;
       md.mutants.survived = 2;
       md.mutants.killed = 5;
@@ -146,24 +140,24 @@ public class TestMetricsWriterTest {
   }
 
   @Test
-  public void writeMetrics_moreMutants_measureCreated() throws Exception {
-
+  void writeMetrics_moreMutants_measureCreated() throws Exception {
     //arrange
     final TestSensorContext context = harness.createSensorContext();
     context.addTestFile("CustomTest.java");
     context.addTestFile("OtherTest.java");
     final Collection<Mutant> globalMutants = Collections.emptyList();
-    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(context.newResourceMutationMetrics("Product.java", md -> {
-      md.lines = 100;
-      md.mutants.survived = 2;
-      md.mutants.killed = 5;
-      md.test.name = "CustomTest";
-    }), context.newResourceMutationMetrics("Other.java", md -> {
-      md.lines = 50;
-      md.mutants.survived = 3;
-      md.mutants.killed = 2;
-      md.test.name = "OtherTest";
-    }));
+    final Collection<ResourceMutationMetrics> metrics = Arrays.asList(
+        context.newResourceMutationMetrics("Product.java", md -> {
+          md.lines = 100;
+          md.mutants.survived = 2;
+          md.mutants.killed = 5;
+          md.test.name = "CustomTest";
+        }), context.newResourceMutationMetrics("Other.java", md -> {
+          md.lines = 50;
+          md.mutants.survived = 3;
+          md.mutants.killed = 2;
+          md.test.name = "OtherTest";
+        }));
 
     //act
     final TestMetricsWriter smw = new TestMetricsWriter(context.fileSystem());
@@ -180,31 +174,30 @@ public class TestMetricsWriterTest {
     assertEquals(2, measures2.get(MutationMetrics.TEST_KILLS_KEY));
     assertEquals(12, measures2.get(MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY));
   }
+
   private Map<String, Serializable> getMeasuresByKey(String expectedComponentKey, final TestSensorContext context) {
-
     return context.getStorage()
-                  .getMeasures()
-                  .stream()
-                  .filter(m -> expectedComponentKey.equals(m.inputComponent().key()))
-                  .collect(Collectors.toMap(m -> m.metric().key(), Measure::value));
+        .getMeasures()
+        .stream()
+        .filter(m -> expectedComponentKey.equals(m.inputComponent().key()))
+        .collect(Collectors.toMap(m -> m.metric().key(), Measure::value));
   }
-  private List<Mutant> generateMutants(final int count) {
 
+  private List<Mutant> generateMutants(final int count) {
     return IntStream.range(0, count).mapToObj(this::newMutant).collect(Collectors.toList());
   }
 
   private Mutant newMutant(int i) {
-
     return Mutant.builder()
-                 .mutantStatus(Mutant.State.KILLED)
-                 .inSourceFile("Example.java")
-                 .inClass("Example")
-                 .inMethod("aMethod")
-                 .withMethodParameters("()")
-                 .usingMutator("BOOLEAN_FALSE_RETURN")
-                 .killedBy("Test")
-                 .inLine(i)
-                 .build();
+        .mutantStatus(Mutant.State.KILLED)
+        .inSourceFile("Example.java")
+        .inClass("Example")
+        .inMethod("aMethod")
+        .withMethodParameters("()")
+        .usingMutator("BOOLEAN_FALSE_RETURN")
+        .killedBy("Test")
+        .inLine(i)
+        .build();
   }
 
 }

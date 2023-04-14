@@ -21,10 +21,9 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.testharness;
 
 
+import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
-import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import org.sonar.api.ce.measure.Component;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.ce.measure.test.TestComponent;
@@ -42,19 +41,16 @@ public class MeasureComputerTestHarness<T extends MeasureComputer> {
   private final TestConfiguration config;
 
   public MeasureComputerTestHarness(final T computer) {
-
     this(computer, new TestConfiguration());
   }
 
   public MeasureComputerTestHarness(final T computer, final TestConfiguration configuration) {
-
     this.computer = computer;
     this.config = configuration;
     enableExperimentalFeatures(true);
   }
 
   public static <T extends MeasureComputer> MeasureComputerTestHarness<T> createFor(Class<T> computer) {
-
     try {
       final Constructor<T> c = computer.getConstructor(Configuration.class);
       final TestConfiguration configuration = new TestConfiguration();
@@ -71,7 +67,6 @@ public class MeasureComputerTestHarness<T extends MeasureComputer> {
   }
 
   public T getComputer() {
-
     return computer;
   }
 
@@ -80,12 +75,10 @@ public class MeasureComputerTestHarness<T extends MeasureComputer> {
   }
 
   public TestConfiguration getConfig() {
-
     return config;
   }
 
   public TestMeasureComputerContext createMeasureContextForSourceFile(String componentKey) {
-
     return createMeasureContext(componentKey, Component.Type.FILE, "java", false);
   }
 
@@ -93,39 +86,37 @@ public class MeasureComputerTestHarness<T extends MeasureComputer> {
     return createMeasureContext(componentKey, Component.Type.FILE, "java", true);
 
   }
-  public TestMeasureComputerContext createMeasureContextForDirectory(String componentKey) {
 
+  public TestMeasureComputerContext createMeasureContextForDirectory(String componentKey) {
     return createMeasureContext(componentKey, Component.Type.DIRECTORY, "java", false);
   }
 
   public TestMeasureComputerContext createMeasureContextForModule(String componentKey) {
-
     return createMeasureContext(componentKey, Component.Type.MODULE, "java", false);
   }
-  public TestMeasureComputerContext createMeasureContextForProject(String componentKey) {
 
+  public TestMeasureComputerContext createMeasureContextForProject(String componentKey) {
     return createMeasureContext(componentKey, Component.Type.PROJECT, "java", false);
   }
 
   public TestMeasureComputerContext createMeasureContext(String componentKey, Component.Type type) {
-
     return createMeasureContext(componentKey, type, "java", false);
   }
 
   public TestMeasureComputerContext createMeasureContext(String componentKey, Component.Type type, String language, boolean unitTest) {
-
     final TestMeasureComputerDefinitionContext context = new TestMeasureComputerDefinitionContext();
     final MeasureComputer.MeasureComputerDefinition def = computer.define(context);
     final TestSettings settings = new TestSettings();
 
-    if(type == Component.Type.FILE){
-      return new TestMeasureComputerContext(new TestComponent(componentKey, type, new TestComponent.FileAttributesImpl(language, unitTest)), settings, def);
+    if (type == Component.Type.FILE) {
+      return new TestMeasureComputerContext(
+          new TestComponent(componentKey, type, new TestComponent.FileAttributesImpl(language, unitTest)), settings, def);
     }
     return new TestMeasureComputerContext(new TestComponent(componentKey, type, null), settings, def);
   }
 
   public TestMeasureComputerContext createMeasureContext(String componentKey, Component.Type type, boolean unitTest) {
-
     return createMeasureContext(componentKey, type, "java", unitTest);
   }
+
 }

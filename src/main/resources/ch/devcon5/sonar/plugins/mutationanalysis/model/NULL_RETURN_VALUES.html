@@ -19,11 +19,13 @@
   -->
 
 <div id="NULL_RETURN_VALUES">
-    This mutator replaces all non-primitive return values with <code>null</code>.
-    <br>
-    As this mutator produces mutations that are very likely to be unstable - causing a NullPointerException that
-    is even found by trivial tests - this operator does not mutate the return type, if a more stable return
-    value mutation exists.
-    <br>
-    It does further not mutate methods that are annotated with <code>@NotNull</code>
+  <h2>Null Return Values Mutator (NULL_RETURN_VALUES)</h2>
+
+  <p>This operator mutates all non-primitive return values by replacing them with <code>null</code>.</p>
+  <br>
+  As this mutator produces mutations that are very likely to be unstable - causing a NullPointerException that
+  is even found by trivial tests - this operator does not mutate the return type, if a more stable return
+  value mutation exists.
+  <br>
+  It does further not mutate methods that are annotated with <code>@NotNull</code>
 </div>

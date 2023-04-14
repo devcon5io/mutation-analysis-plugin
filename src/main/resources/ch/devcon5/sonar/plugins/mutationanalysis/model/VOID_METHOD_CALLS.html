@@ -19,13 +19,15 @@
   -->
 
 <div id="VOID_METHOD_CALLS">
-    <h2>Void Method Call Mutator (VOID<em>METHOD</em>CALLS)</h2>
+  <h2>Void Method Call Mutator (VOID<em>METHOD</em>CALLS)</h2>
 
-    <p>Method without a return value - void methods - do not produce an explicit result that is assigned to a
-        variable. This could be a call of a setter or a message to an external system or underlying components for
-        which the effects require more effort to verify. This operator removes such method calls. </p>
+  <p>
+  This operator mutates methods without a return value - void methods - that do not produce an explicit result that
+  is assigned to a variable. This could be a call of a setter or a message to an external system or underlying
+  component for which the effects requires more effort to verify. This operator removes such method calls.
+  </p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public void aMethod(String s) {
   // some Code
 }
@@ -35,11 +37,11 @@ public String bMethod() {
   aMethod(s);
   return s;
 }
-</pre>
+    </pre>
 
-    <p>will be changed to</p>
+  <p>will be changed to</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public void aMethod(String s) {
   // someCode
 }
@@ -48,13 +50,14 @@ public String bMethod() {
   String s = "example";
   return s;
 }
-</pre>
+    </pre>
 
-    <p>Constructor calls are not considered as method calls and are therefore not affected by this operator.
-        To mutate constructor calls, refer to the
-        <a href="http://pitest.org/quickstart/mutators#CONSTRUCTOR_CALL">Constructor Call Mutator</a> or the
-        <a href="http://pitest.org/quickstart/mutators#NON_VOID_METHOD_CALL">Non Void Method Call
-            Mutator</a> if you want to mutate method calls that produce a return value.</p>
-
-    <p>see <a href="http://pitest.org/quickstart/mutators#VOID_METHOD_CALLS">Pitest Mutators</a></p>
+  <p>
+  Constructor calls are not considered as method calls and are therefore not affected by this operator.
+  To mutate constructor calls, refer to the
+  <a href="http://pitest.org/quickstart/mutators#CONSTRUCTOR_CALL">Constructor Call Mutator</a> or the
+  <a href="http://pitest.org/quickstart/mutators#NON_VOID_METHOD_CALL">Non Void Method Call Mutator</a> if you
+  want to mutate method calls that produce a return value.
+  </p>
+  <p>see <a href="http://pitest.org/quickstart/mutators#VOID_METHOD_CALLS">Pitest Mutators</a></p>
 </div>

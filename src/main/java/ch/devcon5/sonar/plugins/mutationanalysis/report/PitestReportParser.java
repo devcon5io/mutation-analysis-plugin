@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  *     &lt;killingTest&gt;io.inkstand.scribble.inject.ResourceInjectionTest.testByMappedName_match(io.inkstand.scribble.inject.ResourceInjectionTest)&lt;/killingTest&gt;
  *   &lt;/mutation&gt;
  *   ...
- * &lt;/mutantions&gt;
+ * &lt;/mutations&gt;
  * </pre>
  */
 public class PitestReportParser {
@@ -102,17 +102,13 @@ public class PitestReportParser {
     *         if the report file could not be read
     */
    public Collection<Mutant> parseMutants(final Path report) throws IOException {
-
       Collection<Mutant> result;
-
-      //TODO replace java.nio.Files API when migrating to JDK9+
-      if (!report.toFile().exists()) {
+      if (report == null || !Files.exists(report)) {
          LOG.debug("No report {} found", report);
          return Collections.emptyList();
       }
       try (InputStream stream = Files.newInputStream(report)) {
          result = readMutants(stream);
-
       } catch (XMLStreamException e) {
          LOG.warn("Parsing report failed: {}", e.getMessage());
          LOG.debug("Parsing error ", e);
@@ -123,7 +119,7 @@ public class PitestReportParser {
 
    /**
     * Reads mutants from the input stream which is assumed to be a stream of xml data. In case the stream contains invalid mutation description - i.e. mandatory information
-    * is mssing - an {@link XMLStreamException} containing the exact location of the fault is thrown.
+    * is missing - an {@link XMLStreamException} containing the exact location of the fault is thrown.
     * @param stream
     *  the input stream containing the xml data
     * @return
@@ -153,7 +149,6 @@ public class PitestReportParser {
     * @throws XMLStreamException
     */
    private Collection<Mutant> readMutants(final XMLStreamReader reader) throws XMLStreamException {
-
       final Collection<Mutant> result = new ArrayList<>();
       int event;
       while (reader.hasNext()) {
@@ -162,7 +157,6 @@ public class PitestReportParser {
             startElement(reader, result);
          }
       }
-
       return result;
    }
 
@@ -178,7 +172,6 @@ public class PitestReportParser {
     * @throws XMLStreamException
     */
    private void startElement(final XMLStreamReader reader, final Collection<Mutant> result) throws XMLStreamException {
-
       if (ELEMENT_MUTATION.equals(reader.getLocalName())) {
          final Mutant mutant = parseMutant(reader);
          LOG.debug("Found mutant {}", mutant);
@@ -187,7 +180,7 @@ public class PitestReportParser {
    }
 
    /**
-    * The method assumes, the reader is at the start element position of a <code>&lt;mutation&gt;</code> element.
+    * The method assumes the reader is at the start element position of a <code>&lt;mutation&gt;</code> element.
     *
     * @param reader
     *
@@ -196,11 +189,9 @@ public class PitestReportParser {
     * @throws XMLStreamException
     */
    private Mutant parseMutant(final XMLStreamReader reader) throws XMLStreamException {
-
       final Mutant.Builder builder = Mutant.builder()
                                            .mutantStatus(getMutantStatus(reader))
                                            .numberOfTestsRun(getNumberOfTestsRun(reader));
-
       while (true) {
          int event = reader.next();
          if (event == START_ELEMENT) {
@@ -224,7 +215,6 @@ public class PitestReportParser {
     * @throws XMLStreamException
     */
    private void buildMutant(final XMLStreamReader reader, final Mutant.Builder builder) throws XMLStreamException {
-
       switch (reader.getLocalName()) {
          case ELEMENT_SOURCE_FILE:
             builder.inSourceFile(reader.getElementText());
@@ -267,7 +257,6 @@ public class PitestReportParser {
     * @return the mutant status as a string
     */
    private String getMutantStatus(final XMLStreamReader reader) {
-
       return reader.getAttributeValue(NAMESPACE_URI, ATTR_STATUS);
    }
 
@@ -280,11 +269,11 @@ public class PitestReportParser {
     * @return the mutant status as a string
     */
    private int getNumberOfTestsRun(final XMLStreamReader reader) {
-
       final String numberOfTestsRun = reader.getAttributeValue(NAMESPACE_URI, ATTR_NUMBER_OF_TESTS_RUN);
       if(numberOfTestsRun != null){
          return Integer.parseInt(numberOfTestsRun);
       }
       return 0;
    }
+
 }

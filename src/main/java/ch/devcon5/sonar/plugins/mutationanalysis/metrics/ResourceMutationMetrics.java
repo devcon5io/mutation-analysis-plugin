@@ -29,7 +29,6 @@ import org.sonar.api.batch.fs.InputFile;
 
 /**
  * Metrics for Mutants found in a single resource. It is used to collect mutant information for a specific resource.
- *
  */
 public class ResourceMutationMetrics {
 
@@ -53,7 +52,6 @@ public class ResourceMutationMetrics {
    *         the Sonar resource for which mutation information should be collected
    */
   public ResourceMutationMetrics(final InputFile resource) {
-
     this.resource = resource;
   }
 
@@ -64,7 +62,6 @@ public class ResourceMutationMetrics {
    *         the mutant to be added
    */
   public void addMutant(final Mutant mutant) {
-
     mutants.add(mutant);
     if (mutant.isDetected()) {
       mutationsDetected++;
@@ -94,24 +91,22 @@ public class ResourceMutationMetrics {
         break;
     }
     // update mutation coverage
-    mutationCoverage = 100.0 * mutationsKilled / mutationsTotal;
+    mutationCoverage = 100.0d * ((double) mutationsKilled / (double) mutationsTotal);
   }
 
   /**
    * @return all mutants collected so for the resource
    */
   public Collection<Mutant> getMutants() {
-
     return mutants;
   }
 
   /**
-   * The total amount of {@link Mutant} added to the metric.
+   * The total number of {@link Mutant}s added to the metric.
    *
    * @return number of all mutations found in the resource
    */
   public int getMutationsTotal() {
-
     return mutationsTotal;
   }
 
@@ -121,17 +116,15 @@ public class ResourceMutationMetrics {
    * @return number of mutations that are not covered
    */
   public int getMutationsNoCoverage() {
-
     return mutationsNoCoverage;
   }
 
   /**
    * The number of {@link Mutant}s added whose {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant.State} was {@code KILLED}
    *
-   * @return number of mutation killed by a test
+   * @return number of mutations killed by a test
    */
   public int getMutationsKilled() {
-
     return mutationsKilled;
   }
 
@@ -141,7 +134,6 @@ public class ResourceMutationMetrics {
    * @return number of mutations that survived a test
    */
   public int getMutationsSurvived() {
-
     return mutationsSurvived;
   }
 
@@ -151,7 +143,6 @@ public class ResourceMutationMetrics {
    * @return number of mutations killed by a memory error
    */
   public int getMutationsMemoryError() {
-
     return mutationsMemoryError;
   }
 
@@ -161,7 +152,6 @@ public class ResourceMutationMetrics {
    * @return number of mutations killed by a timeout
    */
   public int getMutationsTimedOut() {
-
     return mutationsTimedOut;
   }
 
@@ -169,7 +159,6 @@ public class ResourceMutationMetrics {
    * @return number of mutations with unknown status
    */
   public int getMutationsUnknown() {
-
     return mutationsUnknown;
   }
 
@@ -177,7 +166,6 @@ public class ResourceMutationMetrics {
    * @return the number of mutations detected at all
    */
   public int getMutationsDetected() {
-
     return mutationsDetected;
   }
 
@@ -185,7 +173,6 @@ public class ResourceMutationMetrics {
    * @return the mutation coverage in percent, that is a value between 0.0 and 100.0
    */
   public double getMutationCoverage() {
-
     return mutationCoverage;
   }
 
@@ -195,7 +182,6 @@ public class ResourceMutationMetrics {
    *  a number >= 0
    */
   public int getNumTestsRun() {
-
     return numTestsRun;
   }
 
@@ -205,7 +191,6 @@ public class ResourceMutationMetrics {
    * @return An {@link InputFile} representing the resource.
    */
   public InputFile getResource() {
-
     return resource;
   }
 

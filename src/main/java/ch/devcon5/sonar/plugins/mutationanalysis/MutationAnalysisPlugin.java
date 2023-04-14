@@ -40,68 +40,67 @@ import org.sonar.api.PropertyType;
 import org.sonar.api.config.Configuration;
 
 /**
- * This class is the entry point for the Mutation Analysis Plugin.
- * The properties define, which {@link org.sonar.api.config.Configuration} are configurable for the plugin.
+ * This class is the entry point for the Mutation Analysis Plugin. The properties define, which
+ * {@link org.sonar.api.config.Configuration} are configurable for the plugin.
  */
 @Properties({
-                @Property(key = MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED,
-                          name = "Active Pitest Java Sensor",
-                          description = "Enables the Kotlin Sensor for PIT. Default is 'true'",
-                          type = PropertyType.BOOLEAN,
-                          defaultValue = "true",
-                          project = true),
-                @Property(key = MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED,
-                          name = "Active Pitest Kotlin Sensor",
-                          description = "Enables the Kotlin Sensor for PIT. Default is 'true'",
-                          type = PropertyType.BOOLEAN,
-                          defaultValue = "true",
-                          project = true),
-                @Property(key = MutationAnalysisPlugin.EXPERIMENTAL_FEATURE_ENABLED,
-                          name = "Enable experimental features",
-                          description = "Enables features that are still under development and may cause existing behavior to break",
-                          type = PropertyType.BOOLEAN,
-                          defaultValue = "false",
-                          project = true),
-                @Property(key = MutationAnalysisPlugin.REPORT_DIRECTORY_KEY,
-                          defaultValue = MutationAnalysisPlugin.REPORT_DIRECTORY_DEF,
-                          name = "Output directory for the PIT reports",
-                          description = "This property is needed when the reports are not located in the default directory (i.e. target/pit-reports)",
-                          project = true),
-                @Property(key = MutationAnalysisPlugin.PROJECT_ROOT_FOLDER,
-                          name = "Root folder of multi-module projects",
-                          description = "This optional property may be used to explicitly define the root project of a multi-module project in case the "
-                              + "project root can not be determined by the plugin.",
-                          project = true),
-                @Property(key = MutationAnalysisPlugin.EFFORT_MUTANT_KILL,
-                          defaultValue = MutationAnalysisPlugin.DEFAULT_EFFORT_TO_KILL_MUTANT,
-                          name = "Effort: Kill a mutant",
-                          description = "Effort to kill a single mutant. Values may be hours, i.e. '1h' or minutes '30min'.",
-                          type = PropertyType.STRING,
-                          project = true),
-                @Property(key = MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE,
-                          defaultValue = "1.0",
-                          name = "Effort Factor: Missing Coverage",
-                          description = "Factor that is multiplied by the minimally additional required mutants to be killed to get required mutation coverage.",
-                          type = PropertyType.FLOAT,
-                          project = true),
-                @Property(key = MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT,
-                          defaultValue = "1.0",
-                          name = "Effort Factor: Survived Mutant ",
-                          description = "Factor that is applied to any of the survived mutant rule to calculate effort to fix",
-                          type = PropertyType.FLOAT,
-                          project = true),
-                @Property(key = MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO,
-                          name = "Force missing coverage to zero",
-                          description = "If a project has no mutation report, it's coverage is forced to zero. If disabled, no coverage metric is calculated",
-                          type = PropertyType.BOOLEAN,
-                          defaultValue = "false"
-                          //the project=true setting doesn't seem to have an effect on compute engine side
-                          // see https://community.sonarsource.com/t/plugin-development-project-level-settings-have-no-effect-in-ce/1528
-                          //, project = true
-                ),
-            })
+    @Property(key = MutationAnalysisPlugin.PITEST_JAVA_SENSOR_ENABLED,
+        name = "Active Pitest Java Sensor",
+        description = "Enables the Java Sensor for PIT. Default is 'true'",
+        type = PropertyType.BOOLEAN,
+        defaultValue = "true",
+        project = true),
+    @Property(key = MutationAnalysisPlugin.PITEST_KOTLIN_SENSOR_ENABLED,
+        name = "Active Pitest Kotlin Sensor",
+        description = "Enables the Kotlin Sensor for PIT. Default is 'true'",
+        type = PropertyType.BOOLEAN,
+        defaultValue = "true",
+        project = true),
+    @Property(key = MutationAnalysisPlugin.EXPERIMENTAL_FEATURE_ENABLED,
+        name = "Enable experimental features",
+        description = "Enables features that are still under development and may cause existing behavior to break",
+        type = PropertyType.BOOLEAN,
+        defaultValue = "false",
+        project = true),
+    @Property(key = MutationAnalysisPlugin.REPORT_DIRECTORY_KEY,
+        defaultValue = MutationAnalysisPlugin.REPORT_DIRECTORY_DEF,
+        name = "Output directory for the PIT reports",
+        description = "This property is needed when the reports are not located in the default directory (i.e. target/pit-reports)",
+        project = true),
+    @Property(key = MutationAnalysisPlugin.PROJECT_ROOT_FOLDER,
+        name = "Root folder of multi-module projects",
+        description = "This optional property may be used to explicitly define the root project of a multi-module project in case the "
+                + "project root can not be determined by the plugin.",
+        project = true),
+    @Property(key = MutationAnalysisPlugin.EFFORT_MUTANT_KILL,
+        defaultValue = MutationAnalysisPlugin.DEFAULT_EFFORT_TO_KILL_MUTANT,
+        name = "Effort: Kill a mutant",
+        description = "Effort to kill a single mutant. Values may be hours, i.e. '1h' or minutes '30min'.",
+        type = PropertyType.STRING,
+        project = true),
+    @Property(key = MutationAnalysisPlugin.EFFORT_FACTOR_MISSING_COVERAGE,
+        defaultValue = "1.0",
+        name = "Effort Factor: Missing Coverage",
+        description = "Factor that is multiplied by the minimally additional required mutants to be killed to get required mutation coverage.",
+        type = PropertyType.FLOAT,
+        project = true),
+    @Property(key = MutationAnalysisPlugin.EFFORT_FACTOR_SURVIVED_MUTANT,
+        defaultValue = "1.0",
+        name = "Effort Factor: Survived Mutant ",
+        description = "Factor that is applied to any of the survived mutant rule to calculate effort to fix",
+        type = PropertyType.FLOAT,
+        project = true),
+    @Property(key = MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO,
+        name = "Force missing coverage to zero",
+        description = "If a project has no mutation report, it's coverage is forced to zero. If disabled, no coverage metric is calculated",
+        type = PropertyType.BOOLEAN,
+        defaultValue = "false"
+        //the project=true setting doesn't seem to have an effect on compute engine side
+        // see https://community.sonarsource.com/t/plugin-development-project-level-settings-have-no-effect-in-ce/1528
+        //, project = true
+    ),
+})
 public final class MutationAnalysisPlugin implements Plugin {
-
 
   public static final String PITEST_JAVA_SENSOR_ENABLED = "dc5.mutationAnalysis.pitest.java.sensor.enabled";
   public static final String PITEST_KOTLIN_SENSOR_ENABLED = "dc5.mutationAnalysis.pitest.kotlin.sensor.enabled";
@@ -117,13 +116,12 @@ public final class MutationAnalysisPlugin implements Plugin {
 
   @Override
   public void define(final Context context) {
-
     //we add each extension separately although there is a method (addExtensions) accepting varargs that would handle this in one call.
     //Background: varargs produce bytecode artifacts that cause mutations that can not be killed (i.e. reordering of varargs)
     //Because of this plugin deals with mutations, it's also kind of an example how to run mutation testing and what impact on code bases it might have.
     //This option was chosen because it allows to kill all mutants in this class + reduces the mutation density.
     //The equivalent option would be to use the varargs, which would have the same LoC but just a single statement and lots of re-ordering mutations, which
-    //increased the mutation density + reduces the mutation coverage through unkillable mutations.
+    //increased the mutation density + reduces the mutation coverage through un-killable mutations.
     context.addExtension(PitestReportParser.class);
     context.addExtension(ReportFinder.class);
     context.addExtension(JavaRulesDefinition.class);
@@ -139,7 +137,8 @@ public final class MutationAnalysisPlugin implements Plugin {
     context.addExtension(QuantitativeMeasureComputer.class);
   }
 
-  public static boolean isExperimentalFeaturesEnabled(Configuration config){
+  public static boolean isExperimentalFeaturesEnabled(Configuration config) {
     return config.getBoolean(EXPERIMENTAL_FEATURE_ENABLED).orElse(false);
   }
+
 }

@@ -19,23 +19,27 @@
   -->
 
 <div id="EXPERIMENTAL_NAKED_RECEIVER">
-    Mutation operator that replaces a call to method with the receiver of the method (the instance on which the
-    method is invoked), if the return type of the method is the same as the receiver.
-    <br>
-    For example:
+  <h2>Experimental Naked Receiver Mutator (EXPERIMENTAL_NAKED_RECEIVER)</h2>
 
-    <pre><code>
-    public String originalMethod() {
-      String someString = "original";
-      return someString.toUpperCase();
-    }
+  <p>
+  This operator replaces a call to a method with the receiver of the method (the instance on which the method
+  is invoked), if the return type of the method is the same as the receiver.
+  </p>
+  <br>
+  <p>For example:</p>
+
+  <pre><code>
+  public String originalMethod() {
+    String someString = "original";
+    return someString.toUpperCase();
+  }
     </code></pre>
-     is mutated to
-    <pre><code>
-    public int mutatedMethod() {
-      String someString = "original";
-      return someString;
-    }
+  is mutated to
+  <pre><code>
+  public int mutatedMethod() {
+    String someString = "original";
+    return someString;
+  }
     </code></pre>
-    as the return type of <code>toUpperCase()</code> is the same as the type of <code>someString</code>
+  as the return type of <code>toUpperCase()</code> is the same as the type of <code>someString</code>
 </div>

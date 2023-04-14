@@ -21,17 +21,17 @@
 package ch.devcon5.sonar.plugins.mutationanalysis.rules
 
 import ch.devcon5.sonar.plugins.mutationanalysis.rules.MutationAnalysisRulesDefinition.REPOSITORY_KEY
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test as test
 import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition
-import kotlin.test.assertEquals
-import org.junit.Test as test
 
 
 class KotlinProfileDefinitionTest {
 
     val context = BuiltInQualityProfilesDefinition.Context()
 
-    @test fun define() {
-
+    @test
+    fun define() {
         val def = KotlinProfileDefinition()
 
         def.define(context)
@@ -40,4 +40,5 @@ class KotlinProfileDefinitionTest {
 
         assertEquals(23, kotlinProfile.rules().stream().filter { r -> "$REPOSITORY_KEY.kotlin" == r.repoKey() }.count())
     }
+
 }

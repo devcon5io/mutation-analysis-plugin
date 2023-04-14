@@ -25,6 +25,7 @@ import static ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin.E
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperator;
 import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
+import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.config.Configuration;
@@ -75,25 +76,22 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
    */
   private static final Logger LOG = LoggerFactory.getLogger(MutationAnalysisRulesDefinition.class);
   /**
-   * Loader used to load the rules from an xml files
+   * Loader used to load the rules from an xml file
    */
   private final RulesDefinitionXmlLoader xmlLoader;
 
   /**
-   * The plugin setting.s
+   * The plugin settings
    */
   private final Configuration settings;
 
   /**
    * Constructor to create the pitest rules definitions and repository. The constructor is invoked by Sonar.
    *
-   * @param settings
-   *     the settings of the Pitest-Sensor pluin
-   * @param xmlLoader
-   *     an XML loader to load the rules definitions from the rules def.
+   * @param settings the settings of the Pitest-Sensor plugin
+   * @param xmlLoader an XML loader to load the rules definitions from the rules def.
    */
   protected MutationAnalysisRulesDefinition(final Configuration settings, final RulesDefinitionXmlLoader xmlLoader) {
-
     this.xmlLoader = xmlLoader;
     this.settings = settings;
   }
@@ -104,17 +102,16 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
    */
   @Override
   public void define(final Context context) {
-
-    final NewRepository repository = context.createRepository(REPOSITORY_KEY + "." + getLanguageKey(), getLanguageKey()).setName(REPOSITORY_NAME);
+    final NewRepository repository = context.createRepository(REPOSITORY_KEY + "." + getLanguageKey(), getLanguageKey())
+        .setName(REPOSITORY_NAME);
     this.xmlLoader.load(repository,
-                        getClass().getResourceAsStream("/ch/devcon5/sonar/plugins/mutationanalysis/rules.xml"),
-                        "UTF-8");
+        getClass().getResourceAsStream("/ch/devcon5/sonar/plugins/mutationanalysis/rules.xml"), StandardCharsets.UTF_8);
     addMutatorRules(repository);
 
     for (final NewRule rule : repository.rules()) {
       rule.setDebtRemediationFunction(rule.debtRemediationFunctions()
-                                          .linearWithOffset(settings.get(EFFORT_MUTANT_KILL)
-                                                                    .orElse(DEFAULT_EFFORT_TO_KILL_MUTANT), "7min"));
+          .linearWithOffset(settings.get(EFFORT_MUTANT_KILL)
+              .orElse(DEFAULT_EFFORT_TO_KILL_MUTANT), "7min"));
       rule.setGapDescription("Effort to kill the mutant(s)");
     }
     repository.done();
@@ -123,20 +120,17 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
 
   protected abstract String getLanguageKey();
 
-
   /**
    * Enriches the mutator rules with the descriptions from the mutators
    *
-   * @param repository
-   *     the repository containing the mutator rules
+   * @param repository the repository containing the mutator rules
    */
   private void addMutatorRules(final NewRepository repository) {
-
     for (final MutationOperator mutationOperator : MutationOperators.allMutationOperators()) {
-      //create for each mutation operator two rules, one is a "bug" rule, the other is
-      //a "code smell" rule. As there are project which prefer to treat them as bugs (or potential bugs)
-      //and other projects might prefer to treat them as code smell. This way
-      //the projects can decide themselves how to set up their quality profile
+      // create for each mutation operator two rules, one is a "bug" rule, the other is
+      // a "code smell" rule. As there are project which prefer to treat them as bugs (or potential bugs)
+      // and other projects might prefer to treat them as code smell. This way
+      // the projects can decide themselves how to set up their quality profile
       createBugRule(repository, mutationOperator);
       createCodeSmellRule(repository, mutationOperator);
     }
@@ -154,23 +148,17 @@ public abstract class MutationAnalysisRulesDefinition implements org.sonar.api.s
     createRule(repository, mutationOperator, RuleType.CODE_SMELL, id, name);
   }
 
-  private void createRule(final NewRepository repository,
-                          final MutationOperator mutationOperator,
-                          final RuleType type,
-                          final String id,
-                          final String name) {
+  private void createRule(final NewRepository repository, final MutationOperator mutationOperator, final RuleType type, final String id, final String name) {
     final NewRule rule = repository.createRule(id)
-                                   .setType(type)
-                                   .setName(name)
-                                   .setTags("pitest", "test", "test-quality", "mutator", "mutation-operator");
+        .setType(type)
+        .setName(name)
+        .setTags("pitest", "test", "test-quality", "mutator", "mutation-operator");
     mutationOperator.getMutagenDescriptionLocation().ifPresent(rule::setHtmlDescription);
-
     if (mutationOperator.getId().startsWith("EXPERIMENTAL")) {
       rule.setStatus(RuleStatus.BETA);
     } else {
       rule.setActivatedByDefault(true);
     }
-
   }
 
 }

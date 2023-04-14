@@ -32,7 +32,7 @@
         </classes>
     </operator>
     <operator id="BOOLEAN_FALSE_RETURN">
-        <name>Boolean False Return Vals Mutator</name>
+        <name>Boolean False Return Values Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A primitive or boxed boolean has been replaced with false without being detected by a test]]>
         </violationDescription>
@@ -43,7 +43,7 @@
         </classes>
     </operator>
     <operator id="BOOLEAN_TRUE_RETURN">
-        <name>Boolean True Return Vals Mutator</name>
+        <name>Boolean True Return Values Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A primitive or boxed boolean has been replaced with true without being detected by a test]]>
         </violationDescription>
@@ -74,9 +74,9 @@
         </classes>
     </operator>
     <operator id="EMPTY_RETURN_VALUES">
-        <name>Empty Object Return Vals Mutator</name>
+        <name>Empty Object Return Values Mutator</name>
         <violationDescription>
-            <![CDATA[Alive Mutant: An object return value has been replaced with it's empty counterpart without being detected by a test]]>
+            <![CDATA[Alive Mutant: An object return value has been replaced with its empty counterpart without being detected by a test]]>
         </violationDescription>
         <operatorDescription classpath="EMPTY_RETURN_VALUES.html"/>
         <classes>
@@ -145,7 +145,7 @@
         </classes>
     </operator>
     <operator id="NULL_RETURN_VALUES">
-        <name>Null Return Vals Mutator</name>
+        <name>Null Return Values Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: A non-primitive return value has been replaced with null without being detected by a test]]>
         </violationDescription>
@@ -177,7 +177,7 @@
         </classes>
     </operator>
     <operator id="RETURN_VALS">
-        <name>Return Vals Mutator</name>
+        <name>Return Values Mutator</name>
         <violationDescription>
             <![CDATA[Alive Mutant: The return value of a method call has been replaced without being detected by a test.]]>
         </violationDescription>
@@ -209,7 +209,7 @@
     <operator id="EXPERIMENTAL_NAKED_RECEIVER">
         <name>Naked Receiver Mutator</name>
         <violationDescription>
-            <![CDATA[Alive Mutant: A non-void method call has been removed and replaced with it's receiver without being detected by a test]]>
+            <![CDATA[Alive Mutant: A non-void method call has been removed and replaced with its receiver without being detected by a test]]>
         </violationDescription>
         <operatorDescription classpath="EXPERIMENTAL_NAKED_RECEIVER.html"/>
         <classes>

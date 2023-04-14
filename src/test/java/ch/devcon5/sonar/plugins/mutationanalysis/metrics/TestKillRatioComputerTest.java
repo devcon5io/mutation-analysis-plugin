@@ -23,15 +23,15 @@ package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.TEST_KILLS_KEY;
 import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.TEST_KILL_RATIO_KEY;
 import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Arrays;
+import java.util.Collections;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.sonar.api.ce.measure.Component;
 import org.sonar.api.ce.measure.Measure;
 import org.sonar.api.ce.measure.MeasureComputer;
@@ -39,36 +39,31 @@ import org.sonar.api.ce.measure.test.TestMeasureComputerContext;
 import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
 
 /**
- *
+ * Test Kill Ratio Computer Tests
  */
-public class TestKillRatioComputerTest {
+class TestKillRatioComputerTest {
 
   private MeasureComputerTestHarness<TestKillRatioComputer> harness;
 
   private TestKillRatioComputer computer;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     this.harness = MeasureComputerTestHarness.createFor(TestKillRatioComputer.class);
     this.computer = harness.getComputer();
   }
 
-
-
   @Test
-  public void define() {
+  void define() {
     final TestMeasureComputerDefinitionContext context = new TestMeasureComputerDefinitionContext();
-
     final MeasureComputer.MeasureComputerDefinition def = computer.define(context);
 
-    assertTrue(def.getInputMetrics()
-                  .containsAll(Arrays.asList(UTILITY_GLOBAL_MUTATIONS_KEY, TEST_KILLS_KEY)));
-    assertTrue(def.getOutputMetrics().containsAll(Arrays.asList(TEST_KILL_RATIO_KEY)));
+    assertTrue(def.getInputMetrics().containsAll(Arrays.asList(UTILITY_GLOBAL_MUTATIONS_KEY, TEST_KILLS_KEY)));
+    assertTrue(def.getOutputMetrics().containsAll(Collections.singletonList(TEST_KILL_RATIO_KEY)));
   }
 
   @Test
-  public void compute_noInputMeasures_noOutputMeasure() {
-
+  void compute_noInputMeasures_noOutputMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForUnitTest("compKey");
 
     computer.compute(measureContext);
@@ -77,12 +72,10 @@ public class TestKillRatioComputerTest {
 
     //no measure is created if component contains no/0 input values
     assertNull(total);
-
   }
 
   @Test
-  public void compute_experimentalFeaturesDisable_noOutputMeasure() {
-
+  void compute_experimentalFeaturesDisable_noOutputMeasure() {
     harness.enableExperimentalFeatures(false);
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForUnitTest("compKey");
 
@@ -95,12 +88,10 @@ public class TestKillRatioComputerTest {
 
     //no measure is created if component contains no/0 input values
     assertNull(total);
-
   }
 
   @Test
-  public void compute_directory_aggregatedOutputMeasure() {
-
+  void compute_directory_aggregatedOutputMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContext("compKey", Component.Type.DIRECTORY);
     measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 10);
     measureContext.addChildrenMeasures(TEST_KILLS_KEY, 1);
@@ -110,12 +101,10 @@ public class TestKillRatioComputerTest {
     Measure ratio = measureContext.getMeasure(TEST_KILL_RATIO_KEY);
 
     assertEquals(10.0, ratio.getDoubleValue(), 0.05);
-
   }
 
   @Test
-  public void compute_sourceFileIsNoUnitTest_noOutputMeasure() {
-
+  void compute_sourceFileIsNoUnitTest_noOutputMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContext("compKey", Component.Type.FILE);
     measureContext.addInputMeasure(UTILITY_GLOBAL_MUTATIONS_KEY, 10);
     measureContext.addInputMeasure(TEST_KILLS_KEY, 1);
@@ -126,12 +115,10 @@ public class TestKillRatioComputerTest {
 
     //no measure is created if component contains no/0 input values
     assertNull(total);
-
   }
 
   @Test
-  public void compute_oneInputMeasure_computesOutputMeasure() {
-
+  void compute_oneInputMeasure_computesOutputMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForUnitTest("compKey");
 
     measureContext.addInputMeasure(UTILITY_GLOBAL_MUTATIONS_KEY, 10);
@@ -140,14 +127,11 @@ public class TestKillRatioComputerTest {
     computer.compute(measureContext);
 
     Measure ratio = measureContext.getMeasure(TEST_KILL_RATIO_KEY);
-
     assertEquals(10.0, ratio.getDoubleValue(), 0.05);
-
   }
 
   @Test
-  public void compute_globalMutations0_noOutputMeasure() {
-
+  void compute_globalMutations0_noOutputMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForUnitTest("compKey");
 
     measureContext.addInputMeasure(UTILITY_GLOBAL_MUTATIONS_KEY, 0);
@@ -156,39 +140,32 @@ public class TestKillRatioComputerTest {
     computer.compute(measureContext);
 
     Measure ratio = measureContext.getMeasure(TEST_KILL_RATIO_KEY);
-
     assertNull(ratio);
-
   }
 
   @Test
-  public void compute_noGlobalMetrics_noOutputMeasure() {
-
+  void compute_noGlobalMetrics_noOutputMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForUnitTest("compKey");
 
-    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 3,2, 1);
+    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 3, 2, 1);
 
     computer.compute(measureContext);
 
     Measure ratio = measureContext.getMeasure(TEST_KILL_RATIO_KEY);
-
     assertNull(ratio);
-
   }
 
   @Test
-  public void compute_childInputMeasure_computesOutputMeasure() {
-
+  void compute_childInputMeasure_computesOutputMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForUnitTest("compKey");
 
     measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 10, 10, 10, 10);
-    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 3,2, 1);
+    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 3, 2, 1);
 
     computer.compute(measureContext);
 
     Measure ratio = measureContext.getMeasure(TEST_KILL_RATIO_KEY);
-
     assertEquals(60.0, ratio.getDoubleValue(), 0.05);
-
   }
+
 }

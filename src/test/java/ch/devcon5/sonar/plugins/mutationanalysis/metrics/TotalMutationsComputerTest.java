@@ -20,22 +20,21 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Arrays;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.sonar.api.ce.measure.Measure;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.ce.measure.test.TestMeasureComputerContext;
 import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
 
 /**
- *
+ *Total Mutations Computer Tests
  */
 public class TotalMutationsComputerTest {
 
@@ -51,27 +50,25 @@ public class TotalMutationsComputerTest {
 
   private TotalMutationsComputer computer;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     this.harness = MeasureComputerTestHarness.createFor(TotalMutationsComputer.class);
     this.computer = harness.getComputer();
   }
 
   @Test
-  public void define() {
-
+  void define() {
     final TestMeasureComputerDefinitionContext context = new TestMeasureComputerDefinitionContext();
-
     final MeasureComputer.MeasureComputerDefinition def = computer.define(context);
 
     assertTrue(def.getInputMetrics().containsAll(Arrays.asList(GLOBAL_MUTATIONS, GLOBAL_ALIVE, MUTATIONS_TOTAL, MUTATIONS_ALIVE)));
     assertTrue(def.getOutputMetrics().containsAll(Arrays.asList(TOTAL_PERCENT, ALIVE_PERCENT)));
-
   }
 
   @Test
-  public void compute_onModuleRootFolder_noComputation() throws Exception {
-    final TestMeasureComputerContext measureContext = addValidInputMeasures(harness.createMeasureContextForDirectory("module:/"));
+  void compute_onModuleRootFolder_noComputation() {
+    final TestMeasureComputerContext measureContext = addValidInputMeasures(
+        harness.createMeasureContextForDirectory("module:/"));
 
     computer.compute(measureContext);
 
@@ -79,32 +76,39 @@ public class TotalMutationsComputerTest {
   }
 
   @Test
-  public void compute_onPomFile_noComputation() throws Exception {
-    final TestMeasureComputerContext measureContext = addValidInputMeasures(harness.createMeasureContextForSourceFile("module:pom.xml"));
+  void compute_onPomFile_noComputation() {
+    final TestMeasureComputerContext measureContext = addValidInputMeasures(
+        harness.createMeasureContextForSourceFile("module:pom.xml"));
 
     computer.compute(measureContext);
 
     assertNoComputation(measureContext);
   }
+
   @Test
-  public void compute_onUnitTest_noComputation() throws Exception {
-    final TestMeasureComputerContext measureContext = addValidInputMeasures(harness.createMeasureContextForUnitTest("module:src/test/Test.java"));
+  void compute_onUnitTest_noComputation() {
+    final TestMeasureComputerContext measureContext = addValidInputMeasures(
+        harness.createMeasureContextForUnitTest("module:src/test/Test.java"));
 
     computer.compute(measureContext);
 
     assertNoComputation(measureContext);
   }
+
   @Test
-  public void compute_onTestSrcFolder_noComputation() throws Exception {
-    final TestMeasureComputerContext measureContext = addValidInputMeasures(harness.createMeasureContextForDirectory("module:src/test/"));
+  void compute_onTestSrcFolder_noComputation() {
+    final TestMeasureComputerContext measureContext = addValidInputMeasures(
+        harness.createMeasureContextForDirectory("module:src/test/"));
 
     computer.compute(measureContext);
 
     assertNoComputation(measureContext);
   }
+
   @Test
-  public void compute_onSourceInTestFolder_noComputation() throws Exception {
-    final TestMeasureComputerContext measureContext = addValidInputMeasures(harness.createMeasureContextForSourceFile("module:src/test/NoTest.java"));
+  void compute_onSourceInTestFolder_noComputation() {
+    final TestMeasureComputerContext measureContext = addValidInputMeasures(
+        harness.createMeasureContextForSourceFile("module:src/test/NoTest.java"));
 
     computer.compute(measureContext);
 
@@ -112,21 +116,19 @@ public class TotalMutationsComputerTest {
   }
 
   @Test
-  public void compute_experimentalFeaturesDisabled_noMeasure() {
-
+  void compute_experimentalFeaturesDisabled_noMeasure() {
     harness.enableExperimentalFeatures(false);
 
-    final TestMeasureComputerContext measureContext = addValidInputMeasures(harness.createMeasureContextForSourceFile("compKey"));
+    final TestMeasureComputerContext measureContext = addValidInputMeasures(
+        harness.createMeasureContextForSourceFile("compKey"));
 
     computer.compute(measureContext);
 
     assertNoComputation(measureContext);
-
   }
 
   @Test
-  public void compute_noInputMeasures_noOutputValues() {
-
+  void compute_noInputMeasures_noOutputValues() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     computer.compute(measureContext);
@@ -135,8 +137,7 @@ public class TotalMutationsComputerTest {
   }
 
   @Test
-  public void compute_noGlobalMutations_noOutputValues() {
-
+  void compute_noGlobalMutations_noOutputValues() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(GLOBAL_MUTATIONS, 0);
@@ -151,8 +152,7 @@ public class TotalMutationsComputerTest {
   }
 
   @Test
-  public void compute_onSourceFile_withComponentInputMeasures_correctOutputValues() {
-
+  void compute_onSourceFile_withComponentInputMeasures_correctOutputValues() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     //80% of all mutations are in this component
@@ -174,13 +174,12 @@ public class TotalMutationsComputerTest {
   }
 
   @Test
-  public void compute_onModule_withChildInputMeasure_correctOutputValues() {
-
+  void compute_onModule_withChildInputMeasure_correctOutputValues() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForModule("compKey");
 
     //80% of all mutations are in the child components
-    measureContext.addChildrenMeasures(GLOBAL_MUTATIONS, 10,10,10,10);
-    measureContext.addChildrenMeasures(MUTATIONS_TOTAL, 4,3,1);
+    measureContext.addChildrenMeasures(GLOBAL_MUTATIONS, 10, 10, 10, 10);
+    measureContext.addChildrenMeasures(MUTATIONS_TOTAL, 4, 3, 1);
 
     //60% of all alive mutations are in the child components
     measureContext.addChildrenMeasures(GLOBAL_ALIVE, 5, 5, 5, 5);
@@ -193,17 +192,15 @@ public class TotalMutationsComputerTest {
 
     assertEquals(80.0, total.getDoubleValue(), 0.05);
     assertEquals(60.0, alive.getDoubleValue(), 0.05);
-
   }
 
   @Test
-  public void compute_onFolder_withChildInputMeasure_correctOutputValues() {
-
+  void compute_onFolder_withChildInputMeasure_correctOutputValues() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForDirectory("module:src/main/");
 
     //80% of all mutations are in the child components
-    measureContext.addChildrenMeasures(GLOBAL_MUTATIONS, 10,10,10,10);
-    measureContext.addChildrenMeasures(MUTATIONS_TOTAL, 4,3,1);
+    measureContext.addChildrenMeasures(GLOBAL_MUTATIONS, 10, 10, 10, 10);
+    measureContext.addChildrenMeasures(MUTATIONS_TOTAL, 4, 3, 1);
 
     //60% of all alive mutations are in the child components
     measureContext.addChildrenMeasures(GLOBAL_ALIVE, 5, 5, 5, 5);
@@ -216,12 +213,12 @@ public class TotalMutationsComputerTest {
 
     assertEquals(80.0, total.getDoubleValue(), 0.05);
     assertEquals(60.0, alive.getDoubleValue(), 0.05);
-
   }
 
   /**
    * Assertion to check if no computation took place
-   * @param measureContext
+   *
+   * @param measureContext the context from which to get measures
    */
   void assertNoComputation(final TestMeasureComputerContext measureContext) {
     assertNull(measureContext.getMeasure(TOTAL_PERCENT));

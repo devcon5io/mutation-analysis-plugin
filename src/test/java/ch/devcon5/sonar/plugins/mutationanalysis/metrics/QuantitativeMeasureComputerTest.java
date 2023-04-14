@@ -20,70 +20,77 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_ALIVE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_DETECTED_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_KILLED_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_MEMORY_ERROR_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_NO_COVERAGE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_SURVIVED_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TIMED_OUT_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_UNKNOWN_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.TEST_KILLS_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_ALIVE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Arrays;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.ce.measure.test.TestMeasureComputerContext;
 import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
 
 /**
- *
+ * Quantitative Measure Computer Tests
  */
-public class QuantitativeMeasureComputerTest {
+class QuantitativeMeasureComputerTest {
 
 
   private MeasureComputerTestHarness<QuantitativeMeasureComputer> harness;
   private QuantitativeMeasureComputer computer;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     this.harness = MeasureComputerTestHarness.createFor(QuantitativeMeasureComputer.class);
     this.computer = harness.getComputer();
   }
 
   @Test
-  public void define() {
-
+  void define() {
     final TestMeasureComputerDefinitionContext context = new TestMeasureComputerDefinitionContext();
-
     final MeasureComputer.MeasureComputerDefinition def = computer.define(context);
 
     assertTrue(def.getOutputMetrics().containsAll(Arrays.asList(MUTATIONS_TOTAL_KEY,
-                                                                MUTATIONS_NO_COVERAGE_KEY,
-                                                                MUTATIONS_DETECTED_KEY,
-                                                                MUTATIONS_ALIVE_KEY,
-                                                                MUTATIONS_KILLED_KEY,
-                                                                MUTATIONS_UNKNOWN_KEY,
-                                                                MUTATIONS_TIMED_OUT_KEY,
-                                                                MUTATIONS_MEMORY_ERROR_KEY,
-                                                                MUTATIONS_SURVIVED_KEY,
-                                                                TEST_KILLS_KEY,
-                                                                UTILITY_GLOBAL_MUTATIONS_KEY,
-                                                                UTILITY_GLOBAL_ALIVE_KEY)));
+        MUTATIONS_NO_COVERAGE_KEY,
+        MUTATIONS_DETECTED_KEY,
+        MUTATIONS_ALIVE_KEY,
+        MUTATIONS_KILLED_KEY,
+        MUTATIONS_UNKNOWN_KEY,
+        MUTATIONS_TIMED_OUT_KEY,
+        MUTATIONS_MEMORY_ERROR_KEY,
+        MUTATIONS_SURVIVED_KEY,
+        TEST_KILLS_KEY,
+        UTILITY_GLOBAL_MUTATIONS_KEY,
+        UTILITY_GLOBAL_ALIVE_KEY)));
   }
 
   @Test
-  public void compute_sumChildMeasures() {
+  void compute_sumChildMeasures() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
-
-    measureContext.addChildrenMeasures(MUTATIONS_TOTAL_KEY, 1,2,3);
-    measureContext.addChildrenMeasures(MUTATIONS_NO_COVERAGE_KEY, 4,5,6);
-    measureContext.addChildrenMeasures(MUTATIONS_DETECTED_KEY, 7,8,9);
-    measureContext.addChildrenMeasures(MUTATIONS_KILLED_KEY, 10,11,12);
-    measureContext.addChildrenMeasures(MUTATIONS_TIMED_OUT_KEY, 13,14,15);
-    measureContext.addChildrenMeasures(MUTATIONS_MEMORY_ERROR_KEY, 16,17,18);
-    measureContext.addChildrenMeasures(MUTATIONS_SURVIVED_KEY, 19,20,21);
-    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 22,23,24);
-    measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 10,10,10);
-    measureContext.addChildrenMeasures(UTILITY_GLOBAL_ALIVE_KEY, 20,20,20);
+    measureContext.addChildrenMeasures(MUTATIONS_TOTAL_KEY, 1, 2, 3);
+    measureContext.addChildrenMeasures(MUTATIONS_NO_COVERAGE_KEY, 4, 5, 6);
+    measureContext.addChildrenMeasures(MUTATIONS_DETECTED_KEY, 7, 8, 9);
+    measureContext.addChildrenMeasures(MUTATIONS_KILLED_KEY, 10, 11, 12);
+    measureContext.addChildrenMeasures(MUTATIONS_TIMED_OUT_KEY, 13, 14, 15);
+    measureContext.addChildrenMeasures(MUTATIONS_MEMORY_ERROR_KEY, 16, 17, 18);
+    measureContext.addChildrenMeasures(MUTATIONS_SURVIVED_KEY, 19, 20, 21);
+    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 22, 23, 24);
+    measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 10, 10, 10);
+    measureContext.addChildrenMeasures(UTILITY_GLOBAL_ALIVE_KEY, 20, 20, 20);
 
     computer.compute(measureContext);
 
@@ -100,19 +107,18 @@ public class QuantitativeMeasureComputerTest {
   }
 
   @Test
-  public void compute_childMeasuresAre0_noValuePropagated() {
+  void compute_childMeasuresAre0_noValuePropagated() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
-
-    measureContext.addChildrenMeasures(MUTATIONS_TOTAL_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(MUTATIONS_NO_COVERAGE_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(MUTATIONS_DETECTED_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(MUTATIONS_KILLED_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(MUTATIONS_TIMED_OUT_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(MUTATIONS_MEMORY_ERROR_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(MUTATIONS_SURVIVED_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 0,0,0);
-    measureContext.addChildrenMeasures(UTILITY_GLOBAL_ALIVE_KEY, 0,0,0);
+    measureContext.addChildrenMeasures(MUTATIONS_TOTAL_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(MUTATIONS_NO_COVERAGE_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(MUTATIONS_DETECTED_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(MUTATIONS_KILLED_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(MUTATIONS_TIMED_OUT_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(MUTATIONS_MEMORY_ERROR_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(MUTATIONS_SURVIVED_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(TEST_KILLS_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 0, 0, 0);
+    measureContext.addChildrenMeasures(UTILITY_GLOBAL_ALIVE_KEY, 0, 0, 0);
 
     computer.compute(measureContext);
 
@@ -129,13 +135,12 @@ public class QuantitativeMeasureComputerTest {
   }
 
   @Test
-  public void compute_skipPreExistingMeasures() {
+  void compute_skipPreExistingMeasures() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
-
     measureContext.addMeasure(MUTATIONS_TOTAL_KEY, 999);
     measureContext.addMeasure(UTILITY_GLOBAL_MUTATIONS_KEY, 888);
-    measureContext.addChildrenMeasures(MUTATIONS_TOTAL_KEY, 16,17,18);
-    measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 10,10,10);
+    measureContext.addChildrenMeasures(MUTATIONS_TOTAL_KEY, 16, 17, 18);
+    measureContext.addChildrenMeasures(UTILITY_GLOBAL_MUTATIONS_KEY, 10, 10, 10);
 
     computer.compute(measureContext);
 
@@ -145,7 +150,7 @@ public class QuantitativeMeasureComputerTest {
 
 
   @Test
-  public void compute_childMeasuresAreNull_noValuePropagated() {
+  void compute_childMeasuresAreNull_noValuePropagated() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     computer.compute(measureContext);
@@ -161,4 +166,5 @@ public class QuantitativeMeasureComputerTest {
     assertNull(measureContext.getMeasure(UTILITY_GLOBAL_MUTATIONS_KEY));
     assertNull(measureContext.getMeasure(UTILITY_GLOBAL_ALIVE_KEY));
   }
+
 }

@@ -25,7 +25,8 @@ package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
  */
 public class MetricDefinitionException extends RuntimeException {
 
-    public MetricDefinitionException(final String s, final Exception e) {
-        super(s, e);
-    }
+  public MetricDefinitionException(final String s, final Exception e) {
+    super(s, e);
+  }
+
 }

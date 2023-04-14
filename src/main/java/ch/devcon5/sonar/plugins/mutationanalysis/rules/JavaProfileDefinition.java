@@ -22,8 +22,9 @@ package ch.devcon5.sonar.plugins.mutationanalysis.rules;
 
 public class JavaProfileDefinition extends MutationAnalysisProfileDefinition {
 
-   @Override
-   protected String getLanguageKey() {
-      return "java";
-   }
+  @Override
+  protected String getLanguageKey() {
+    return "java";
+  }
+
 }

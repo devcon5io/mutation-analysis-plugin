@@ -19,33 +19,34 @@
   -->
 
 <div id="INCREMENTS">
-    <h2>Increments Mutator (INCREMENTS)</h2>
+  <h2>Increments Mutator (INCREMENTS)</h2>
 
-    <p>
-        This operator replaces increments with decrements and vice versa. It mutates increments, decrements, assignment
-        increments and decrements of stack variables (local variables).</p>
+  <p>
+  This operator replaces increments with decrements and vice versa. It mutates increments, decrements, assignment
+  increments and decrements of stack variables (local variables).
+  </p>
+  <br>
+  <p>For example</p>
 
-    <p>For example</p>
-
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public int aMethod(int i) {
   i--;
   return i;
 }
-</pre>
+    </pre>
 
-    <p>will be mutated to</p>
+  <p>will be mutated to</p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public int aMethod(int i) {
   i++;
   return i;
 }
-</pre>
+    </pre>
 
-    <p>Only increments and decrements of local variables are mutated. Member variables and the increments and
-        decrements thereof will be covered by the <a href="http://pitest.org/quickstart/mutators#MATH">Math Mutator</a>.
-    </p>
-
-    <p>see <a href="http://pitest.org/quickstart/mutators#INCREMENTS">Pitest Mutators</a></p>
+  <p>
+  Only increments and decrements of local variables are mutated. Member variables and the increments and
+  decrements thereof will be covered by the <a href="http://pitest.org/quickstart/mutators#MATH">Math Mutator</a>.
+  </p>
+  <p>see <a href="http://pitest.org/quickstart/mutators#INCREMENTS">Pitest Mutators</a></p>
 </div>

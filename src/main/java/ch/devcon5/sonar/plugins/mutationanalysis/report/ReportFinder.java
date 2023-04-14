@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Searches the latest xml file in the reports directory.
- *
  */
 public class ReportFinder {
 
@@ -59,13 +58,10 @@ public class ReportFinder {
    *         if the most recent report could not be determined
    */
   public Path findReport(final Path reportDirectory) throws IOException {
-
-    //TODO replace java.nio.Files API when migrating to JDK9+
-    if (reportDirectory == null || !reportDirectory.toFile().exists() ) {
-      LOG.warn("ReportDirectory {} is no valid directory", reportDirectory);
+    if (reportDirectory == null || !Files.exists(reportDirectory)) {
+      LOG.warn("ReportDirectory {} is not a valid directory", reportDirectory);
       return null;
     }
-
     return findMostRecentReport(reportDirectory, "*.xml");
   }
 
@@ -83,17 +79,14 @@ public class ReportFinder {
    * @throws java.io.IOException if the report or the directory of the report can not be accessed
    */
   protected Path findMostRecentReport(final Path reportDirectory, final String pattern) throws IOException {
-
     Path mostRecent = null;
     ReportFinderVisitor reportFinderVisitor = new ReportFinderVisitor(pattern);
     Files.walkFileTree(reportDirectory, reportFinderVisitor);
-
     for (final Path report : reportFinderVisitor.getReports()) {
       if (mostRecent == null || isNewer(mostRecent, report)) {
         mostRecent = report;
       }
     }
-
     return mostRecent;
   }
 
@@ -103,17 +96,15 @@ public class ReportFinder {
    * @param referencePath
    *         the path to compare the other path against
    * @param otherPath
-   *         the other path to be comapred against the reference path
+   *         the other path to be compared against the reference path
    *
    * @return <code>true</code> if the otherPath is newer than the referencePath
    *
    * @throws IOException if the last modification time can not be determined
    */
   protected boolean isNewer(final Path referencePath, final Path otherPath) throws IOException {
-
     return Files.getLastModifiedTime(referencePath).compareTo(Files.getLastModifiedTime(otherPath)) < 0;
   }
-
 
   /**
    * Recursive search report xml
@@ -135,17 +126,19 @@ public class ReportFinder {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
       requireNonNull(file, "file must not be null");
-
       final Path filename = file.getFileName();
       if (Objects.nonNull(filename) && matcher.matches(filename)) {
         reports.add(file);
       }
       return FileVisitResult.CONTINUE;
     }
+
     private static <T> void requireNonNull(T obj, String message) {
       if (obj == null) {
         throw new IllegalArgumentException(message);
       }
     }
+
   }
+
 }

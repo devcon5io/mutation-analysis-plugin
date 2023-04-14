@@ -25,14 +25,16 @@ import java.util.stream.StreamSupport;
 
 public final class Streams {
 
-   private Streams() {
-      //to prevent instantiation of this class
-   }
+  private Streams() {
+    //to prevent instantiation of this class
+  }
 
-   public static <T> Stream<T> sequentialStream(Iterable<T> elements){
-      return StreamSupport.stream(elements.spliterator(), false);
-   }
-   public static <T> Stream<T> parallelStream(Iterable<T> elements){
-      return StreamSupport.stream(elements.spliterator(), true);
-   }
+  public static <T> Stream<T> sequentialStream(Iterable<T> elements) {
+    return StreamSupport.stream(elements.spliterator(), false);
+  }
+
+  public static <T> Stream<T> parallelStream(Iterable<T> elements) {
+    return StreamSupport.stream(elements.spliterator(), true);
+  }
+
 }

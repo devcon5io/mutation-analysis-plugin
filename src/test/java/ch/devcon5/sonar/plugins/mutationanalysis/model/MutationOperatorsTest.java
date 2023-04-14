@@ -20,121 +20,49 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.model;
 
-import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- *
+ * Mutation Operators Test
  */
-public class MutationOperatorsTest {
+class MutationOperatorsTest {
 
-    @Test
-    public void testFind_knownMutator_byID() throws Exception {
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "ARGUMENT_PROPAGATION",
+      "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
+      "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator",
+      "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator_WITH_SUFFIX",
+      "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator_WITH_SUFFIX"
+  })
+  void testFind_knownMutator_byID(String mutagenKey) {
+    final MutationOperator mutationOperator = MutationOperators.find(mutagenKey);
+    assertNotNull(mutationOperator);
+    assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
+    assertEquals(new HashSet<String>() {{
+      add("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator");
+      add("org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator");
+    }}, mutationOperator.getClassNames());
+    assertNotNull(mutationOperator.getViolationDescription());
+  }
 
-        final MutationOperator mutationOperator = MutationOperators.find("ARGUMENT_PROPAGATION");
-        assertNotNull(mutationOperator);
-        assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-        assertEquals(
-            new HashSet<>(
-                Arrays.asList(
-                    "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
-                    "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator"
-                )
-            ),
-            mutationOperator.getClassNames());
-        assertNotNull(mutationOperator.getViolationDescription());
-    }
+  @Test
+  void testAllMutators() {
+    // act
+    final Collection<MutationOperator> mutationOperators = MutationOperators.allMutationOperators();
 
-    @Test
-    public void testFind_knownMutator_byClassName() throws Exception {
+    // assert
+    assertNotNull(mutationOperators);
+    assertFalse(mutationOperators.isEmpty());
+    assertEquals(23, mutationOperators.size());
+  }
 
-        final MutationOperator mutationOperator = MutationOperators
-                .find("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator");
-        assertNotNull(mutationOperator);
-        assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-        assertEquals(
-            new HashSet<>(
-                Arrays.asList(
-                    "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
-                    "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator"
-                )
-            ),
-            mutationOperator.getClassNames());
-        assertNotNull(mutationOperator.getViolationDescription());
-    }
-
-    @Test
-    public void testFind_knownMutator_byClassName_v2() throws Exception {
-
-        final MutationOperator mutationOperator = MutationOperators
-            .find("org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator");
-        assertNotNull(mutationOperator);
-        assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-        assertEquals(
-            new HashSet<>(
-                Arrays.asList(
-                    "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
-                    "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator"
-                )
-            ),
-            mutationOperator.getClassNames());
-        assertNotNull(mutationOperator.getViolationDescription());
-    }
-
-    @Test
-    public void testFind_knownMutator_byClassNameWithSuffix() throws Exception {
-
-        final MutationOperator mutationOperator = MutationOperators
-                .find("org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator_WITH_SUFFIX");
-        assertNotNull(mutationOperator);
-        assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-        assertEquals(
-            new HashSet<>(
-                Arrays.asList(
-                    "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
-                    "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator"
-                )
-            ),
-            mutationOperator.getClassNames());
-        assertNotNull(mutationOperator.getViolationDescription());
-    }
-
-    @Test
-    public void testFind_knownMutator_byClassNameWithSuffix_v2() throws Exception {
-
-        final MutationOperator mutationOperator = MutationOperators
-            .find("org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator_WITH_SUFFIX");
-        assertNotNull(mutationOperator);
-        assertEquals("ARGUMENT_PROPAGATION", mutationOperator.getId());
-        assertEquals(
-            new HashSet<>(
-                Arrays.asList(
-                    "org.pitest.mutationtest.engine.gregor.mutators.ArgumentPropagationMutator",
-                    "org.pitest.mutationtest.engine.gregor.mutators.experimental.ArgumentPropagationMutator"
-                )
-            ),
-            mutationOperator.getClassNames());
-        assertNotNull(mutationOperator.getViolationDescription());
-    }
-
-    @Test
-    public void testAllMutators() throws Exception {
-
-        // act
-        final Collection<MutationOperator> mutationOperators = MutationOperators.allMutationOperators();
-
-        // assert
-        assertNotNull(mutationOperators);
-        assertFalse(mutationOperators.isEmpty());
-        assertEquals(23, mutationOperators.size());
-
-    }
 }

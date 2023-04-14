@@ -20,48 +20,43 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.Serializable;
 import java.util.List;
-
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 import org.sonar.api.measures.Metric;
 
-public class MutationMetricsTest {
+class MutationMetricsTest {
 
-    @Test
-    public void testMetricConstants() throws Exception {
+  @Test
+  void testMetricConstants() {
+    assertNotNull(MutationMetrics.MUTATIONS_COVERAGE);
+    assertNotNull(MutationMetrics.MUTATIONS_TEST_STRENGTH);
+    assertNotNull(MutationMetrics.MUTATIONS_DATA);
+    assertNotNull(MutationMetrics.MUTATIONS_DETECTED);
+    assertNotNull(MutationMetrics.MUTATIONS_KILLED);
+    assertNotNull(MutationMetrics.MUTATIONS_MEMORY_ERROR);
+    assertNotNull(MutationMetrics.MUTATIONS_NO_COVERAGE);
+    assertNotNull(MutationMetrics.MUTATIONS_SURVIVED);
+    assertNotNull(MutationMetrics.MUTATIONS_TIMED_OUT);
+    assertNotNull(MutationMetrics.MUTATIONS_TOTAL);
+    assertNotNull(MutationMetrics.MUTATIONS_UNKNOWN);
+  }
 
-        assertNotNull(MutationMetrics.MUTATIONS_COVERAGE);
-        assertNotNull(MutationMetrics.MUTATIONS_TEST_STRENGTH);
-        assertNotNull(MutationMetrics.MUTATIONS_DATA);
-        assertNotNull(MutationMetrics.MUTATIONS_DETECTED);
-        assertNotNull(MutationMetrics.MUTATIONS_KILLED);
-        assertNotNull(MutationMetrics.MUTATIONS_MEMORY_ERROR);
-        assertNotNull(MutationMetrics.MUTATIONS_NO_COVERAGE);
-        assertNotNull(MutationMetrics.MUTATIONS_SURVIVED);
-        assertNotNull(MutationMetrics.MUTATIONS_TIMED_OUT);
-        assertNotNull(MutationMetrics.MUTATIONS_TOTAL);
-        assertNotNull(MutationMetrics.MUTATIONS_UNKNOWN);
-    }
+  @Test
+  void testGetQuantitativeMetrics() {
+    final List<Metric<Serializable>> metrics = MutationMetrics.getQuantitativeMetrics();
+    assertNotNull(metrics);
+    assertFalse(metrics.isEmpty());
+  }
 
-
-
-    @Test
-    public void testGetQuantitativeMetrics() throws Exception {
-
-        final List<Metric<Serializable>> metrics = MutationMetrics.getQuantitativeMetrics();
-        assertNotNull(metrics);
-        assertFalse(metrics.isEmpty());
-    }
-
-    @Test
-    public void testGetSensorMetrics() throws Exception {
-
-        final List<Metric<Serializable>> metrics = MutationMetrics.getSensorMetrics();
-        assertNotNull(metrics);
-        assertFalse(metrics.isEmpty());
-    }
+  @Test
+  void testGetSensorMetrics() {
+    final List<Metric<Serializable>> metrics = MutationMetrics.getSensorMetrics();
+    assertNotNull(metrics);
+    assertFalse(metrics.isEmpty());
+  }
 
 }
