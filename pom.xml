@@ -79,7 +79,7 @@
         <license.title>Mutation Analysis Plugin</license.title>
         <license.years>2015-2022</license.years>
         <license.mailto>info@devcon5.ch</license.mailto>
-        <sonarQubeMinVersion>7.9.5</sonarQubeMinVersion>
+        <sonarQubeMinVersion>9.5.0.71</sonarQubeMinVersion>
     </properties>
 
     <dependencies>
@@ -161,13 +161,14 @@
             <plugin>
                 <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
                 <artifactId>sonar-packaging-maven-plugin</artifactId>
-                <version>1.18.0.372</version>
+                <version>1.23.0.740</version>
                 <extensions>true</extensions>
                 <configuration>
                     <pluginKey>mutationanalysis</pluginKey>
                     <pluginClass>ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin</pluginClass>
                     <pluginName>Mutation Analysis</pluginName>
-                    <sonarQubeMinVersion>${sonarQubeMinVersion}</sonarQubeMinVersion>
+                    <pluginApiMinVersion>${sonarQubeMinVersion}</pluginApiMinVersion>
+                    <requiredForLanguages>java</requiredForLanguages>
                 </configuration>
             </plugin>
 
