@@ -24,71 +24,65 @@ import java.util.Objects;
 
 public class TestDescriptor {
 
-   private final String className;
-   private final String methodName;
-   private final String spec;
+  private final String className;
+  private final String methodName;
+  private final String spec;
 
-   public TestDescriptor(final String spec) {
-      this.spec = spec;
+  public TestDescriptor(final String spec) {
+    this.spec = spec;
 
-      final int parenthesis = spec.indexOf('(');
-      final int methodSeparator = spec.lastIndexOf('.', parenthesis);
-      final int nestedSeparator = spec.indexOf('$');
+    final int parenthesis = spec.indexOf('(');
+    final int methodSeparator = spec.lastIndexOf('.', parenthesis);
+    final int nestedSeparator = spec.indexOf('$');
 
-      if(nestedSeparator != -1){
-         this.className = spec.substring(0, nestedSeparator);
-         if(methodSeparator != -1){
-            this.methodName = spec.substring(methodSeparator + 1, parenthesis);
-         } else {
-            this.methodName = "unknown";
-         }
-      } else
-      if(methodSeparator != -1){
-         this.className = spec.substring(0, methodSeparator);
-         this.methodName = spec.substring(methodSeparator + 1, parenthesis);
-
+    if (nestedSeparator != -1) {
+      this.className = spec.substring(0, nestedSeparator);
+      if (methodSeparator != -1) {
+        this.methodName = spec.substring(methodSeparator + 1, parenthesis);
       } else {
-         className = spec;
-         methodName = "unknown";
+        this.methodName = "unknown";
       }
+    } else if (methodSeparator != -1) {
+      this.className = spec.substring(0, methodSeparator);
+      this.methodName = spec.substring(methodSeparator + 1, parenthesis);
+    } else {
+      className = spec;
+      methodName = "unknown";
+    }
+  }
 
-   }
+  public String getClassName() {
+    return className;
+  }
 
-   public String getClassName() {
-      return className;
-   }
+  public String getMethodName() {
+    return methodName;
+  }
 
-   public String getMethodName() {
-      return methodName;
-   }
+  public String getSpec() {
+    return spec;
+  }
 
-   public String getSpec() {
-      return spec;
-   }
+  @Override
+  public String toString() {
+    return "TestDescriptor{class='" + className + "', method='" + methodName + "'}";
+  }
 
-   @Override
-   public String toString() {
-      final StringBuilder sb = new StringBuilder("TestDescriptor{");
-      sb.append("class='").append(className).append("', method='").append(methodName);
-      sb.append("'}");
-      return sb.toString();
-   }
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final TestDescriptor that = (TestDescriptor) o;
+    return Objects.equals(className, that.className);
+  }
 
-   @Override
-   public boolean equals(final Object o) {
-      if (this == o) {
-         return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-         return false;
-      }
-      final TestDescriptor that = (TestDescriptor) o;
-      return Objects.equals(className, that.className);
-   }
+  @Override
+  public int hashCode() {
+    return Objects.hash(className);
+  }
 
-   @Override
-   public int hashCode() {
-
-      return Objects.hash(className);
-   }
 }

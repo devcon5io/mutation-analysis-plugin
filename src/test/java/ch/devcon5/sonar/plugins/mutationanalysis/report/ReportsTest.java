@@ -20,74 +20,66 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Collection;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class ReportsTest {
+class ReportsTest {
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
+  @TempDir
+  public Path folder;
 
-    @Test
-    public void testReadMutants_fromDirectory_noReport() throws Exception {
+  @Test
+  void testReadMutants_fromDirectory_noReport() throws Exception {
+    // act
+    final Collection<Mutant> mutants = Reports.readMutants(folder);
 
-        // prepare
+    // assert
+    assertNotNull(mutants);
+    assertTrue(mutants.isEmpty());
+  }
 
-        // act
-        final Collection<Mutant> mutants = Reports.readMutants(folder.getRoot().toPath());
+  @Test
+  void testReadMutants_fromDirectory_withReport() throws Exception {
+    // prepare
+    fileFromResource("ReportsTest_mutations.xml", "mutations.xml");
 
-        // assert
-        assertNotNull(mutants);
-        assertTrue(mutants.isEmpty());
-    }
+    // act
+    final Collection<Mutant> mutants = Reports.readMutants(folder);
 
-    @Test
-    public void testReadMutants_fromDirectory_withReport() throws Exception {
+    // assert
+    assertNotNull(mutants);
+    assertEquals(3, mutants.size());
+  }
 
-        // prepare
-        fileFromResource("ReportsTest_mutations.xml", "mutations.xml");
+  @Test
+  void testReadMutants_fromFile() throws Exception {
+    // prepare
+    final File file = fileFromResource("ReportsTest_mutations.xml", "mutations.xml");
 
-        // act
-        final Collection<Mutant> mutants = Reports.readMutants(folder.getRoot().toPath());
+    // act
+    final Collection<Mutant> mutants = Reports.readMutants(file.toPath());
 
-        // assert
-        assertNotNull(mutants);
-        assertEquals(3, mutants.size());
-    }
+    // assert
+    assertNotNull(mutants);
+    assertEquals(3, mutants.size());
+  }
 
-    @Test
-    public void testReadMutants_fromFile() throws Exception {
-
-        // prepare
-        final File file = fileFromResource("ReportsTest_mutations.xml", "mutations.xml");
-
-        // act
-        final Collection<Mutant> mutants = Reports.readMutants(file.toPath());
-
-        // assert
-        assertNotNull(mutants);
-        assertEquals(3, mutants.size());
-    }
-
-    private File fileFromResource(final String resourcePath, final String fileName) throws IOException,
-            FileNotFoundException {
-
-        final File newFile = folder.newFile(fileName);
-        IOUtils.copy(getClass().getResourceAsStream(resourcePath), new FileOutputStream(newFile));
-        return newFile;
-    }
+  private File fileFromResource(final String resourcePath, final String fileName) throws IOException {
+    final File newFile = Files.createFile(folder.resolve(fileName)).toFile();
+    IOUtils.copy(getClass().getResourceAsStream(resourcePath), Files.newOutputStream(newFile.toPath()));
+    return newFile;
+  }
 
 }

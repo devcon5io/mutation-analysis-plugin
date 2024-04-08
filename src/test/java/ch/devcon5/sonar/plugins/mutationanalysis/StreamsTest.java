@@ -20,28 +20,28 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+class StreamsTest {
 
-public class StreamsTest {
+  @Test
+  void sequentialStream() {
+    Stream<String> stream = Streams.sequentialStream(Arrays.asList("one", "two"));
+    assertFalse(stream.isParallel());
+    assertEquals(2, stream.count());
+  }
 
-   @Test
-   public void sequentialStream() {
-      Stream<String> stream = Streams.sequentialStream(Arrays.asList("one", "two"));
-      assertFalse(stream.isParallel());
-      assertEquals(2, stream.count());
-   }
+  @Test
+  void parallelStream() {
+    Stream<String> stream = Streams.parallelStream(Arrays.asList("one", "two"));
+    assertTrue(stream.isParallel());
+    assertEquals(2, stream.count());
+  }
 
-   @Test
-   public void parallelStream() {
-      Stream<String> stream = Streams.parallelStream(Arrays.asList("one", "two"));
-      assertTrue(stream.isParallel());
-      assertEquals(2, stream.count());
-   }
 }

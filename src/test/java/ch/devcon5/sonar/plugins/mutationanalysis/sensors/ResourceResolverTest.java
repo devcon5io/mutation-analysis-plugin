@@ -20,69 +20,79 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.sensors;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.SensorTestHarness;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.sonar.api.batch.fs.FileSystem;
 
 public class ResourceResolverTest {
 
-   @ClassRule
-   public static TemporaryFolder folder = new TemporaryFolder();
+  @TempDir
+  public static Path folder;
 
-   private static SensorTestHarness HARNESS;
-   private static FileSystem FILESYSTEM;
+  private static FileSystem FILESYSTEM;
 
-   private ResourceResolver resolver;
+  private ResourceResolver resolver;
 
-   @BeforeClass
-   public static void setUpFilesystem() throws Exception {
-      SensorTestHarness harness = SensorTestHarness.builder().withTempFolder(folder).build();
+  @BeforeAll
+  public static void setUpFilesystem() throws Exception {
+    SensorTestHarness harness = SensorTestHarness.builder().withTempFolder(folder).build();
 
-      harness.createSourceFile("src/main/java/ch/example/java/", "Example.java");
-      harness.createSourceFile("src/main/java/ch/example/java/", "Example$Nested.java");
-      harness.createSourceFile("src/main/java/ch/example/java/", "Example$Nested$Nested.java");
-      harness.createSourceFile("src/main/kotlin/ch/example/kotlin/", "Example.kt");
-      harness.createSourceFile("src/main/kotlin/ch/example/kotlin/", "Example$Nested.kt");
-      harness.createSourceFile("src/main/kotlin/ch/example/kotlin/", "Example$Nested$Nested.kt");
+    harness.createSourceFile("src/main/java/ch/example/java/", "Example.java");
+    harness.createSourceFile("src/main/java/ch/example/java/", "Example$Nested.java");
+    harness.createSourceFile("src/main/java/ch/example/java/", "Example$Nested$Nested.java");
+    harness.createSourceFile("src/main/kotlin/ch/example/kotlin/", "Example.kt");
+    harness.createSourceFile("src/main/kotlin/ch/example/kotlin/", "Example$Nested.kt");
+    harness.createSourceFile("src/main/kotlin/ch/example/kotlin/", "Example$Nested$Nested.kt");
 
-      FILESYSTEM = harness.createSensorContext().scanFiles().fileSystem();
-   }
+    FILESYSTEM = harness.createSensorContext().scanFiles().fileSystem();
+  }
 
-   @Before
-   public void setUp() throws Exception {
-      resolver = new ResourceResolver(FILESYSTEM);
-   }
+  @BeforeEach
+  public void setUp() throws Exception {
+    resolver = new ResourceResolver(FILESYSTEM);
+  }
 
-   @Test
-   public void resolve_javaFile() throws IOException {
-      assertEquals("Example.java", resolver.resolve("ch.example.java.Example").get().filename());
-   }
-   @Test
-   public void resolve_nestedJavaClass() throws IOException {
-      assertEquals("Example.java", resolver.resolve("ch.example.java.Example$Nested").get().filename());
-   }
-   @Test
-   public void resolve_deeplyNestedJavaClass() throws IOException {
-      assertEquals("Example.java", resolver.resolve("ch.example.java.Example$Nested$Nested").get().filename());
-   }
-   @Test
-   public void resolve_kotlinClass() throws IOException {
-      assertEquals("Example.kt", resolver.resolve("ch.example.kotlin.Example").get().filename());
-   }
-   @Test
-   public void resolve_nestedKotlinClass() throws IOException {
-      assertEquals("Example.kt", resolver.resolve("ch.example.kotlin.Example$Nested").get().filename());
-   }
-   @Test
-   public void resolve_deeplyNestedKotlinClass() throws IOException {
-      assertEquals("Example.kt", resolver.resolve("ch.example.kotlin.Example$Nested$Nested").get().filename());
-   }
+  @Test
+  void resolve_javaFile() {
+    assertTrue(resolver.resolve("ch.example.java.Example").isPresent());
+    assertEquals("Example.java", resolver.resolve("ch.example.java.Example").get().filename());
+  }
+
+  @Test
+  void resolve_nestedJavaClass() {
+    assertTrue(resolver.resolve("ch.example.java.Example$Nested").isPresent());
+    assertEquals("Example.java", resolver.resolve("ch.example.java.Example$Nested").get().filename());
+  }
+
+  @Test
+  void resolve_deeplyNestedJavaClass() {
+    assertTrue(resolver.resolve("ch.example.java.Example$Nested$Nested").isPresent());
+    assertEquals("Example.java", resolver.resolve("ch.example.java.Example$Nested$Nested").get().filename());
+  }
+
+  @Test
+  void resolve_kotlinClass() {
+    assertTrue(resolver.resolve("ch.example.kotlin.Example").isPresent());
+    assertEquals("Example.kt", resolver.resolve("ch.example.kotlin.Example").get().filename());
+  }
+
+  @Test
+  void resolve_nestedKotlinClass() {
+    assertTrue(resolver.resolve("ch.example.kotlin.Example$Nested").isPresent());
+    assertEquals("Example.kt", resolver.resolve("ch.example.kotlin.Example$Nested").get().filename());
+  }
+
+  @Test
+  void resolve_deeplyNestedKotlinClass() {
+    assertTrue(resolver.resolve("ch.example.kotlin.Example$Nested$Nested").isPresent());
+    assertEquals("Example.kt", resolver.resolve("ch.example.kotlin.Example$Nested$Nested").get().filename());
+  }
+
 }

@@ -20,27 +20,31 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.*;
-import static org.junit.Assert.*;
-
-import java.util.Arrays;
-import java.util.HashSet;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_COVERAGE_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_DETECTED_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_SURVIVED_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TEST_STRENGTH_KEY;
+import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
-import org.junit.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.ce.measure.test.TestMeasureComputerContext;
 import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
 
-public class MutationScoreComputerTest {
+class MutationScoreComputerTest {
 
   private MutationScoreComputer computer;
   private MeasureComputerTestHarness<MutationScoreComputer> harness;
 
-  @Before
+  @BeforeEach
   public void setUp() {
-
     this.harness = MeasureComputerTestHarness.createFor(MutationScoreComputer.class);
     this.computer = harness.getComputer();
     setForceMissingCoverageToZero(null);
@@ -48,19 +52,18 @@ public class MutationScoreComputerTest {
   }
 
   @Test
-  public void define() {
-
+  void define() {
     final TestMeasureComputerDefinitionContext context = new TestMeasureComputerDefinitionContext();
-
     final MeasureComputer.MeasureComputerDefinition def = computer.define(context);
 
-    assertEquals(def.getInputMetrics(), new HashSet<>(Arrays.asList(MUTATIONS_DETECTED_KEY, MUTATIONS_TOTAL_KEY, MUTATIONS_SURVIVED_KEY)));
-    assertEquals(def.getOutputMetrics(), new HashSet<>(Arrays.asList(MUTATIONS_COVERAGE_KEY, MUTATIONS_TEST_STRENGTH_KEY)));
+    assertEquals(def.getInputMetrics(),
+        new HashSet<>(Arrays.asList(MUTATIONS_DETECTED_KEY, MUTATIONS_TOTAL_KEY, MUTATIONS_SURVIVED_KEY)));
+    assertEquals(def.getOutputMetrics(),
+        new HashSet<>(Arrays.asList(MUTATIONS_COVERAGE_KEY, MUTATIONS_TEST_STRENGTH_KEY)));
   }
 
   @Test
-  public void compute_noMutations_forceToZeroNotConfigured_defaultsToFalse_noMeasure() {
-
+  void compute_noMutations_forceToZeroNotConfigured_defaultsToFalse_noMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     computer.compute(measureContext);
@@ -69,8 +72,7 @@ public class MutationScoreComputerTest {
   }
 
   @Test
-  public void compute_noMutations_ForceTo0Disabled_noMeasure() {
-
+  void compute_noMutations_ForceTo0Disabled_noMeasure() {
     setForceMissingCoverageToZero(false);
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
@@ -80,8 +82,7 @@ public class MutationScoreComputerTest {
   }
 
   @Test
-  public void compute_noMutations_forceTo0Enabled_noMeasure() {
-
+  void compute_noMutations_forceTo0Enabled_noMeasure() {
     setForceMissingCoverageToZero(true);
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
@@ -92,8 +93,7 @@ public class MutationScoreComputerTest {
   }
 
   @Test
-  public void compute_0totalMutations_to_100percentCoverage() {
-
+  void compute_0totalMutations_to_100percentCoverage() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 0);
@@ -105,8 +105,7 @@ public class MutationScoreComputerTest {
   }
 
   @Test
-  public void compute_3of5Mutations_to_60percentCoverage() {
-
+  void compute_3of5Mutations_to_60percentCoverage() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 5);
@@ -115,12 +114,10 @@ public class MutationScoreComputerTest {
     computer.compute(measureContext);
 
     assertEquals(60.0, measureContext.getMeasure(MUTATIONS_COVERAGE_KEY).getDoubleValue(), 0.05);
-
   }
 
   @Test
-  public void compute_1of5MutationsKilled_to_20percentTestStrength() {
-
+  void compute_1of5MutationsKilled_to_20percentTestStrength() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 5);
@@ -130,12 +127,10 @@ public class MutationScoreComputerTest {
     computer.compute(measureContext);
 
     assertEquals(20.0, measureContext.getMeasure(MUTATIONS_TEST_STRENGTH_KEY).getDoubleValue(), 0.05);
-
   }
 
   @Test
-  public void compute_SurvivedAndDetectedAreInconsitent_testStrengthDefaultsTo0() {
-
+  void compute_SurvivedAndDetectedAreInconsitent_testStrengthDefaultsTo0() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 1);
@@ -145,12 +140,10 @@ public class MutationScoreComputerTest {
     computer.compute(measureContext);
 
     assertEquals(0.0, measureContext.getMeasure(MUTATIONS_TEST_STRENGTH_KEY).getDoubleValue(), 0.05);
-
   }
 
   @Test
-  public void compute_5of5MutationsKilled_missingSurvivedMetric_to_100percentTestStrength() {
-
+  void compute_5of5MutationsKilled_missingSurvivedMetric_to_100percentTestStrength() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     //we dont set the MUTATIONS_SURVIVED_KEY metric (defaulting to 0)
@@ -160,13 +153,11 @@ public class MutationScoreComputerTest {
     computer.compute(measureContext);
 
     assertEquals(100.0, measureContext.getMeasure(MUTATIONS_TEST_STRENGTH_KEY).getDoubleValue(), 0.05);
-
   }
 
 
   @Test
-  public void compute_NoCoveredElements_0percentCoverage() {
-
+  void compute_NoCoveredElements_0percentCoverage() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 5);
@@ -175,11 +166,9 @@ public class MutationScoreComputerTest {
 
     assertEquals(0.0, measureContext.getMeasure(MUTATIONS_COVERAGE_KEY).getDoubleValue(), 0.05);
     assertEquals(0.0, measureContext.getMeasure(MUTATIONS_TEST_STRENGTH_KEY).getDoubleValue(), 0.05);
-
   }
 
   private void setForceMissingCoverageToZero(Boolean enabled) {
-
     harness.getConfig().set(MutationAnalysisPlugin.FORCE_MISSING_COVERAGE_TO_ZERO, enabled);
   }
 

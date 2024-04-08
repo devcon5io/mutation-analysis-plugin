@@ -59,7 +59,7 @@ public class Mutant {
    private final int hashCode;
    private final String toString;
    private final TestDescriptor testDescriptor;
-   private String description;
+   private final String description;
 
    /**
     * Creates a new Mutant using the specified builder. This constructor is invoked by the builder.
@@ -70,7 +70,6 @@ public class Mutant {
     *         to be non-null for the construction to succeed.
     */
    private Mutant(final Builder builder) {
-
       this.state = builder.state;
       this.sourceFile = builder.sourceFile;
       this.mutatedClass = builder.mutatedClass;
@@ -118,18 +117,15 @@ public class Mutant {
                                         this.description == null ? 0 : this.description.hashCode());
 
       this.testDescriptor = new TestDescriptor(this.killingTest);
-
    }
 
    /**
-    * Creates a new build to define a mutant. As the {@link Mutant} class is designed as being immutable, the builder
-    * allows sequential definition of the {@link Mutant}'s properties instead of passing all at once to the
-    * constructor.
+    * Creates a new builder to define a mutant. As the {@link Mutant} class is immutable, the builder allows
+    * sequential definition of the {@link Mutant}'s properties instead of passing all at once to the constructor.
     *
     * @return a {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant.Builder} for creating a {@link Mutant}
     */
    public static Builder builder() {
-
       return new Builder();
    }
 
@@ -137,16 +133,13 @@ public class Mutant {
     * @return flag to indicate if the mutant was detected by a test or not
     */
    public boolean isDetected() {
-
       return state.isDetected();
    }
 
    /**
-    * @return the {@link Mutant.State} of the mutant. Only killed mutants are
-    * good mutants.
+    * @return the {@link Mutant.State} of the mutant. Only killed mutants are good mutants.
     */
    public State getState() {
-
       return state;
    }
 
@@ -154,7 +147,6 @@ public class Mutant {
     * @return the path to the sourceFile that contains the mutant. The sourceFile is relative to the project path.
     */
    public String getSourceFile() {
-
       return sourceFile;
    }
 
@@ -162,7 +154,6 @@ public class Mutant {
     * @return the fully qualified class name containing the mutant
     */
    public String getMutatedClass() {
-
       return mutatedClass;
    }
 
@@ -170,7 +161,6 @@ public class Mutant {
     * @return the name of the method containing the mutant
     */
    public String getMutatedMethod() {
-
       return mutatedMethod;
    }
 
@@ -178,7 +168,6 @@ public class Mutant {
     * @return the description of the method that specifies its signature. {@see http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.3}
     */
    public String getMethodDescription() {
-
       return methodDescription;
    }
 
@@ -186,7 +175,6 @@ public class Mutant {
     * @return the line number where the mutant was found
     */
    public int getLineNumber() {
-
       return lineNumber;
    }
 
@@ -194,7 +182,6 @@ public class Mutant {
     * @return the mutationOperator that was used to create the mutant
     */
    public MutationOperator getMutationOperator() {
-
       return mutationOperator;
    }
 
@@ -204,7 +191,6 @@ public class Mutant {
     * <code>null</code> is not allowed
     */
    public String getMutatorSuffix() {
-
       return mutatorSuffix;
    }
 
@@ -212,7 +198,6 @@ public class Mutant {
     * @return the index of the mutationOperator. It has no relevance to the sonar results
     */
    public int getIndex() {
-
       return index;
    }
 
@@ -221,44 +206,36 @@ public class Mutant {
     * not killed, this is an empty string and is never <code>null</code>.
     */
    public String getKillingTest() {
-
       return killingTest;
    }
 
    /**
-    *
-    * @return the number of tests that had to be executed to kill the mutant. The number is
-    * usually >= 1.
+    * @return the number of tests that had to be executed to kill the mutant. The number is usually >= 1.
     */
    public int getNumberOfTestsRun() {
-
       return numberOfTestsRun;
    }
 
    /**
     * Newer versions of Pit produce a description containing more details about what has been mutated.
     *
-    * @return the description if the mutant contained any or an empty optional
+    * @return the description if the mutant contained any, or an empty optional
     */
    public Optional<String> getDescription() {
-
       return Optional.ofNullable(this.description);
    }
 
    public TestDescriptor getTestDescriptor() {
-
       return this.testDescriptor;
    }
 
    @Override
    public int hashCode() {
-
       return this.hashCode;
    }
 
    @Override
    public boolean equals(final Object obj) {
-
       if (this == obj) {
          return true;
       }
@@ -273,12 +250,10 @@ public class Mutant {
 
    @Override
    public String toString() {
-
       return toString;
    }
 
    private int calculateHashCode(final int... values) {
-
       int result = 1;
       for (final int value : values) {
          result = PRIME * result + value;
@@ -287,7 +262,6 @@ public class Mutant {
    }
 
    private boolean equalsMutant(final Mutant other) { // NOSONAR
-
       if (index != other.index) {
          return false;
       }
@@ -334,10 +308,10 @@ public class Mutant {
       // a sane implementation would use an enum constructor with the alive flag and a getter
       // for example:  State(boolean alive)
       //
-      // unfortunately, this creates an unkillable mutant by removing the variable assignment. Although
+      // unfortunately, this creates an un-killable mutant by removing the variable assignment. Although
       // some test would fail when run separately, when running with pit this does not fail.
       // I assume this is because the literals of the enum are created once and remain immutable
-      // in the JVM, even if it's constructor change.
+      // in the JVM, even if its constructor changes.
       // to circumvent this, I chose to use the abstract method / override method approach that
       // leaves nothing to mutate.
       // It's working, but it's certainly less readable.
@@ -409,7 +383,6 @@ public class Mutant {
        * otherwise the matching state.
        */
       public static State parse(final String stateName) {
-
          for (final State state : State.values()) {
             if (state.name().equals(stateName)) {
                return state;
@@ -432,7 +405,6 @@ public class Mutant {
        * @return <code>true</code> if the {@link Mutant} was detected.
        */
       public boolean isDetected() {
-
          return !isAlive();
       }
    }
@@ -459,7 +431,6 @@ public class Mutant {
       private String description;
 
       Builder() {
-
       }
 
       /**
@@ -469,7 +440,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder mutantStatus(final State state) {
-
          this.state = state;
          return this;
       }
@@ -481,7 +451,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder mutantStatus(final String statusName) {
-
          return mutantStatus(State.parse(statusName));
       }
 
@@ -492,7 +461,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder inSourceFile(final String sourceFile) {
-
          this.sourceFile = sourceFile;
          return this;
       }
@@ -504,7 +472,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder inClass(final String mutatedClass) {
-
          this.mutatedClass = mutatedClass;
          return this;
       }
@@ -516,7 +483,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder inMethod(final String mutatedMethod) {
-
          this.mutatedMethod = mutatedMethod;
          return this;
       }
@@ -529,7 +495,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder withMethodParameters(final String methodDescription) {
-
          this.methodDescription = methodDescription;
          return this;
       }
@@ -541,7 +506,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder inLine(final int lineNumber) {
-
          this.lineNumber = lineNumber;
          return this;
       }
@@ -553,7 +517,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder usingMutator(final MutationOperator mutationOperator) {
-
          this.mutationOperator = mutationOperator;
          mutatorSuffix = "";
          return this;
@@ -561,16 +524,14 @@ public class Mutant {
 
       /**
        * @param mutagenName
-       *         the mutationOperator that was used to create the mutant specified as String. The string may be either the the ID,
+       *         the mutationOperator that was used to create the mutant specified as String. The string may be either the ID,
        *         the fully qualified class name or the fully qualified class name and a suffix. If the mutagenName is
        *         specified with suffix, the mutationOperator suffix is set accordingly, otherwise the empty string is used.
        *
        * @return this builder
        */
       public Builder usingMutator(final String mutagenName) {
-
          mutationOperator = MutationOperators.find(mutagenName);
-
          if (mutationOperator == MutationOperators.UNKNOWN) {
             LOGGER.warn("Found unknown mutation operator: {}", mutagenName);
             mutatorSuffix = "";
@@ -587,7 +548,6 @@ public class Mutant {
             mutatorSuffix = mutatorSuffix.substring(1);
          }
          return this;
-
       }
 
       /**
@@ -597,7 +557,6 @@ public class Mutant {
        * @return this builder
        */
       public Builder atIndex(final int index) {
-
          this.index = index;
          return this;
       }
@@ -605,13 +564,12 @@ public class Mutant {
       /**
        * @param killingTest
        *         the fully qualified name of the test including the test method that killed the test. This method is
-       *         optional and only has to be invoked, if the mutant was actually killed. If not invoked, the the
+       *         optional and only has to be invoked, if the mutant was actually killed. If not invoked, the
        *         killingTest property is passed as empty string
        *
        * @return this builder
        */
       public Builder killedBy(final String killingTest) {
-
          this.killingTest = killingTest;
          return this;
       }
@@ -637,18 +595,15 @@ public class Mutant {
        * @return a new instance of a {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}
        */
       public Mutant build() {
-
          requireNonNull(state, "state must be set");
          requireNonNull(sourceFile, "sourceFile must be set");
          requireNonNull(mutatedClass, "mutatedClass must be set");
          requireNonNull(mutatedMethod, "mutatedMethod must be set");
          requireNonNull(methodDescription, "methodDescription must be set");
          requireNonNull(mutationOperator, "mutationOperator must be set");
-
          if (!state.isAlive()) {
             requireNonNull(killingTest, "killingTest must be set");
          }
-
          return new Mutant(this);
       }
 
@@ -662,5 +617,7 @@ public class Mutant {
             throw new IllegalArgumentException(message);
          }
       }
+
    }
+
 }

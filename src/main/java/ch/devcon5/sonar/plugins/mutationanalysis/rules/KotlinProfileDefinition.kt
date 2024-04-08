@@ -26,4 +26,5 @@ class KotlinProfileDefinition : MutationAnalysisProfileDefinition() {
     override fun getLanguageKey(): String {
         return "kotlin"
     }
+
 }

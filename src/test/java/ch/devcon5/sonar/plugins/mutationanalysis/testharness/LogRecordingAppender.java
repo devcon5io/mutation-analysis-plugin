@@ -22,7 +22,6 @@ package ch.devcon5.sonar.plugins.mutationanalysis.testharness;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
@@ -32,31 +31,32 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 
 public class LogRecordingAppender extends AbstractAppender implements AutoCloseable {
 
-   private List<LogEvent> events = new CopyOnWriteArrayList<>();
+  private final List<LogEvent> events = new CopyOnWriteArrayList<>();
 
-   public LogRecordingAppender() {
-      super("listAppender", null, null);
-      getLoggerConfig().addAppender(this, Level.ALL, null);
-      this.start();
-   }
+  public LogRecordingAppender() {
+    super("listAppender", null, null);
+    getLoggerConfig().addAppender(this, Level.ALL, null);
+    this.start();
+  }
 
-   @Override
-   public void append(final LogEvent logEvent) {
-      events.add(logEvent.toImmutable());
-   }
+  @Override
+  public void append(final LogEvent logEvent) {
+    events.add(logEvent.toImmutable());
+  }
 
-   public List<LogEvent> getEvents() {
-      return events;
-   }
+  public List<LogEvent> getEvents() {
+    return events;
+  }
 
-   private LoggerConfig getLoggerConfig() {
-      final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-      return loggerContext.getConfiguration().getLoggerConfig("");
-   }
+  private LoggerConfig getLoggerConfig() {
+    final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    return loggerContext.getConfiguration().getLoggerConfig("");
+  }
 
-   @Override
-   public void close() throws Exception {
-      getLoggerConfig().removeAppender(getName());
-      this.stop();
-   }
+  @Override
+  public void close() throws Exception {
+    getLoggerConfig().removeAppender(getName());
+    this.stop();
+  }
+
 }

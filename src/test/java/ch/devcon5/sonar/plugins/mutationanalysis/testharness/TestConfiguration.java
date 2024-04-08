@@ -23,7 +23,6 @@ package ch.devcon5.sonar.plugins.mutationanalysis.testharness;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.sonar.api.config.Configuration;
 
 /**
@@ -31,28 +30,28 @@ import org.sonar.api.config.Configuration;
  */
 public class TestConfiguration implements Configuration {
 
-   private final Map<String,String> settings = new ConcurrentHashMap<>();
+  private final Map<String, String> settings = new ConcurrentHashMap<>();
 
-   public TestConfiguration() {
-   }
+  public TestConfiguration() {}
 
-   public TestConfiguration set(String key, Object value){
-      this.settings.put(key, String.valueOf(value));
-      return this;
-   }
+  public TestConfiguration set(String key, Object value) {
+    this.settings.put(key, String.valueOf(value));
+    return this;
+  }
 
-   @Override
-   public Optional<String> get(final String key) {
-      return Optional.ofNullable(settings.get(key));
-   }
+  @Override
+  public Optional<String> get(final String key) {
+    return Optional.ofNullable(settings.get(key));
+  }
 
-   @Override
-   public boolean hasKey(final String key) {
-      return settings.containsKey(key);
-   }
+  @Override
+  public boolean hasKey(final String key) {
+    return settings.containsKey(key);
+  }
 
-   @Override
-   public String[] getStringArray(final String key) {
-      return get(key).map(v -> v.split(",")).orElse(new String[0]);
-   }
+  @Override
+  public String[] getStringArray(final String key) {
+    return get(key).map(v -> v.split(",")).orElse(new String[0]);
+  }
+
 }
