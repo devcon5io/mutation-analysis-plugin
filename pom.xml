@@ -75,7 +75,8 @@
       <log4j.version>2.20.0</log4j.version>
       <mockito.version>5.2.0</mockito.version>
       <jacoco.version>0.8.9</jacoco.version>
-      <pitest.version>1.12.0</pitest.version>
+      <pitest.version>1.15.2</pitest.version>
+    <pitest.junit5.version>1.2.1</pitest.junit5.version>
       <!-- license settings -->
       <license.owner>DevCon5 GmbH</license.owner>
       <license.title>Mutation Analysis Plugin</license.title>
@@ -282,6 +283,13 @@
             <groupId>org.pitest</groupId>
             <artifactId>pitest-maven</artifactId>
             <version>${pitest.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-junit5-plugin</artifactId>
+                <version>${pitest.junit5.version}</version>
+              </dependency>
+            </dependencies>
             <configuration>
               <targetClasses>
                 <param>ch.devcon5.sonar.plugins.mutationanalysis.*</param>
