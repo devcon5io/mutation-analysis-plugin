@@ -63,25 +63,27 @@
     </license>
   </licenses>
 
+
   <properties>
-    <sonar.build.version>8.9.10.61524</sonar.build.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jdk.min.version>11</jdk.min.version>
-    <kotlin.version>1.8.20</kotlin.version>
-    <junit.version>5.9.1</junit.version>
-    <staxmate.version>2.0.1</staxmate.version>
-    <slf4j.version>1.7.36</slf4j.version>
-    <log4j.version>2.20.0</log4j.version>
-    <mockito.version>5.2.0</mockito.version>
-    <jacoco.version>0.8.9</jacoco.version>
-    <pitest.version>1.12.0</pitest.version>
-    <!-- license settings -->
-    <license.owner>DevCon5 GmbH</license.owner>
-    <license.title>Mutation Analysis Plugin</license.title>
-    <license.years>2015-2022</license.years>
-    <license.mailto>info@devcon5.ch</license.mailto>
-    <sonarQubeMinVersion>7.9.5</sonarQubeMinVersion>
+      <sonar.build.version>8.9.10.61524</sonar.build.version>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <jdk.min.version>11</jdk.min.version>
+      <kotlin.version>1.8.20</kotlin.version>
+      <junit.version>5.9.1</junit.version>
+      <staxmate.version>2.0.1</staxmate.version>
+      <slf4j.version>1.7.36</slf4j.version>
+      <log4j.version>2.20.0</log4j.version>
+      <mockito.version>5.2.0</mockito.version>
+      <jacoco.version>0.8.9</jacoco.version>
+      <pitest.version>1.12.0</pitest.version>
+      <!-- license settings -->
+      <license.owner>DevCon5 GmbH</license.owner>
+      <license.title>Mutation Analysis Plugin</license.title>
+      <license.years>2015-2022</license.years>
+      <license.mailto>info@devcon5.ch</license.mailto>
+      <sonarQubeMinVersion>9.5.0.71</sonarQubeMinVersion>
   </properties>
+
 
   <dependencies>
     <dependency>
@@ -157,19 +159,20 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
+<build>
+  <plugins>
       <plugin>
-        <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
-        <artifactId>sonar-packaging-maven-plugin</artifactId>
-        <version>1.21.0.505</version>
-        <extensions>true</extensions>
-        <configuration>
-          <pluginKey>mutationanalysis</pluginKey>
-          <pluginClass>ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin</pluginClass>
-          <pluginName>Mutation Analysis</pluginName>
-          <sonarQubeMinVersion>${sonarQubeMinVersion}</sonarQubeMinVersion>
-        </configuration>
+          <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+          <artifactId>sonar-packaging-maven-plugin</artifactId>
+          <version>1.23.0.740</version>
+          <extensions>true</extensions>
+          <configuration>
+              <pluginKey>mutationanalysis</pluginKey>
+              <pluginClass>ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin</pluginClass>
+              <pluginName>Mutation Analysis</pluginName>
+              <pluginApiMinVersion>${sonarQubeMinVersion}</pluginApiMinVersion>
+              <requiredForLanguages>java</requiredForLanguages>
+          </configuration>
       </plugin>
 
       <plugin>
