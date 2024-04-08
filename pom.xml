@@ -2,7 +2,7 @@
 
 <!--
   ~ Mutation Analysis Plugin
-  ~ Copyright (C) 2015-2018 DevCon5 GmbH, Switzerland
+  ~ Copyright (C) 2015-2024 DevCon5 GmbH, Switzerland
   ~ info@devcon5.ch
   ~
   ~ This program is free software; you can redistribute it and/or
@@ -25,7 +25,7 @@
     <artifactId>mutation-analysis-plugin</artifactId>
     <groupId>ch.devcon5.sonar</groupId>
     <packaging>sonar-plugin</packaging>
-    <version>1.8-SNAPSHOT</version>
+    <version>1.8</version>
 
   <name>${project.artifactId}</name>
   <description>Sonar Plugin for integrating and visualizing mutation analysis results</description>
@@ -80,7 +80,7 @@
       <!-- license settings -->
       <license.owner>DevCon5 GmbH</license.owner>
       <license.title>Mutation Analysis Plugin</license.title>
-      <license.years>2015-2022</license.years>
+      <license.years>2015-2024</license.years>
       <license.mailto>info@devcon5.ch</license.mailto>
       <sonarQubeMinVersion>9.5.0.71</sonarQubeMinVersion>
   </properties>
