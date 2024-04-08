@@ -20,13 +20,9 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
-import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
+import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -36,11 +32,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import javax.xml.stream.XMLStreamException;
+
+import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
+import ch.devcon5.sonar.plugins.mutationanalysis.model.MutationOperators;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.*;
 
 class PitestReportParserTest {
 
@@ -155,7 +152,8 @@ class PitestReportParserTest {
 
   @Test
   void parseReport_emptyFile_emptyList() throws Exception {
-    Path emptyFile = folder.toFile().toPath();
+
+    Path emptyFile = Files.createFile(folder.resolve("emptyFile"));
     Collection<Mutant> result = subject.parseMutants(emptyFile);
     assertTrue(result.isEmpty());
   }
