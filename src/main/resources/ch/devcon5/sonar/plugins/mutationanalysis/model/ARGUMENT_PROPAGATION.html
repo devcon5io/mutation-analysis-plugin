@@ -19,31 +19,33 @@
   -->
 
 <div id="ARGUMENT_PROPAGATION">
-    <h2>Argument Propagation Mutator (ARGUMENT_PROPAGATION)</h2>
+  <h2>Argument Propagation Mutator (ARGUMENT_PROPAGATION)</h2>
 
-    <p>If a method has a parameter whose type matches the return type, this
-        operator replaces the actual return value with the value of the parameter.
-        Hence it is only applicable to non-void methods.
-        For example:</p>
+  <p>
+  This operator replaces the return value of a method parameter, whose type matches the return type, with the
+  value of the parameter. Hence, it is only applicable to non-void methods.
+  </p>
+  <br>
+  <p>For example:</p>
 
- <pre class="prettyprint lang-java">
-   public String aMethod() {
-     String aValue = "example";
-     return bMethod(aValue);
-   }
+  <pre class="prettyprint lang-java">
+public String aMethod() {
+  String aValue = "example";
+  return bMethod(aValue);
+}
 
-   private String bMethod(String param) {
-     return param + " not mutated";
-   }
- </pre>
+private String bMethod(String param) {
+  return param + " not mutated";
+}
+    </pre>
 
-    is mutated to
+  is mutated to
 
- <pre class="prettyprint lang-java">
-   public String mutatedMethod() {
-     String aValue = "example";
-     return aValue;
-   }
- </pre>
-    <p>see <a href="http://pitest.org/quickstart/mutators#ARGUMENT_PROPAGATION">Pitest Mutators</a></p>
+  <pre class="prettyprint lang-java">
+public String mutatedMethod() {
+  String aValue = "example";
+  return aValue;
+}
+    </pre>
+  <p>see <a href="http://pitest.org/quickstart/mutators#ARGUMENT_PROPAGATION">Pitest Mutators</a></p>
 </div>

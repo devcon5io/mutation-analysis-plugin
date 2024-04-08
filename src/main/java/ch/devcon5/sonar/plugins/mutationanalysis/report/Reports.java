@@ -20,18 +20,17 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.report;
 
+import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
-
-import ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility class to read a {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s from a report located in a directory.
- *
+ * Utility class to read a {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s from a report located in a
+ * directory.
  */
 public final class Reports {
 
@@ -40,25 +39,19 @@ public final class Reports {
    */
   private static final Logger LOG = LoggerFactory.getLogger(Reports.class);
 
-  private Reports() {
-
-  }
+  private Reports() {}
 
   /**
-   * Reads the {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s from the report in the reports directory. The method searches for the most recent
-   * {@code mutations.xml} report and returns it's contents as a list.
+   * Reads the {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s from the report in the reports directory.
+   * The method searches for the most recent {@code mutations.xml} report and returns its contents as a list.
    *
-   * @param reportsDirectory
-   *         the {@link Path} to the directory containing the report.
-   *
-   * @return a collection of all {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s declared in the report or an empty list if neither report was found
-   * nor it contained any {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s. The method does not return <code>null</code>
-   *
-   * @throws IOException
-   *         if the search for the report failed or the report could not be read.
+   * @param reportsDirectory the {@link Path} to the directory containing the report.
+   * @return a collection of all {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s declared in the report
+   * or an empty list if neither report was found nor it contained any
+   * {@link ch.devcon5.sonar.plugins.mutationanalysis.model.Mutant}s. The method does not return <code>null</code>
+   * @throws IOException if the search for the report failed or the report could not be read.
    */
   public static Collection<Mutant> readMutants(final Path reportsDirectory) throws IOException {
-
     LOG.debug("Searching pit reports in {}", reportsDirectory);
 
     final Path xmlReport;
@@ -71,10 +64,11 @@ public final class Reports {
     if (xmlReport == null) {
       LOG.warn("No XML PIT report found in directory {} !", reportsDirectory);
       LOG.warn(
-        "Checkout plugin documentation for more detailed explanations: https://github.com/devcon5io/mutation-analysis-plugin");
+          "Checkout plugin documentation for more detailed explanations: https://github.com/devcon5io/mutation-analysis-plugin");
       return Collections.emptyList();
     }
 
     return new PitestReportParser().parseMutants(xmlReport);
-}
+  }
+
 }

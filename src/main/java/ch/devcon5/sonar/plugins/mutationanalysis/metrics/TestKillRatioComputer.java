@@ -38,22 +38,22 @@ public class TestKillRatioComputer implements MeasureComputer {
 
   private static final Logger LOG = getLogger(TestKillRatioComputer.class);
 
-  private Configuration config;
+  private final Configuration config;
 
   public TestKillRatioComputer(final Configuration config) {
-
     this.config = config;
   }
 
   @Override
   public MeasureComputerDefinition define(final MeasureComputerDefinitionContext defContext) {
-
-    return defContext.newDefinitionBuilder().setInputMetrics(UTILITY_GLOBAL_MUTATIONS_KEY, TEST_KILLS_KEY).setOutputMetrics(TEST_KILL_RATIO_KEY).build();
+    return defContext.newDefinitionBuilder()
+        .setInputMetrics(UTILITY_GLOBAL_MUTATIONS_KEY, TEST_KILLS_KEY)
+        .setOutputMetrics(TEST_KILL_RATIO_KEY)
+        .build();
   }
 
   @Override
   public void compute(final MeasureComputerContext context) {
-
     if (!MutationAnalysisPlugin.isExperimentalFeaturesEnabled(config)) {
       LOG.info("ExperimentalFeature disabled");
       return;
@@ -61,17 +61,16 @@ public class TestKillRatioComputer implements MeasureComputer {
 
     final Component comp = context.getComponent();
     if (isNotUnitTestOrDirectory(comp)) {
-      LOG.info("Skipping {} because it's not test resource", comp);
+      LOG.info("Skipping {} because it's not a test resource", comp);
       return;
     }
 
     final double mutationsGlobal = getMutationsGlobal(context, UTILITY_GLOBAL_MUTATIONS_KEY);
     final double testKillsLocal = getTestKillsLocal(context);
-
     if (mutationsGlobal == 0.0) {
       return;
     }
-    final double percentage = 100.0 * testKillsLocal / mutationsGlobal;
+    final double percentage = 100.0d * testKillsLocal / mutationsGlobal;
     LOG.info("Computed {} of {}% from ({} / {}) for {}", TEST_KILL_RATIO.getName(), percentage, testKillsLocal, mutationsGlobal, comp);
     context.addMeasure(TEST_KILL_RATIO_KEY, percentage);
   }
@@ -81,12 +80,13 @@ public class TestKillRatioComputer implements MeasureComputer {
   }
 
   private double getMutationsGlobal(final MeasureComputerContext context, String key) {
-
     final double mutationsGlobal;
     final Measure globalMutationsMeasure = context.getMeasure(key);
-
     if (globalMutationsMeasure == null) {
-      mutationsGlobal = Streams.parallelStream(context.getChildrenMeasures(key)).mapToInt(Measure::getIntValue).findFirst().orElse(0);
+      mutationsGlobal = Streams.parallelStream(context.getChildrenMeasures(key))
+          .mapToInt(Measure::getIntValue)
+          .findFirst()
+          .orElse(0);
       LOG.info("Component {} has no global mutation information, using first child's: {}", context.getComponent(), mutationsGlobal);
     } else {
       mutationsGlobal = globalMutationsMeasure.getIntValue();
@@ -96,11 +96,11 @@ public class TestKillRatioComputer implements MeasureComputer {
   }
 
   private double getTestKillsLocal(final MeasureComputerContext context) {
-
     final Measure localTestKills = context.getMeasure(TEST_KILLS_KEY);
-
     if (localTestKills == null) {
-      return Streams.parallelStream(context.getChildrenMeasures(TEST_KILLS_KEY)).mapToInt(Measure::getIntValue).sum();
+      return Streams.parallelStream(context.getChildrenMeasures(TEST_KILLS_KEY))
+          .mapToInt(Measure::getIntValue)
+          .sum();
     } else {
       return localTestKills.getIntValue();
     }

@@ -34,10 +34,9 @@ import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.
 import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.UTILITY_GLOBAL_MUTATIONS_KEY;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.Serializable;
-
 import ch.devcon5.sonar.plugins.mutationanalysis.MutationAnalysisPlugin;
 import ch.devcon5.sonar.plugins.mutationanalysis.Streams;
+import java.io.Serializable;
 import org.slf4j.Logger;
 import org.sonar.api.ce.measure.Component;
 import org.sonar.api.ce.measure.Measure;
@@ -52,22 +51,19 @@ public class TotalMutationsComputer implements MeasureComputer {
   private final Configuration config;
 
   public TotalMutationsComputer(final Configuration config) {
-
     this.config = config;
   }
 
   @Override
   public MeasureComputerDefinition define(final MeasureComputerDefinitionContext defContext) {
-
     return defContext.newDefinitionBuilder()
-                     .setInputMetrics(UTILITY_GLOBAL_MUTATIONS_KEY, UTILITY_GLOBAL_ALIVE_KEY, MUTATIONS_TOTAL_KEY, MUTATIONS_ALIVE_KEY)
-                     .setOutputMetrics(MUTATIONS_TOTAL_PERCENT_KEY, MUTATIONS_ALIVE_PERCENT_KEY)
-                     .build();
+        .setInputMetrics(UTILITY_GLOBAL_MUTATIONS_KEY, UTILITY_GLOBAL_ALIVE_KEY, MUTATIONS_TOTAL_KEY, MUTATIONS_ALIVE_KEY)
+        .setOutputMetrics(MUTATIONS_TOTAL_PERCENT_KEY, MUTATIONS_ALIVE_PERCENT_KEY)
+        .build();
   }
 
   @Override
   public void compute(final MeasureComputerContext context) {
-
     if (!MutationAnalysisPlugin.isExperimentalFeaturesEnabled(config)) {
       LOG.info("Experimental features disabled");
       return;
@@ -107,29 +103,25 @@ public class TotalMutationsComputer implements MeasureComputer {
   }
 
   private void computePercentage(final MeasureComputerContext context, final Metric<Serializable> globalMetric, final Metric<Serializable> localMetric, final Metric<Serializable> resultMetric) {
-
     final double mutationsGlobal = getMutationsGlobal(context, globalMetric);
     final double mutationsLocal = getMutationsLocal(context, localMetric);
-
     if (mutationsGlobal == 0.0) {
       LOG.info("No mutations found in project");
-    } else  {
-      final double percentage = 100.0 * mutationsLocal / mutationsGlobal;
+    } else {
+      final double percentage = 100.0d * mutationsLocal / mutationsGlobal;
       LOG.info("Computed {} of {}% from ({} / {}) for {}", resultMetric.getName(), percentage, mutationsLocal, mutationsGlobal, context.getComponent());
       context.addMeasure(resultMetric.key(), percentage);
     }
   }
 
   private double getMutationsGlobal(final MeasureComputerContext context, Metric<Serializable> metric) {
-
     final double mutationsGlobal;
     final Measure globalMutationsMeasure = context.getMeasure(metric.key());
-
     if (globalMutationsMeasure == null) {
       mutationsGlobal = Streams.parallelStream(context.getChildrenMeasures(metric.key()))
-                                             .mapToInt(Measure::getIntValue)
-                                             .findFirst()
-                                             .orElse(0);
+          .mapToInt(Measure::getIntValue)
+          .findFirst()
+          .orElse(0);
       LOG.info("Component {} has no global mutation information, using first child's: {}", context.getComponent(), mutationsGlobal);
     } else {
       mutationsGlobal = globalMutationsMeasure.getIntValue();
@@ -139,18 +131,16 @@ public class TotalMutationsComputer implements MeasureComputer {
   }
 
   private double getMutationsLocal(final MeasureComputerContext context, Metric<Serializable> metric) {
-
     final double mutationsLocal;
     final Measure localMutationsMeasure = context.getMeasure(metric.key());
-
     if (localMutationsMeasure == null) {
-      mutationsLocal = Streams.parallelStream(context.getChildrenMeasures(metric.key())).mapToInt(Measure::getIntValue).sum();
+      mutationsLocal = Streams.parallelStream(context.getChildrenMeasures(metric.key()))
+          .mapToInt(Measure::getIntValue)
+          .sum();
       LOG.info("Component {} children have {} mutations ", context.getComponent(), mutationsLocal);
-
     } else {
       mutationsLocal = localMutationsMeasure.getIntValue();
       LOG.info("Component {} has no children, using local mutation count of {}", context.getComponent(), mutationsLocal);
-
     }
     return mutationsLocal;
   }

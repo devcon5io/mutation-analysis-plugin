@@ -20,24 +20,24 @@
 
 package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.sonar.api.measures.Metric;
 
 /**
- *
+ * Mutation Analysis Metrics Tests
  */
-public class MutationAnalysisMetricsTest {
+class MutationAnalysisMetricsTest {
 
-    @Test
-    public void testGetMetrics() throws Exception {
+  @Test
+  void testGetMetrics() {
+    final List<Metric> metrics = new MutationAnalysisMetrics().getMetrics();
+    assertNotNull(metrics);
+    assertFalse(metrics.isEmpty());
+  }
 
-        final List<Metric> metrics = new MutationAnalysisMetrics().getMetrics();
-        assertNotNull(metrics);
-        assertFalse(metrics.isEmpty());
-    }
 }

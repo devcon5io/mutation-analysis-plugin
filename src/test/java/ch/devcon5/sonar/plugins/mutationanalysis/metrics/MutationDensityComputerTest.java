@@ -22,49 +22,48 @@ package ch.devcon5.sonar.plugins.mutationanalysis.metrics;
 
 import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_DENSITY_KEY;
 import static ch.devcon5.sonar.plugins.mutationanalysis.metrics.MutationMetrics.MUTATIONS_TOTAL_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.sonar.api.measures.CoreMetrics.LINES_TO_COVER_KEY;
 
-import java.util.Arrays;
-
 import ch.devcon5.sonar.plugins.mutationanalysis.testharness.MeasureComputerTestHarness;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Arrays;
+import java.util.Collections;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.sonar.api.ce.measure.Measure;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.ce.measure.test.TestMeasureComputerContext;
 import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
 
 /**
- *
+ * Mutation Density Computer Tests
  */
-public class MutationDensityComputerTest {
+class MutationDensityComputerTest {
 
   private MeasureComputerTestHarness<MutationDensityComputer> harness;
   private MutationDensityComputer computer;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     this.harness = MeasureComputerTestHarness.createFor(MutationDensityComputer.class);
     this.computer = harness.getComputer();
   }
 
   @Test
-  public void define() {
-
+  void define() {
     final TestMeasureComputerDefinitionContext context = new TestMeasureComputerDefinitionContext();
 
     final MeasureComputer.MeasureComputerDefinition def = computer.define(context);
 
     assertTrue(def.getInputMetrics()
-                  .containsAll(Arrays.asList(MUTATIONS_TOTAL_KEY, LINES_TO_COVER_KEY)));
-    assertTrue(def.getOutputMetrics().containsAll(Arrays.asList(MUTATIONS_DENSITY_KEY)));
+        .containsAll(Arrays.asList(MUTATIONS_TOTAL_KEY, LINES_TO_COVER_KEY)));
+    assertTrue(def.getOutputMetrics().containsAll(Collections.singletonList(MUTATIONS_DENSITY_KEY)));
   }
 
   @Test
-  public void compute_experimentalFeaturesDisabled_noMeasure() {
+  void compute_experimentalFeaturesDisabled_noMeasure() {
     harness.enableExperimentalFeatures(false);
 
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
@@ -78,7 +77,7 @@ public class MutationDensityComputerTest {
   }
 
   @Test
-  public void compute_noMutations_noMeasure() {
+  void compute_noMutations_noMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     computer.compute(measureContext);
@@ -87,7 +86,7 @@ public class MutationDensityComputerTest {
   }
 
   @Test
-  public void compute_withInputMeausresMutations_correctOutputMeasure() {
+  void compute_withInputMeausresMutations_correctOutputMeasure() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 30);
@@ -100,7 +99,7 @@ public class MutationDensityComputerTest {
   }
 
   @Test
-  public void compute_ZeroMutationsAndZeroLines_noDensityMetric() {
+  void compute_ZeroMutationsAndZeroLines_noDensityMetric() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 0);
@@ -112,7 +111,7 @@ public class MutationDensityComputerTest {
   }
 
   @Test
-  public void compute_noLineMetrics_densitySetToZero() {
+  void compute_noLineMetrics_densitySetToZero() {
     final TestMeasureComputerContext measureContext = harness.createMeasureContextForSourceFile("compKey");
 
     measureContext.addInputMeasure(MUTATIONS_TOTAL_KEY, 30);
@@ -122,4 +121,5 @@ public class MutationDensityComputerTest {
     Measure density = measureContext.getMeasure(MUTATIONS_DENSITY_KEY);
     assertEquals(0.0, density.getDoubleValue(), 0.05);
   }
+
 }

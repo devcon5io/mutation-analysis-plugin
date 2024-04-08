@@ -29,11 +29,12 @@ import org.sonar.api.server.rule.RulesDefinitionXmlLoader
  * defined in the rules.xml file in the classpath. The rule keys are accessible as constants.
  */
 class KotlinRulesDefinition
+
 /**
  * Constructor to create the pitest rules definitions and repository. The constructor is invoked by Sonar.
  *
  * @param settings
- * the settings of the Pitest-Sensor pluin
+ * the settings of the Pitest-Sensor plugin
  * @param xmlLoader
  */
 (settings: Configuration, xmlLoader: RulesDefinitionXmlLoader) : MutationAnalysisRulesDefinition(settings, xmlLoader) {

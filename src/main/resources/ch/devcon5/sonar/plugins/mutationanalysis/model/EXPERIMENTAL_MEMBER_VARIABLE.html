@@ -19,86 +19,89 @@
   -->
 
 <div id="EXPERIMENTAL_MEMBER_VARIABLE">
-    <h2>Experimental Member Variable Mutator (EXPERIMENTAL<em>MEMBER</em>VARIABLE)</h2>
+  <h2>Experimental Member Variable Mutator (EXPERIMENTAL_MEMBER_VARIABLE)</h2>
 
-    <p>This operator mutates assignments to member variables, including final members, by removing the assignments.
-        Member variables will be initialized with their Java defaul values, depending on the type of the variable.
-        </p>
+  <p>
+  This operator mutates assignments to member variables, including final members, by removing the assignments.
+  Member variables will be initialized with their Java default values, depending on the type of the variable.
+  </p>
 
-    <p>Java Default Values for Primitives and Reference Types</p>
+  <p>Java Default Values for Primitives and Reference Types</p>
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Type</th>
-            <th>Default Value</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>
-                <code>boolean</code>
-            </td>
-            <td><code>false</code></td>
-        </tr>
-        <tr>
-            <td>
-                <code>int</code>
-                <code>short</code>
-                <code>byte</code>
-                <code>long</code>
-            </td>
-            <td><code>0</code></td>
-        </tr>
-        <tr>
-            <td>
-                <code>float</code>
-                <code>double</code>
-            </td>
-            <td><code>0.0</code></td>
-        </tr>
-        <tr>
-            <td>
-                <code>char</code>
-            </td>
-            <td><code>'\u0000'</code></td>
-        </tr>
-        <tr>
-            <td>
-                <code>Object</code>
-            </td>
-            <td><code>null</code></td>
-        </tr>
-        </tbody>
-    </table>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Type</th>
+      <th>Default Value</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td><code>false</code></td>
+    </tr>
+    <tr>
+      <td>
+        <code>int</code>
+        <code>short</code>
+        <code>byte</code>
+        <code>long</code>
+      </td>
+      <td><code>0</code></td>
+    </tr>
+    <tr>
+      <td>
+        <code>float</code>
+        <code>double</code>
+      </td>
+      <td><code>0.0</code></td>
+    </tr>
+    <tr>
+      <td>
+        <code>char</code>
+      </td>
+      <td><code>'\u0000'</code></td>
+    </tr>
+    <tr>
+      <td>
+        <code>Object</code>
+      </td>
+      <td><code>null</code></td>
+    </tr>
+    </tbody>
+  </table>
+  <br>
+  <p>For Example:</p>
 
-    <p>Example</p>
-
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public class Example {
-    private final int a = 10;
-    private String text = "abc";
-    //...
+  private final int a = 10;
+  private String text = "abc";
+  //...
 }
-</pre>
+    </pre>
 
-    <p>will be mutated to</p>
+  <p>will be mutated to</p>
 
-<pre class="prettyprint lang-java">
-  public class Example {
-    private final int a = 0;
-    private String text = null;
-    ...
-  }
-</pre>
+  <pre class="prettyprint lang-java">
+public class Example {
+  private final int a = 0;
+  private String text = null;
+  ...
+}
+    </pre>
 
-    <p>In cases where the member variable is explicitly initialized with a default value this operator will create an
-        equivalent mutation that can not be killed.</p>
+  <p>
+  In cases where the member variable is explicitly initialized with a default value this operator will create an
+  equivalent mutation that can not be killed.
+  </p>
 
-<pre class="prettyprint lang-java">
+  <pre class="prettyprint lang-java">
 public class EquivalentExample {
-    private boolean b = false;
+  private boolean b = false;
 }
-</pre>
-    <p>see <a href="http://pitest.org/quickstart/mutators#EXPERIMENTAL_MEMBER_VARIABLE">Pitest Mutators</a></p>
+    </pre>
+  <p>see <a href="http://pitest.org/quickstart/mutators#EXPERIMENTAL_MEMBER_VARIABLE">Pitest Mutators</a></p>
 </div>
