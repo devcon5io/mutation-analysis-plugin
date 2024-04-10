@@ -83,6 +83,9 @@
       <license.years>2015-2024</license.years>
       <license.mailto>info@devcon5.ch</license.mailto>
       <sonarQubeMinVersion>9.5.0.71</sonarQubeMinVersion>
+      <!-- SonarCloud Analysis -->
+      <sonar.organization>devcon5io</sonar.organization>
+      <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
 
 
